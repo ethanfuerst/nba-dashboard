@@ -2,13 +2,7 @@
 .DS_Store
 
 # Icon
-Icon\r
-Icon\r\r
-Icon[
-]
 Icon?
-"Icon[\r]"
-Icon[\r]
 
 # VS Code Settings
 .vscode
