@@ -8,12 +8,13 @@ __*margin_of_victory.py*__ - .py file with analysis that showed the '19 - '20 se
 
 __*player_games.py*__ - .py file to pull a players game log for a season
 
-__*nba_games.py*__ - .py file with methods to help pull data from [basketball-reference.com](https://www.basketball-reference.com) and other sources.
+__*nba_games.py*__ - .py file with methods to help pull data from [basketball-reference.com](https://www.basketball-reference.com), [NPA API](https://github.com/swar/nba_api/), and other sources.
 
 __*.gitignore*__ - shows github what files to ignore when I commit my changes.
 
 ## TODO
 
+- [ ] create player_games() and put in nba_games
 - [ ] make sure get_year() works for all years
   - [ ] clean up the logic behind what get_year() returns
 - [ ] why are there so many blowouts this year? - create new .py file and dig in to it
