@@ -64,17 +64,16 @@ def get_player_season(player_name, season=datetime.datetime.today().year - 1, se
     # Get the id from the result of my search
     player_id = player_search[0]['id']
 
-    # log is a nba_api class that contains the dataframes
+    # playergamelog is a nba_api class that contains the dataframes
     log = playergamelog.PlayerGameLog(player_id=player_id, season=season, season_type_all_star=season_type)
 
     # If no results for the season, throw an error
     if len(log.get_data_frames()[0]) == 0:
         raise SeasonNotFoundError("'" + player_name + "'" + " doesn't have data recorded for the " +  str(season) + " season." )
 
-    # Get the dataframe
     df = log.get_data_frames()[0]
     
-    # Drop the 'video available' column and return the df
+    # Drop the 'video available' column
     df.drop(['VIDEO_AVAILABLE'], axis=1, inplace=True)
     return df
 
@@ -123,7 +122,6 @@ def get_season(season=datetime.datetime.today().year - 1, season_type='Regular S
     for i in months:
         urls.append('https://www.basketball-reference.com/leagues/NBA_' + str(season) + '_games-' + str(i) + '.html')
     
-    # Creating the dataframe
     games = pd.DataFrame()
     for url in urls:
         try:
@@ -154,7 +152,7 @@ def get_season(season=datetime.datetime.today().year - 1, season_type='Regular S
     try:
         playoff_start = games[games['Date'] == 'Playoffs'].index[0]
     except:
-        # This means season specified doeesn't contain playoff games
+        # The specified season doeesn't contain playoff games
         return clean_games(games)
 
     if season_type == 'Regular Season':
