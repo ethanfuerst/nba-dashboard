@@ -18,3 +18,4 @@ __*.gitignore*__ - shows github what files to ignore when I commit my changes.
 - [x] make sure get_year() works for all years
   - [x] clean up the logic behind what get_year() returns
 - [ ] why are there so many blowouts this year? - create new .py file and dig in to it
+- [ ] dig in to ppfta, ppfga, pp3pa on player_games.py
