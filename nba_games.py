@@ -63,6 +63,7 @@ def get_player_season(player_name, season=datetime.datetime.today().year - 1, se
 
     # Get the id from the result of my search
     player_id = player_search[0]['id']
+    player_name = player_search[0]['full_name']
 
     # playergamelog is a nba_api class that contains the dataframes
     log = playergamelog.PlayerGameLog(player_id=player_id, season=season, season_type_all_star=season_type)
