@@ -2,21 +2,38 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from nba_api.stats.static import players
-from nba_api.stats.endpoints import commonplayerinfo, playergamelog
+from nba_games import get_player_season
 
 #%%
-# nba_api
-player_id = players.find_players_by_full_name('luka doncic')[0]['id']
-player_info = commonplayerinfo.CommonPlayerInfo(player_id=player_id)
+df = get_player_season(player_name='luka doncic')
 
-# Figure out how I want to do by season and playoffs and whatnot
-# For now, just get most recent season
-log = playergamelog.PlayerGameLog(player_id=player_id, season=2019, season_type_all_star='Regular Season')
-df = log.get_data_frames()[0]
-
-# df['PPFTA'] = df['FT_PCT'].copy()
+df['PPFTA'] = df['FT_PCT'].copy()
 df['PPFGA'] = df['FG_PCT'] * 2
 df['PP3PA'] = df['FG3_PCT'] * 3
 
-# Moving average of 3? 5?
+df = df[['GAME_DATE', 'PPFTA', 'PPFGA', 'PP3PA']].copy()
+
+df = df.rolling(window=3).mean().copy()
+
+df.plot()
+
+df[(df['PPFTA'] <= df['PPFGA']) & (df['PPFGA'] <= df['PP3PA'])]
+
+#%%
+df = get_player_season(player_name='james harden')
+
+df['PPFTA'] = df['FT_PCT'].copy()
+df['PPFGA'] = df['FG_PCT'] * 2
+df['PP3PA'] = df['FG3_PCT'] * 3
+
+df = df[['GAME_DATE', 'PPFTA', 'PPFGA', 'PP3PA']].copy()
+
+df = df.rolling(window=3).mean().copy()
+
+df.plot()
+
+df[(df['PPFTA'] <= df['PPFGA']) & (df['PPFGA'] <= df['PP3PA'])]
+
+# %%
+# See where ppfta =< ppfga =< pp3pa
+# Count games where above is true
