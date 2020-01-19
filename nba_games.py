@@ -70,7 +70,7 @@ def get_player_season(player_name, season=datetime.datetime.today().year - 1, se
 
     # If no results for the season, throw an error
     if len(log.get_data_frames()[0]) == 0:
-        raise SeasonNotFoundError("'" + player_name + "'" + " doesn't have data recorded for the " +  str(season) + " season." )
+        raise SeasonNotFoundError(player_name + " doesn't have data recorded for the " +  str(season) + " season." )
 
     df = log.get_data_frames()[0]
     
