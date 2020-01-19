@@ -14,7 +14,7 @@ __*.gitignore*__ - shows github what files to ignore when I commit my changes.
 
 ## TODO
 
-- [ ] create player_games() and put in nba_games
-- [ ] make sure get_year() works for all years
-  - [ ] clean up the logic behind what get_year() returns
+- [x] create get_player_season() and put in nba_games
+- [x] make sure get_year() works for all years
+  - [x] clean up the logic behind what get_year() returns
 - [ ] why are there so many blowouts this year? - create new .py file and dig in to it
