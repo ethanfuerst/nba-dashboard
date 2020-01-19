@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import datetime
 import html5lib
-from nba_games import get_year, thres_games
+from nba_games import get_season, thres_games
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from textwrap import wrap
@@ -18,7 +18,7 @@ Also, when I created this I wasn't that familiar with matplotlib so some of my l
 
 #%%
 # 20, 30, 40, 50
-curr_season = get_year(2020)
+curr_season = get_season(2019)
 df_40 = thres_games(startyear = 2015, thres = 40)
 df_30 = thres_games(startyear = 2015, thres = 30)
 df_20 = thres_games(startyear = 2015, thres = 20)
@@ -113,7 +113,7 @@ plt.scatter(dist30['Game Nums'].iloc[4],[y[4] for j in range(len(dist30['Game Nu
 plt.yticks(y,dist30['Season']) 
 plt.xticks([i for i in range(0, 1231, 205)], [round((i/1230) * 100,2) for i in range(0, 1231, 205)])
 plt.title('Distribution of 30 point wins throughout each season')
-curr_game_mark = len(get_year(2020))
+curr_game_mark = len(get_season(2019))
 plt.axvline(x=curr_game_mark)
 handles = mpatches.Patch(facecolor='#1D78B7', label='Current Game Mark')
 plt.legend(handles=[handles], framealpha=0.2, loc='upper left', ncol=1, bbox_to_anchor=(1, 1))
