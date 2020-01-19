@@ -10,8 +10,8 @@ from textwrap import wrap
 
 '''
 I created this on 12/26/19.
-My findings can be found in this reddit post:
-https://www.reddit.com/r/nba/comments/eg2own/oc_this_season_is_on_pace_for_a_record_number_of/
+My findings can be found in this post on my data exploration blog:
+* add url *
 If you run this script later it might not work as well as it did in the past.
 Also, when I created this I wasn't that familiar with matplotlib so some of my logic here might be a little weird.
 '''
