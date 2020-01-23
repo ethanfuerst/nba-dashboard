@@ -1,6 +1,6 @@
 # nba_vis
 
-This project is where I keep all my python files that I use when I analyze all sorts of NBA data.
+This project is where I keep all my files that I use when I analyze all sorts of NBA data.
 
 ## Files in this repository
 
