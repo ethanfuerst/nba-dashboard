@@ -2,10 +2,10 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from nba_games import get_player_season
+from nba_games import get_player_season, NBA_Player
 
 #%%
-df = get_player_season(player_name='luka doncic')
+df = NBA_Player('luka doncic').get_season(2019)
 
 df['PPFTA'] = df['FT_PCT'].copy()
 df['PPFGA'] = df['FG_PCT'] * 2
