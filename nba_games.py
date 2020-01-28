@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import datetime
 import html5lib
-from nba_api.stats.static import players
+from nba_api.stats.static import players, playercareerstats
 from nba_api.stats.endpoints import commonplayerinfo, playergamelog
 
 # Custom errors
@@ -86,6 +86,11 @@ class NBA_Player:
         # Drop the 'video available' column
         df.drop(['VIDEO_AVAILABLE'], axis=1, inplace=True)
         return df
+    
+    def get_career(self, season_type='Regular Season'):
+        # see more on https://github.com/swar/nba_api/blob/master/docs/nba_api/stats/endpoints/playercareerstats.md
+        log = playercareerstats.PlayerCareerStats(player_id=self.player_id, per_mode36='Totals')
+        df = log.get_data_frames()[0]
 
 
 class NBA_Season:
@@ -164,73 +169,6 @@ class NBA_Season:
             raise SeasonNotFoundError("There are no playoffs recorded for the " + self.season_str + " season.")
         else:
             return self.__clean_games(self.games[self.games.index > self.playoff_start].copy())
-
-# Keeping this to make sure that I can still pull data - nba_api is down when I last ran this
-def get_player_season(player_name, season=datetime.datetime.today().year - 1, season_type='Regular Season'):
-    '''
-    Returns a df of player game logs from the 'season to season+1' season.
-    Specify 'Regular Season', 'Pre Season', 'Playoffs' or 'All Star'.
-
-    Parameters:
-
-    player_name (string, required)
-        The name of the player. If name is too general, then first name in the search will be returned.
-            Ex. 'luka doncic' or 'harden'
-        If the search does not return a player, a PlayerNotFoundError will be thrown.
-
-    
-    season (int, default: current year - 1)
-        The season that you want to pull data from. 
-            Ex. 2003
-        If the player you specified doesn't have date from the season inputted, a SeasonNotFoundError will be thrown.
-        
-    season_type (string, default: 'Regular Season')
-        The period of games from which you'd like the data from.
-        Must be one of the following:
-            'Regular Season'
-            'Pre Season'
-            'Playoffs'
-            'All-Star'
-            'All Star'
-        If season_type is not one of the values above, it will be changed to 'Regular Season'.
-
-    Returns:
-
-    df
-        A pd.DataFrame() containing the player data with the following columns:
-            ['SEASON_ID', 'Player_ID', 'Game_ID', 'GAME_DATE', 'MATCHUP', 'WL',
-            'MIN', 'FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A', 'FG3_PCT', 'FTM',
-            'FTA', 'FT_PCT', 'OREB', 'DREB', 'REB', 'AST', 'STL', 'BLK', 'TOV', 
-            'PF', 'PTS', 'PLUS_MINUS']
-    '''
-    
-    # Change season_type to 'Regular Season' if not specified correctly
-    if season_type not in ['Regular Season', 'Pre Season', 'Playoffs', 'All-Star', 'All Star']:
-        season_type = 'Regular Season'
-
-    # Search for the player to get the id
-    player_search = players.find_players_by_full_name(player_name)
-
-    # If no results for the player, throw an error
-    if len(player_search) == 0:
-        raise PlayerNotFoundError('Name not found in database. Try being more specific or look for the player here: https://stats.nba.com/players/')
-
-    # Get the id from the result of my search
-    player_id = player_search[0]['id']
-    player_name = player_search[0]['full_name']
-
-    # playergamelog is a nba_api class that contains the dataframes
-    log = playergamelog.PlayerGameLog(player_id=player_id, season=season, season_type_all_star=season_type)
-
-    # If no results for the season, throw an error
-    if len(log.get_data_frames()[0]) == 0:
-        raise SeasonNotFoundError(player_name + " doesn't have data recorded for the " +  str(season) + " season." )
-
-    df = log.get_data_frames()[0]
-    
-    # Drop the 'video available' column
-    df.drop(['VIDEO_AVAILABLE'], axis=1, inplace=True)
-    return df
 
 def thres_games(startyear=2000, endyear=datetime.datetime.today().year - 1, thres = 40):
     '''
