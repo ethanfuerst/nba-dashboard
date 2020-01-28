@@ -281,7 +281,7 @@ def thres_games(startyear=2000, endyear=datetime.datetime.today().year - 1, thre
     tot = []
     for i in years:
         curr_season = NBA_Season(i)
-        year = curr_season.get_reg_season()
+        year = curr_season.get_season()
         num_games = len(year)
         season = "'" +str(i)[2:] + " - '" + str(i + 1)[2:]
         game_nums = list(year[year['MOV'] >= thres].index + 1)
