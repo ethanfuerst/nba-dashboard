@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 import datetime
 import html5lib
-from nba_api.stats.static import players, playercareerstats
-from nba_api.stats.endpoints import commonplayerinfo, playergamelog
+from nba_api.stats.static import players
+from nba_api.stats.endpoints import commonplayerinfo, playergamelog, playercareerstats
 
 # Custom errors
 class PlayerNotFoundError(Exception):
