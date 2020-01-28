@@ -2,7 +2,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from nba_games import get_player_season, NBA_Player
+from nba_games import NBA_Player
 
 #%%
 df = NBA_Player('luka doncic').get_season(2019)
@@ -20,7 +20,7 @@ df.plot()
 df[(df['PPFTA'] <= df['PPFGA']) & (df['PPFGA'] <= df['PP3PA'])]
 
 #%%
-df = get_player_season(player_name='james harden')
+df = NBA_Player('james harden').get_season(2019)
 
 df['PPFTA'] = df['FT_PCT'].copy()
 df['PPFGA'] = df['FG_PCT'] * 2

@@ -18,7 +18,7 @@ Also, when I created this I wasn't that familiar with matplotlib so some of my l
 
 #%%
 # 20, 30, 40, 50
-curr_season = NBA_Season(2019).get_reg_season()
+curr_season = NBA_Season(2019).get_season()
 df_40 = thres_games(startyear = 2015, thres = 40)
 df_30 = thres_games(startyear = 2015, thres = 30)
 df_20 = thres_games(startyear = 2015, thres = 20)
