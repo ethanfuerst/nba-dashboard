@@ -38,6 +38,7 @@ class NBA_Player:
         self.first_name = player_search[0]['first_name']
         self.last_name = player_search[0]['last_name']
         self.is_active = player_search[0]['is_active']
+        self.full_name = self.first_name + ' ' + self.last_name
     
     def get_season(self, season=datetime.datetime.today().year - 1, season_type='Regular Season'):
         '''
@@ -65,10 +66,10 @@ class NBA_Player:
 
         df
             A pd.DataFrame() containing the player data with the following columns:
-                ['SEASON_ID', 'Player_ID', 'Game_ID', 'GAME_DATE', 'MATCHUP', 'WL',
-                'MIN', 'FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A', 'FG3_PCT', 'FTM',
-                'FTA', 'FT_PCT', 'OREB', 'DREB', 'REB', 'AST', 'STL', 'BLK', 'TOV', 
-                'PF', 'PTS', 'PLUS_MINUS']
+                ['Season', 'Player', 'Game_ID', 'GAME_DATE', 'MATCHUP', 'WL',
+                'MIN', 'FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A', 'FG3_PCT', 'FTM', 'FTA',
+                'FT_PCT', 'TS_PCT', 'OREB', 'DREB', 'REB', 'AST', 'STL', 'BLK', 'TOV', 'PF',
+                'PTS', 'PLUS_MINUS']
         '''
         # Change season_type to 'Regular Season' if not specified correctly
         if season_type not in ['Regular Season', 'Pre Season', 'Playoffs', 'All-Star', 'All Star']:
@@ -82,15 +83,53 @@ class NBA_Player:
             raise SeasonNotFoundError(self.name + " doesn't have data recorded for the " +  str(season) + " season." )
 
         df = log.get_data_frames()[0]
+        df['Player'] = self.full_name
+        df['Season'] = str(season) + "-" + str(season + 1)[2:]
+        df['TS_PCT'] = round(df['PTS'] / (2*(df['FGA'] + (.44 * df['FTA']))),3)
+
+        # Drop the 'video available' column and reorder
+        df = df[['Season', 'Player', 'Game_ID', 'GAME_DATE', 'MATCHUP', 'WL',
+       'MIN', 'FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A', 'FG3_PCT', 'FTM', 'FTA',
+       'FT_PCT', 'TS_PCT', 'OREB', 'DREB', 'REB', 'AST', 'STL', 'BLK', 'TOV', 'PF',
+       'PTS', 'PLUS_MINUS']]
         
-        # Drop the 'video available' column
-        df.drop(['VIDEO_AVAILABLE'], axis=1, inplace=True)
         return df
     
-    def get_career(self, season_type='Regular Season'):
+    def get_career(self):
+        '''
+        Returns a df of the player's totals and percentages for all season in the player's career.
+
+        Parameters:
+
+        season (int, default: current year - 1)
+            The season that you want to pull data from. 
+                Ex. 2003
+            If the player you specified doesn't have date from the season inputted, a SeasonNotFoundError will be thrown.
+        Returns:
+
+        df
+            A pd.DataFrame() containing the player data with the following columns:
+                ['Player', 'Season', 'Team', 'TEAM_ID', 
+                'PLAYER_AGE', 'GP', 'GS', 'MIN', 'FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A',
+                'FG3_PCT', 'FTM', 'FTA', 'FT_PCT', 'TS_PCT', 'OREB', 'DREB', 'REB', 'AST', 
+                'STL', 'BLK', 'TOV', 'PF', 'PTS']
+        '''
         # see more on https://github.com/swar/nba_api/blob/master/docs/nba_api/stats/endpoints/playercareerstats.md
         log = playercareerstats.PlayerCareerStats(player_id=self.player_id, per_mode36='Totals')
         df = log.get_data_frames()[0]
+
+        df['Player'] = self.full_name
+        df['Season'] = df['SEASON_ID'].copy()
+        df['Team'] = df['TEAM_ABBREVIATION'].copy()
+        df['TS_PCT'] = round(df['PTS'] / (2*(df['FGA'] + (.44 * df['FTA']))),3)
+
+        # Specify column order
+        df = df[['Player', 'Season', 'Team', 'TEAM_ID', 
+        'PLAYER_AGE', 'GP', 'GS', 'MIN', 'FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A',
+        'FG3_PCT', 'FTM', 'FTA', 'FT_PCT', 'TS_PCT', 'OREB', 'DREB', 'REB', 'AST', 
+        'STL', 'BLK', 'TOV', 'PF', 'PTS']].copy()
+        
+        return df
 
 
 class NBA_Season:
@@ -112,7 +151,7 @@ class NBA_Season:
             # This is probably because they inputted a string for season, and we need an int
             raise TypeError("Wrong variable type for season. Integer expected.")
         self.season = season
-        self.season_str = "'" + str(season)[2:] + " - '" + str(season + 1)[2:]
+        self.season_str = str(season) + "-" + str(season + 1)[2:]
 
         # basketball-reference references the season by the second year in each season, so we need to add 1 to the season
         season = self.season + 1
