@@ -17,4 +17,6 @@ __*.gitignore*__ - shows github what files to ignore when I commit my changes.
 - [ ] why are there so many blowouts this year? - create new .py file and dig in to it
 - [ ] dig in to ppfta, ppfga, pp3pa on player_games.py
 - [x] create class with all player/team data
-  - [ ] nba.stats.com api is down?
+  - [x] nba.stats.com api is down?
+- [ ] add all-star and preseason for get_full_career() in nba_games.py
+- [ ] add season_type column to get_full_career()
