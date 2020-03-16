@@ -40,10 +40,10 @@ class NBA_Player:
         self.is_active = player_search[0]['is_active']
         self.full_name = self.first_name + ' ' + self.last_name
     
-    def get_season(self, season=datetime.datetime.today().year - 1, season_type='Regular Season'):
+    def get_season(self, season=datetime.datetime.today().year - 1, season_type='regular'):
         '''
         Returns a df of player game logs from the 'season to season+1' season.
-        Specify 'Regular Season', 'Pre Season', 'Playoffs' or 'All Star'.
+        Specify 'regular', 'preseason', 'playoffs' or 'allstar'.
 
         Parameters:
 
@@ -52,15 +52,14 @@ class NBA_Player:
                 Ex. 2003
             If the player you specified doesn't have date from the season inputted, a SeasonNotFoundError will be thrown.
             
-        season_type (string, default: 'Regular Season')
+        season_type (string, default: 'regular')
             The period of games from which you'd like the data from.
             Must be one of the following:
-                'Regular Season'
-                'Pre Season'
-                'Playoffs'
-                'All-Star'
-                'All Star'
-            If season_type is not one of the values above, it will be changed to 'Regular Season'.
+                'regular' - Regular Season
+                'preseason' - Pre-Season
+                'playoffs' - Playoffs
+                'allstar' - All-Star
+            If season_type is not one of the values above, it will be changed to 'regular'.
 
         Returns:
 
@@ -71,12 +70,15 @@ class NBA_Player:
                 'FT_PCT', 'TS_PCT', 'OREB', 'DREB', 'REB', 'AST', 'STL', 'BLK', 'TOV', 'PF',
                 'PTS', 'PLUS_MINUS']
         '''
-        # Change season_type to 'Regular Season' if not specified correctly
-        if season_type not in ['Regular Season', 'Pre Season', 'Playoffs', 'All-Star', 'All Star']:
-            season_type = 'Regular Season'
+        # Change season_type to 'regular' if not specified correctly
+        if season_type not in ['regular', 'preseason', 'playoffs', 'allstar']:
+            season_type = 'regular'
         
+        s_types = {'regular':'Regular Season', 'preseason':'Pre-Season', 'playoffs':'Playoffs', 'allstar':'All-Star'}
+        s_type = s_types[season_type]
+
         # playergamelog is a nba_api class that contains the dataframes
-        log = playergamelog.PlayerGameLog(player_id=self.player_id, season=season, season_type_all_star=season_type)
+        log = playergamelog.PlayerGameLog(player_id=self.player_id, season=season, season_type_all_star=s_type)
 
         # If no results for the season, throw an error
         if len(log.get_data_frames()[0]) == 0:
@@ -89,9 +91,9 @@ class NBA_Player:
 
         # Drop the 'video available' column and reorder
         df = df[['Season', 'Player', 'Game_ID', 'GAME_DATE', 'MATCHUP', 'WL',
-       'MIN', 'FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A', 'FG3_PCT', 'FTM', 'FTA',
-       'FT_PCT', 'TS_PCT', 'OREB', 'DREB', 'REB', 'AST', 'STL', 'BLK', 'TOV', 'PF',
-       'PTS', 'PLUS_MINUS']]
+                'MIN', 'FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A', 'FG3_PCT', 'FTM', 'FTA',
+                'FT_PCT', 'TS_PCT', 'OREB', 'DREB', 'REB', 'AST', 'STL', 'BLK', 'TOV', 'PF',
+                'PTS', 'PLUS_MINUS']]
         
         return df
     
@@ -105,6 +107,7 @@ class NBA_Player:
             The season that you want to pull data from. 
                 Ex. 2003
             If the player you specified doesn't have date from the season inputted, a SeasonNotFoundError will be thrown.
+        
         Returns:
 
         df
@@ -125,10 +128,54 @@ class NBA_Player:
 
         # Specify column order
         df = df[['Player', 'Season', 'Team', 'TEAM_ID', 
-        'PLAYER_AGE', 'GP', 'GS', 'MIN', 'FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A',
-        'FG3_PCT', 'FTM', 'FTA', 'FT_PCT', 'TS_PCT', 'OREB', 'DREB', 'REB', 'AST', 
-        'STL', 'BLK', 'TOV', 'PF', 'PTS']].copy()
+                'PLAYER_AGE', 'GP', 'GS', 'MIN', 'FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A',
+                'FG3_PCT', 'FTM', 'FTA', 'FT_PCT', 'TS_PCT', 'OREB', 'DREB', 'REB', 'AST', 
+                'STL', 'BLK', 'TOV', 'PF', 'PTS']].copy()
+                
+        return df
+
+    def get_full_career(self, season_type='regular'):
+        '''
+        Returns a df of the player's game logs for all season in the player's career.
+
+        Parameters:
+
+        season_type (string, default: 'regular')
+            The period of games from which you'd like the data from.
+            Must be one of the following:
+                'regular' - Regular Season
+                'preseason' - Pre-Season
+                'playoffs' - Playoffs
+                'allstar' - All-Star
+                'full' - Regular Season and Playoffs
+                'all' - Pre-Season, Regular Season, Playoffs and All-Star
+                'no_all_star' - Pre-Season, Regular Season and Playoffs
+            If season_type is not one of the values above, it will be changed to 'regular'.
         
+        Returns:
+
+        df
+            A pd.DataFrame() containing the player data with the following columns:
+                ['Player', 'Season', 'Team', 'TEAM_ID', 
+                'PLAYER_AGE', 'GP', 'GS', 'MIN', 'FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A',
+                'FG3_PCT', 'FTM', 'FTA', 'FT_PCT', 'TS_PCT', 'OREB', 'DREB', 'REB', 'AST', 
+                'STL', 'BLK', 'TOV', 'PF', 'PTS']
+        '''
+        # Get list of seasons with data
+        career_seasons = self.get_career()
+        seasons = [int(i[:4]) for i in career_seasons['Season'].values.astype(str)]
+
+        # Get data from each season
+        df = pd.DataFrame()
+        for i in seasons:
+            if season_type == 'regular' or season_type == 'full':
+                df_1 = self.get_season(i, season_type='regular')
+                df = df.append(df_1)
+            if season_type == 'playoffs' or season_type == 'full':
+                # Add flag if player had no data in playoffs
+                df_2 = self.get_season(i, season_type='playoffs')
+                df = df.append(df_2)
+    
         return df
 
 
@@ -180,7 +227,7 @@ class NBA_Season:
         self.games = games
 
         try:
-            self.playoff_start = self.games[self.games['Date'] == 'Playoffs'].index[0]
+            self.playoff_start = self.games[self.games['Date'] == 'playoffs'].index[0]
         except:
             # The specified season doeesn't contain playoff games
             self.playoff_start = None
@@ -203,9 +250,9 @@ class NBA_Season:
         else:
             return self.__clean_games(self.games[self.games.index < self.playoff_start].copy())
     
-    def get_playoffs(self):
+    def get_play(self):
         if self.playoff_start == None:
-            raise SeasonNotFoundError("There are no playoffs recorded for the " + self.season_str + " season.")
+            raise SeasonNotFoundError("There are no play recorded for the " + self.season_str + " season.")
         else:
             return self.__clean_games(self.games[self.games.index > self.playoff_start].copy())
 
