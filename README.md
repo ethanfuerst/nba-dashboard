@@ -4,7 +4,7 @@ This project is where I keep all my files that I use when I analyze all sorts of
 
 ## Files in this repository
 
-__*margin_of_victory.py*__ - .py file with analysis that showed the '19 - '20 season is set to have the most 40-point blowouts of all time. [Here is my completed analysis.](https://www.reddit.com/r/nba/comments/eg2own/oc_this_season_is_on_pace_for_a_record_number_of/)
+__*margin_of_victory.py*__ - .py file with analysis that showed the '19 - '20 season is set to have the most 40-point blowouts of all time. [Here is my completed analysis.](https://www.tidbitstatistics.com/NBA-blowouts/)
 
 __*nba_games.py*__ - .py file with methods and classes to help pull data from [basketball-reference.com](https://www.basketball-reference.com), [NPA API](https://github.com/swar/nba_api/), and other sources.
 
