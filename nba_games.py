@@ -3,7 +3,7 @@ import numpy as np
 import datetime
 import html5lib
 from nba_api.stats.static import players
-from nba_api.stats.endpoints import commonplayerinfo, playergamelog, playercareerstats
+from nba_api.stats.endpoints import commonplayerinfo, playergamelog, playercareerstats, shotchartdetail
 
 # Custom errors
 class PlayerNotFoundError(Exception):
@@ -213,8 +213,13 @@ class NBA_Player:
         cols_as_int = ['MIN', 'FGM', 'FGA', 'FG3M', 'FG3A', 'FTM', 'FTA', 'OREB', 'DREB', 'REB', 
                         'AST', 'STL', 'BLK', 'TOV', 'PF', 'PTS', 'PLUS_MINUS']
         df[cols_as_int] = df[cols_as_int].astype(int)
-        
+
         return df
+    
+    def get_shot_chart(self):
+        log = shotchartdetail.ShotChartDetail(team_id=1610612742, player_id=1629029)
+        df = log.get_data_frames()[0]
+        pass
 
 
 class NBA_Season:

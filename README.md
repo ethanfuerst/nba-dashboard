@@ -18,5 +18,9 @@ __*.gitignore*__ - shows github what files to ignore when I commit my changes.
 - [ ] dig in to ppfta, ppfga, pp3pa on player_games.py
 - [x] create class with all player/team data
   - [x] nba.stats.com api is down?
-- [ ] add all-star and preseason for get_full_career() in nba_games.py
-- [ ] add season_type column to get_full_career()
+- [x] add all-star and preseason for get_full_career() in nba_games.py
+- [x] add season_type column to get_full_career()
+- [ ] add get_shot_chart() method to NBA_Player class
+  - [ ] pull data frames
+  - [ ] create shot chart from data frames
+  - [ ] add parameters and filters
