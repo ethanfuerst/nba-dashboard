@@ -78,7 +78,10 @@ class NBA_Player:
         s_type = s_types[season_type]
 
         # playergamelog is a nba_api class that contains the dataframes
-        log = playergamelog.PlayerGameLog(player_id=self.player_id, season=season, season_type_all_star=s_type)
+        try:
+            log = playergamelog.PlayerGameLog(player_id=self.player_id, season=season, season_type_all_star=s_type)
+        except:
+            return pd.DataFrame()
 
         # If no results for the season, throw an error
         if len(log.get_data_frames()[0]) == 0:
@@ -168,14 +171,49 @@ class NBA_Player:
         # Get data from each season
         df = pd.DataFrame()
         for i in seasons:
-            if season_type == 'regular' or season_type == 'full':
-                df_1 = self.get_season(i, season_type='regular')
-                df = df.append(df_1)
-            if season_type == 'playoffs' or season_type == 'full':
+            if season_type == 'preseason' or season_type == 'all' or season_type == 'no_all_star':
+                try:
+                    df_1 = self.get_season(i, season_type='preseason')
+                    df_1['Season Type'] = 'PRE'
+                    print(i, season_type, len(df_1), 'pre')
+                    df = df.append(df_1)
+                except SeasonNotFoundError:
+                    pass
+            if season_type == 'regular' or season_type == 'full' or season_type == 'all' or season_type == 'no_all_star':
+                try:
+                    df_2 = self.get_season(i, season_type='regular')
+                    df_2['Season Type'] = 'REG'
+                    print(i, season_type, len(df_2), 'reg')
+                    df = df.append(df_2)
+                except SeasonNotFoundError:
+                    pass
+            if season_type == 'playoffs' or season_type == 'full' or season_type == 'all' or season_type == 'no_all_star':
                 # Add flag if player had no data in playoffs
-                df_2 = self.get_season(i, season_type='playoffs')
-                df = df.append(df_2)
-    
+                try:
+                    df_3 = self.get_season(i, season_type='playoffs')
+                    df_3['Season Type'] = 'PLAY'
+                    print(i, season_type, len(df_3), 'playoffs')
+                    df = df.append(df_3)
+                except SeasonNotFoundError:
+                    pass
+            if season_type == 'allstar' or season_type == 'all':
+                try:
+                    df_4 = self.get_season(i, season_type='allstar')
+                    df_4['Season Type'] = 'ALLSTAR'
+                    print(i, season_type, len(df_4), 'allstar')
+                    df = df.append(df_4)
+                except SeasonNotFoundError:
+                    pass
+
+        df.reset_index(inplace=True)
+        df = df[['Season', 'Season Type', 'Player', 'Game_ID', 'GAME_DATE', 'MATCHUP', 'WL', 
+                'MIN', 'FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A', 'FG3_PCT', 'FTM', 'FTA',
+                'FT_PCT', 'TS_PCT', 'OREB', 'DREB', 'REB', 'AST', 'STL', 'BLK', 'TOV',
+                'PF', 'PTS', 'PLUS_MINUS']].copy()
+        cols_as_int = ['MIN', 'FGM', 'FGA', 'FG3M', 'FG3A', 'FTM', 'FTA', 'OREB', 'DREB', 'REB', 
+                        'AST', 'STL', 'BLK', 'TOV', 'PF', 'PTS', 'PLUS_MINUS']
+        df[cols_as_int] = df[cols_as_int].astype(int)
+        
         return df
 
 
