@@ -38,7 +38,12 @@ class NBA_Player:
         self.first_name = player_search[0]['first_name']
         self.last_name = player_search[0]['last_name']
         self.is_active = player_search[0]['is_active']
-        self.full_name = self.first_name + ' ' + self.last_name
+        # Create a df that outlines the players career
+        df = self.get_career()
+        df = df[df['Team'] != 'TOT'][['Season', 'Team', 'TEAM_ID']].copy()
+        df['start'] = df['Season'].apply(lambda x: int(x[:4]))
+        df['end'] = df['start'] + 1
+        self.career = df
     
     def get_season(self, season=datetime.datetime.today().year - 1, season_type='regular'):
         '''
@@ -88,7 +93,7 @@ class NBA_Player:
             raise SeasonNotFoundError(self.name + " doesn't have data recorded for the " +  str(season) + " season." )
 
         df = log.get_data_frames()[0]
-        df['Player'] = self.full_name
+        df['Player'] = self.name
         df['Season'] = str(season) + "-" + str(season + 1)[2:]
         df['TS_PCT'] = round(df['PTS'] / (2*(df['FGA'] + (.44 * df['FTA']))),3)
 
@@ -124,7 +129,7 @@ class NBA_Player:
         log = playercareerstats.PlayerCareerStats(player_id=self.player_id, per_mode36='Totals')
         df = log.get_data_frames()[0]
 
-        df['Player'] = self.full_name
+        df['Player'] = self.name
         df['Season'] = df['SEASON_ID'].copy()
         df['Team'] = df['TEAM_ABBREVIATION'].copy()
         df['TS_PCT'] = round(df['PTS'] / (2*(df['FGA'] + (.44 * df['FTA']))),3)
