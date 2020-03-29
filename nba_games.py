@@ -192,7 +192,6 @@ class NBA_Player:
                 try:
                     df_1 = self.get_season(i, season_type='preseason')
                     df_1['Season Type'] = 'PRE'
-                    print(i, season_type, len(df_1), 'pre')
                     df = df.append(df_1)
                 except SeasonNotFoundError:
                     pass
@@ -200,7 +199,6 @@ class NBA_Player:
                 try:
                     df_2 = self.get_season(i, season_type='regular')
                     df_2['Season Type'] = 'REG'
-                    print(i, season_type, len(df_2), 'reg')
                     df = df.append(df_2)
                 except SeasonNotFoundError:
                     pass
@@ -209,7 +207,6 @@ class NBA_Player:
                 try:
                     df_3 = self.get_season(i, season_type='playoffs')
                     df_3['Season Type'] = 'PLAY'
-                    print(i, season_type, len(df_3), 'playoffs')
                     df = df.append(df_3)
                 except SeasonNotFoundError:
                     pass
@@ -217,7 +214,6 @@ class NBA_Player:
                 try:
                     df_4 = self.get_season(i, season_type='allstar')
                     df_4['Season Type'] = 'ALLSTAR'
-                    print(i, season_type, len(df_4), 'allstar')
                     df = df.append(df_4)
                 except SeasonNotFoundError:
                     pass
