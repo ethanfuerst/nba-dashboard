@@ -21,6 +21,8 @@ __*.gitignore*__ - shows github what files to ignore when I commit my changes.
 - [x] add all-star and preseason for get_full_career() in nba_games.py
 - [x] add season_type column to get_full_career()
 - [ ] add get_shot_chart() method to NBA_Player class
-  - [ ] pull data frames
+  - [x] pull data frames
   - [ ] create shot chart from data frames
+    - [ ] figure out fix, ax
+    - [ ] colors and background color
   - [ ] add parameters and filters
