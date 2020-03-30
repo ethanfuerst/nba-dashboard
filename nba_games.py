@@ -302,13 +302,13 @@ class NBA_Player:
 
     def _make_shot_chart(self, df):
         # This method will create the shot chart given a df created from the get_shot_chart method
-        plt.figure(figsize=(12,11))
-        plt.figure(figsize=(12,11))
-        plt.scatter(df['LOC_X'], df['LOC_Y'], df['SHOT_MADE_FLAG'])
+        plt.figure(figsize=(10,10))
+        plt.title(df.iloc[0]['PLAYER_NAME'] + ' in the ' + df.iloc[0]['Season'] + ' season', fontdict={'fontsize': 14})
+        plt.scatter(df['LOC_X'], df['LOC_Y'], df['SHOT_MADE_FLAG'], linewidths=6, marker='.')
         draw_court(outer_lines=True)
-        # Descending values along the axis from left to right
-        plt.xlim(300,-300)
-        plt.ylim(-100,500)
+        plt.xlim(-250,250)
+        plt.ylim(422.5, -47.5)
+        plt.axis(False)
         plt.show()
 
 
@@ -517,5 +517,7 @@ def draw_court(ax=None, color='black', lw=2, outer_lines=False):
     # Add the court elements onto the axes
     for element in court_elements:
         ax.add_patch(element)
+
+    ax.patch.set_facecolor('#E4E4E4')
 
     return ax
