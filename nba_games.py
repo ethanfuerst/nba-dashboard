@@ -1,4 +1,5 @@
 import pandas as pd
+pd.options.display.max_columns = None
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle, Rectangle, Arc
@@ -15,16 +16,20 @@ class SeasonNotFoundError(Exception):
     pass
 
 class NBA_Player:
-    def __init__(self, player_name):
+    def __init__(self, player_name, print_name=True):
         '''
         Player object from nba_api
 
         Parameters:
 
         player_name (string, required)
-        The name of the player. If name is too general, then first name in the search will be returned.
-            Ex. 'luka doncic' or 'harden'
-        If the search does not return a player, a PlayerNotFoundError will be thrown.
+            The name of the player. If name is too general, then first name in the search will be returned.
+                Ex. 'luka doncic' or 'harden'
+            If the search does not return a player, a PlayerNotFoundError will be thrown.
+
+        print_name (boolean, default: True)
+            Will print the name of the player on default to make sure that you're querying the player that you want.
+            If you don't want this done, you can pass it False
         '''
 
         # Search for the player to get the id
@@ -45,6 +50,7 @@ class NBA_Player:
         df = df[df['Team'] != 'TOT'][['Season', 'Team', 'TEAM_ID']].copy()
         df['start'] = df['Season'].apply(lambda x: int(x[:4]))
         df['end'] = df['start'] + 1
+        self._career = df.rename({'TEAM_ID': 'Team ID', 'start': 'season'}, axis=1)[['Team ID', 'season']]
         cond = df.end.sub(df.end.shift()).ne(1) | (df.Team.ne(df.Team.shift()))
         no_year_end_change = df.end.shift(-1).sub(df.end).eq(0)
         df['change'] = df.loc[cond,'start']
@@ -56,6 +62,9 @@ class NBA_Player:
         df = df.drop(['change','end_edit'],axis = 1)
         df = df.rename({'TEAM_ID': 'Team ID'}, axis='columns')
         self.career = df
+
+        if print_name:
+            print(self.name)
     
     def get_season(self, season=datetime.datetime.today().year - 1, season_type='regular'):
         '''
@@ -94,7 +103,7 @@ class NBA_Player:
         s_types = {'regular':'Regular Season', 'preseason':'Pre-Season', 'playoffs':'Playoffs', 'allstar':'All-Star'}
         s_type = s_types[season_type]
 
-        # playergamelog is a nba_api class that contains the dataframes
+        # playergamelog is a nba_api endpoint that contains the dataframes
         try:
             log = playergamelog.PlayerGameLog(player_id=self.player_id, season=season, season_type_all_star=s_type)
         except:
@@ -116,7 +125,7 @@ class NBA_Player:
                 'PTS', 'PLUS_MINUS']]
         
         return df
-    
+
     def get_career(self):
         '''
         Returns a df of the player's totals and percentages for all season in the player's career.
@@ -229,10 +238,68 @@ class NBA_Player:
 
         return df
     
-    def get_shot_chart(self):
-        log = shotchartdetail.ShotChartDetail(team_id=1610612742, player_id=1629029)
-        df = log.get_data_frames()[0]
-        pass
+    def get_shot_chart(self, seasons=None):
+        '''
+        Returns a matplotlib fig of the player's shot chart given certain parameters.
+
+        Parameters:
+
+        seasons (list of integers, default: None)
+            The seasons (inclusive) for which you'd like to get data from.
+            Must be a list of length 1 or two containing integers of the seasons.
+            Example: [2005, 2018]
+            If season_type is not one of the values above, it will be changed to 'regular'.
+        
+        Returns:
+
+        fig
+            Matplotlib figure of shotchart
+        '''
+        # Start with just seasons then do teams and seasons
+        # If given a list fo season start and end, create a list of all team ids and seasons
+        # Default season is the first season of the first team
+        # if team_id is None:
+        #     team_id = self.career['Team ID'].iloc[0]
+        if seasons is None:
+            f_seas = int(self.career['Years'].iloc[0][:4])
+            seasons = [f_seas]
+        if len(seasons) > 2 or type(seasons) != list or type(seasons[0]) != int:
+            raise TypeError('The seasons variable must be a list of length 2 or 1 with years in integer form. Example: [2005, 2018]')
+        else:
+            # Get the seasons from ref between two dates
+            first = seasons[0]
+            if len(seasons) == 1:
+                last = seasons[0]
+            else:
+                last = seasons[1]
+            # Get all seasons and team ID between first and last
+            season_df = self._career[(self._career['season'].astype(int) >= first) & (self._career['season'].astype(int) <= last)].reset_index(drop=True).copy()
+
+        # Change format of season column to work with the API
+        season_df['season'] = season_df['season'].apply(lambda x: str(x) + "-" + str(x + 1)[2:])
+        # Now create the df for the shot chart creation with the dfs given
+        df = pd.DataFrame()
+        for i in range(len(season_df)):
+            log = shotchartdetail.ShotChartDetail(team_id=season_df.iloc[i]['Team ID'], player_id=self.player_id, \
+             season_nullable=season_df.iloc[i]['season'], context_measure_simple=['FGA', 'FG3A'])
+            df_1 = log.get_data_frames()[0]
+            df_1['Season'] = season_df.iloc[i]['season']
+            df = pd.concat([df, df_1])
+        
+        df.reset_index(inplace=True, drop=True)
+
+        self._make_shot_chart(df)
+
+    def _make_shot_chart(self, df):
+        # This method will create the shot chart given a df created from the get_shot_chart method
+        plt.figure(figsize=(12,11))
+        plt.figure(figsize=(12,11))
+        plt.scatter(df['LOC_X'], df['LOC_Y'], df['SHOT_MADE_FLAG'])
+        draw_court(outer_lines=True)
+        # Descending values along the axis from left to right
+        plt.xlim(300,-300)
+        plt.ylim(-100,500)
+        plt.show()
 
 
 class NBA_Season:
