@@ -61,6 +61,7 @@ class NBA_Player:
         df = df.sort_values(['change', 'end_edit'])
         df = df.drop(['change','end_edit'],axis = 1)
         df = df.rename({'TEAM_ID': 'Team ID'}, axis='columns')
+        df = df.reset_index(drop=True)
         self.career = df
 
         if print_name:
@@ -248,7 +249,9 @@ class NBA_Player:
             The seasons (inclusive) for which you'd like to get data from.
             Must be a list of length 1 or two containing integers of the seasons.
             Example: [2005, 2018]
-            If season_type is not one of the values above, it will be changed to 'regular'.
+            If nothing is passed, it will return just the first season of the players career.
+            If the player doesn't have data recorded for a year passed, then a SeasonNotFoundError will be thrown.
+            If the seasons range contains years that the player didn't play then only years with data will be shown.
         
         Returns:
 
@@ -288,7 +291,14 @@ class NBA_Player:
         
         df.reset_index(inplace=True, drop=True)
 
+        if len(df) == 0:
+            if len(seasons) == 1:
+                raise SeasonNotFoundError(str(self.name) + ' has no data recorded for the ' + str(seasons[0]) + ' season')
+            else:
+                raise SeasonNotFoundError(str(self.name) + ' has no data recorded for the ' + str(seasons[0]) + '-' + str(seasons[1]) + ' seasons')
+        
         self._make_shot_chart(df)
+        return df
 
     def _make_shot_chart(self, df):
         # This method will create the shot chart given a df created from the get_shot_chart method
