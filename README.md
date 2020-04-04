@@ -23,6 +23,7 @@ __*.gitignore*__ - shows github what files to ignore when I commit my changes.
 - [ ] add get_shot_chart() method to NBA_Player class
   - [x] pull data frames
   - [ ] create shot chart from data frames
-    - [ ] figure out fix, ax
-    - [ ] colors and background color
+    - [x] figure out fix, ax
+    - [x] colors and background color
   - [ ] add parameters and filters
+    - [ ] learn about kwargs and args
