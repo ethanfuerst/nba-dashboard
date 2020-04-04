@@ -6,7 +6,7 @@ from matplotlib.patches import Circle, Rectangle, Arc
 import datetime
 import html5lib
 from nba_api.stats.static import players, teams
-from nba_api.stats.endpoints import *
+from nba_api.stats.endpoints import commonplayerinfo, playergamelog, playercareerstats, shotchartdetail
 
 # Custom errors
 class PlayerNotFoundError(Exception):
@@ -73,8 +73,6 @@ class NBA_Player:
         df = df.rename({'TEAM_ID': 'Team ID'}, axis='columns')
         df = df.reset_index(drop=True)
         self.career = df
-
-        self.league = pd.DataFrame(teams.get_teams())
 
         if print_name:
             print(self.name)
