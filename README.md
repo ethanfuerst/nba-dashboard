@@ -25,8 +25,9 @@ __*.gitignore*__ - shows github what files to ignore when I commit my changes.
   - [ ] create shot chart from data frames
     - [x] figure out fix, ax
     - [x] colors and background color
-  - [ ] add parameters and filters
-    - [ ] limiters for the shots
-    - [ ] formatting for the chart
-    - [ ] team_id list
-    - [ ] kwargs handling
+    - [x] limiters for the shots
+    - [x] kwargs handling
+    - [ ] team_id df in \_\_init__ method
+    - [ ] shart design
+    - [ ] add filters on chart itself as text
+    - [ ] team logo on chart?
