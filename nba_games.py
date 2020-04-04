@@ -265,6 +265,7 @@ class NBA_Player:
             The seasons (inclusive) for which you'd like to get data from.
             Must be a list of length 1 or two containing integers of the seasons.
             Example: [2005, 2018]
+            If seasons, DateFrom and DateTo are passed make sure that the seasons cover the dates.
             If nothing is passed, it will return just the first season of the players career.
             If the player doesn't have data recorded for a year passed, then a SeasonNotFoundError will be thrown.
             If the seasons range contains years that the player didn't play then only years with data will be shown.
@@ -314,6 +315,8 @@ class NBA_Player:
         for key in limiters:
             new_limiters[reassign_dict[key]] = limiters[key]
         
+        # str_create = new_limiters
+
         def get_team_id(abbrev):
             '''Returns team_id when given an abbreviation'''
             return pd.DataFrame(teams.get_teams())[pd.DataFrame(teams.get_teams())['abbreviation'] == abbrev]['id'].iloc[0]
@@ -321,6 +324,20 @@ class NBA_Player:
         if 'opponent_team_id' in new_limiters.keys():
             new_limiters['opponent_team_id'] = get_team_id(new_limiters['opponent_team_id'])
         
+        # Create title
+        title = self.name
+        if 'date_to_nullable' in new_limiters.keys():
+            d_from = datetime.datetime.strptime(new_limiters['date_from_nullable'], '%m-%d-%Y').strftime("%B %-d, %Y")
+            d_to = datetime.datetime.strptime(new_limiters['date_to_nullable'], '%m-%d-%Y').strftime("%B %-d, %Y")
+            title += ' from ' + d_from + ' to ' + d_to
+        else:
+            if len(seasons) == 1:
+                title += ' in the ' + str(str(seasons[0]) + "-" + str(seasons[0] + 1)[2:]) + ' season'
+            elif seasons[1] - seasons[0] == 1:
+                title += ' in the ' + str(str(seasons[0]) + "-" + str(seasons[0] + 1)[2:]) + ' and ' +str(str(seasons[1]) + "-" + str(seasons[1] + 1)[2:]) + ' seasons'
+            else:
+                title += ' from the ' + str(str(seasons[0]) + "-" + str(seasons[0] + 1)[2:]) + ' to ' +str(str(seasons[1]) + "-" + str(seasons[1] + 1)[2:]) + ' seasons'
+
         # If given a list of season start and end, create a list of all team ids and seasons
         if seasons is None:
             f_seas = int(self.career['Years'].iloc[0][:4])
@@ -356,17 +373,17 @@ class NBA_Player:
             else:
                 raise SeasonNotFoundError(str(self.name) + ' has no data recorded for the ' + str(seasons[0]) + '-' + str(seasons[1]) + ' seasons with those limiters')
         
-        plt = self._make_shot_chart(df, show_misses=show_misses)
+        plt = self._make_shot_chart(df, title, show_misses=show_misses)
         plt.show()
         if return_df:
             return df
 
-    def _make_shot_chart(self, df, show_misses=False):
+    def _make_shot_chart(self, df, title, show_misses=False):
         # This method will create the shot chart given a df created from the get_shot_chart method
         fig, ax = plt.subplots(facecolor='#d9d9d9', figsize=(10,10))
         fig.patch.set_facecolor('#d9d9d9')
         ax.patch.set_facecolor('#d9d9d9')
-        plt.title(df.iloc[0]['PLAYER_NAME'] + ' in the ' + df.iloc[0]['Season'] + ' season', fontdict={'fontsize': 14})
+        plt.title(title, fontdict={'fontsize': 14})
         df_1 = df[df['SHOT_MADE_FLAG'] == 1].copy()
         plt.scatter(df_1['LOC_X'], df_1['LOC_Y'], s=10, marker='o', c='#007A33')
         if show_misses:
