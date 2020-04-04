@@ -246,7 +246,7 @@ class NBA_Player:
 
         return df
     
-    def get_shot_chart(self, seasons=None):
+    def get_shot_chart(self, seasons=None, show_misses=False):
         '''
         Returns a matplotlib fig of the player's shot chart given certain parameters.
 
@@ -304,19 +304,28 @@ class NBA_Player:
             else:
                 raise SeasonNotFoundError(str(self.name) + ' has no data recorded for the ' + str(seasons[0]) + '-' + str(seasons[1]) + ' seasons')
         
-        self._make_shot_chart(df)
+        plt = self._make_shot_chart(df, show_misses=show_misses)
+        plt.show()
         return df
 
-    def _make_shot_chart(self, df):
+    def _make_shot_chart(self, df, show_misses=False):
         # This method will create the shot chart given a df created from the get_shot_chart method
-        plt.figure(figsize=(10,10))
+        fig, ax = plt.subplots(facecolor='#d9d9d9', figsize=(10,10))
+        fig.patch.set_facecolor('#d9d9d9')
+        ax.patch.set_facecolor('#d9d9d9')
         plt.title(df.iloc[0]['PLAYER_NAME'] + ' in the ' + df.iloc[0]['Season'] + ' season', fontdict={'fontsize': 14})
-        plt.scatter(df['LOC_X'], df['LOC_Y'], df['SHOT_MADE_FLAG'], linewidths=6, marker='.')
-        draw_court(outer_lines=True)
+        df_1 = df[df['SHOT_MADE_FLAG'] == 1].copy()
+        plt.scatter(df_1['LOC_X'], df_1['LOC_Y'], s=10, marker='o', c='#007A33')
+        if show_misses:
+            df_2 = df[df['SHOT_MADE_FLAG'] == 0].copy()
+            plt.scatter(df_2['LOC_X'], df_2['LOC_Y'], s=10, marker='o', c='#C80A18')
+        court_elements = draw_court()
+        for element in court_elements:
+            ax.add_patch(element)
         plt.xlim(-250,250)
         plt.ylim(422.5, -47.5)
         plt.axis(False)
-        plt.show()
+        return plt
 
 
 class NBA_Season:
@@ -462,75 +471,27 @@ def thres_games(startyear=2000, endyear=datetime.datetime.today().year - 1, thre
     
     return pd.DataFrame(tot, columns=['Season', 'Count', 'Game Nums', 'Projected'])
 
-def draw_court(ax=None, color='black', lw=2, outer_lines=False):
+def draw_court(color='black', lw=2):
     '''
     From http://savvastjortjoglou.com/nba-shot-sharts.html
     '''
-    # If an axes object isn't provided to plot onto, just get current one
-    if ax is None:
-        ax = plt.gca()
-
-    # Create the various parts of an NBA basketball court
-
-    # Create the basketball hoop
-    # Diameter of a hoop is 18" so it has a radius of 9", which is a value
-    # 7.5 in our coordinate system
     hoop = Circle((0, 0), radius=7.5, linewidth=lw, color=color, fill=False)
-
-    # Create backboard
     backboard = Rectangle((-30, -7.5), 60, -1, linewidth=lw, color=color)
-
-    # The paint
-    # Create the outer box 0f the paint, width=16ft, height=19ft
-    outer_box = Rectangle((-80, -47.5), 160, 190, linewidth=lw, color=color,
-                          fill=False)
-    # Create the inner box of the paint, widt=12ft, height=19ft
-    inner_box = Rectangle((-60, -47.5), 120, 190, linewidth=lw, color=color,
-                          fill=False)
-
-    # Create free throw top arc
-    top_free_throw = Arc((0, 142.5), 120, 120, theta1=0, theta2=180,
-                         linewidth=lw, color=color, fill=False)
-    # Create free throw bottom arc
-    bottom_free_throw = Arc((0, 142.5), 120, 120, theta1=180, theta2=0,
-                            linewidth=lw, color=color, linestyle='dashed')
-    # Restricted Zone, it is an arc with 4ft radius from center of the hoop
-    restricted = Arc((0, 0), 80, 80, theta1=0, theta2=180, linewidth=lw,
-                     color=color)
-
-    # Three point line
-    # Create the side 3pt lines, they are 14ft long before they begin to arc
-    corner_three_a = Rectangle((-220, -47.5), 0, 140, linewidth=lw,
-                               color=color)
+    outer_box = Rectangle((-80, -47.5), 160, 190, linewidth=lw, color=color, fill=False)
+    inner_box = Rectangle((-60, -47.5), 120, 190, linewidth=lw, color=color, fill=False)
+    top_free_throw = Arc((0, 142.5), 120, 120, theta1=0, theta2=180, linewidth=lw, color=color, fill=False)
+    bottom_free_throw = Arc((0, 142.5), 120, 120, theta1=180, theta2=0, linewidth=lw, color=color, linestyle='dashed')
+    restricted = Arc((0, 0), 80, 80, theta1=0, theta2=180, linewidth=lw, color=color)
+    corner_three_a = Rectangle((-220, -47.5), 0, 140, linewidth=lw, color=color)
     corner_three_b = Rectangle((220, -47.5), 0, 140, linewidth=lw, color=color)
-    # 3pt arc - center of arc will be the hoop, arc is 23'9" away from hoop
-    # I just played around with the theta values until they lined up with the 
-    # threes
-    three_arc = Arc((0, 0), 475, 475, theta1=22, theta2=158, linewidth=lw,
-                    color=color)
+    three_arc = Arc((0, 0), 475, 475, theta1=22, theta2=158, linewidth=lw, color=color)
+    center_outer_arc = Arc((0, 422.5), 120, 120, theta1=180, theta2=0, linewidth=lw, color=color)
+    center_inner_arc = Arc((0, 422.5), 40, 40, theta1=180, theta2=0, linewidth=lw, color=color)
+    outer_lines = Rectangle((-250, -47.5), 500, 470, linewidth=lw, color=color, fill=False)
 
-    # Center Court
-    center_outer_arc = Arc((0, 422.5), 120, 120, theta1=180, theta2=0,
-                           linewidth=lw, color=color)
-    center_inner_arc = Arc((0, 422.5), 40, 40, theta1=180, theta2=0,
-                           linewidth=lw, color=color)
-
-    # List of the court elements to be plotted onto the axes
     court_elements = [hoop, backboard, outer_box, inner_box, top_free_throw,
-                      bottom_free_throw, restricted, corner_three_a,
-                      corner_three_b, three_arc, center_outer_arc,
-                      center_inner_arc]
+                        bottom_free_throw, restricted, corner_three_a,
+                        corner_three_b, three_arc, center_outer_arc,
+                        center_inner_arc, outer_lines]
 
-    if outer_lines:
-        # Draw the half court line, baseline and side out bound lines
-        outer_lines = Rectangle((-250, -47.5), 500, 470, linewidth=lw,
-                                color=color, fill=False)
-        court_elements.append(outer_lines)
-
-    # Add the court elements onto the axes
-    for element in court_elements:
-        ax.add_patch(element)
-
-    ax.patch.set_facecolor('#E4E4E4')
-
-    return ax
+    return court_elements
