@@ -26,4 +26,7 @@ __*.gitignore*__ - shows github what files to ignore when I commit my changes.
     - [x] figure out fix, ax
     - [x] colors and background color
   - [ ] add parameters and filters
-    - [ ] learn about kwargs and args
+    - [ ] limiters for the shots
+    - [ ] formatting for the chart
+    - [ ] team_id list
+    - [ ] kwargs handling
