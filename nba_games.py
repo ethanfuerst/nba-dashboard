@@ -252,7 +252,7 @@ class NBA_Player:
 
         Parameters:
 
-        seasons (list of integers, default: None)
+        seasons (list of integers, default: None (first season of career))
             The seasons (inclusive) for which you'd like to get data from.
             Must be a list of length 1 or two containing integers of the seasons.
             Example: [2005, 2018]
@@ -268,23 +268,24 @@ class NBA_Player:
         
         **limiters (assorted data types)
             These will filter the shots on the shot chart.
-            ahead_behind_nullable - One of 'Ahead or Behind', 'Ahead or Tied', 'Behind or Tied'
-            clutch_time_nullable - One of 'Last (1-5) Minutes' or 'Last (30 or 10) Seconds'
-            date_from_nullable - ex. 12-14-2019 or 12-2019
-            date_to_nullable - ex. 01-24-2020 or 01-2020
-            * must specify both date_from_nullable and date_to_nullable
-            game_segment_nullable - One of 'First Half', 'Overtime', 'Second Half'
-            last_n_games - integer
-            location_nullable - One of 'Home', 'Road'
-            opponent_team_id - null
-            outcome_nullable - One of 'W' or 'L'
-            period - 1, 2, 3, 4 or 5 (OT)
-            player_position_nullable - One of 'Guard', 'Center', 'Forward'
-            point_diff_nullable - integer
-            season_segment_nullable - One of 'Post All-Star', 'Pre All-Star'
-            season_type_all_star - One of 'Regular Season', 'Pre Season', 'Playoffs', 'All Star'
-            vs_conference_nullable - One of 'East', 'West'
-            vs_division_nullable - One of 'Atlantic', 'Central', 'Northwest', 'Pacific', 'Southeast', 'Southwest', 'East', 'West'
+            AheadBehind - One of 'Ahead or Behind', 'Ahead or Tied', 'Behind or Tied'
+            ClutchTime - One of 'Last (1-5) Minutes' or 'Last (30 or 10) Seconds'
+            DateFrom - ex. 12-14-2019 or 12-2019
+            DateTo - ex. 01-24-2020 or 01-2020
+                Must specify both date_from_nullable and date_to_nullable
+            GameSegment - One of 'First Half', 'Overtime', 'Second Half'
+            LastNGames - integer
+                Will return the last n games from the season specified
+            Location - One of 'Home', 'Road'
+            OpponentTeamID - null
+            Outcome - One of 'W' or 'L'
+            Period - 1, 2, 3, 4 or 5 (OT)
+            PlayerPosition - One of 'Guard', 'Center', 'Forward'
+            PointDiff - integer
+            SeasonSegment - One of 'Post All-Star', 'Pre All-Star'
+            SeasonType - One of 'Regular Season', 'Pre Season', 'Playoffs', 'All Star'
+            VsConference - One of 'East', 'West'
+            VsDivision  - One of 'Atlantic', 'Central', 'Northwest', 'Pacific', 'Southeast', 'Southwest', 'East', 'West'
         
         
         Returns:
@@ -295,7 +296,17 @@ class NBA_Player:
         # Start with just seasons then do teams and seasons
         # If given a list fo season start and end, create a list of all team ids and seasons
         # dict of python variables and api variables
-        d = dict(zip(['ahead_behind_nullable', 'clutch_time_nullable', 'date_from_nullable', 'date_to_nullable', 'game_segment_nullable', 'last_n_games', 'location_nullable', 'month', 'opponent_team_id', 'outcome_nullable', 'period', 'player_position_nullable', 'point_diff_nullable', 'rookie_year_nullable', 'season_segment_nullable', 'season_type_all_star', 'vs_conference_nullable', 'vs_division_nullable'], ['AheadBehind', 'ClutchTime', 'DateFrom', 'DateTo', 'GameSegment', 'LastNGames', 'Location', 'Month', 'OpponentTeamID', 'Outcome', 'Period', 'PlayerPosition', 'PointDiff', 'RookieYear', 'SeasonSegment', 'SeasonType', 'VsConference', 'VsDivision']))
+        reassign_dict = dict(zip(['AheadBehind', 'ClutchTime', 'DateFrom', 'DateTo', 'GameSegment', 'LastNGames', 'Location', 
+                                'Month', 'OpponentTeamID', 'Outcome', 'Period', 'PlayerPosition', 'PointDiff', 'RookieYear', 
+                                'SeasonSegment', 'SeasonType', 'VsConference', 'VsDivision'], 
+                                ['ahead_behind_nullable', 'clutch_time_nullable', 'date_from_nullable', 
+                                'date_to_nullable', 'game_segment_nullable', 'last_n_games', 'location_nullable', 
+                                'month', 'opponent_team_id', 'outcome_nullable', 'period', 'player_position_nullable', 
+                                'point_diff_nullable', 'rookie_year_nullable', 'season_segment_nullable', 
+                                'season_type_all_star', 'vs_conference_nullable', 'vs_division_nullable']))
+        new_limiters = {}
+        for key in limiters:
+            new_limiters[reassign_dict[key]] = limiters[key]
         if seasons is None:
             f_seas = int(self.career['Years'].iloc[0][:4])
             seasons = [f_seas]
@@ -317,7 +328,7 @@ class NBA_Player:
         df = pd.DataFrame()
         for i in range(len(season_df)):
             log = shotchartdetail.ShotChartDetail(team_id=season_df.iloc[i]['Team ID'], player_id=self.player_id, \
-             season_nullable=season_df.iloc[i]['season'], context_measure_simple=['FGA', 'FG3A'], **limiters)
+             season_nullable=season_df.iloc[i]['season'], context_measure_simple=['FGA', 'FG3A'], **new_limiters)
             df_1 = log.get_data_frames()[0]
             df_1['Season'] = season_df.iloc[i]['season']
             df = pd.concat([df, df_1])
