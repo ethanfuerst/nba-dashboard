@@ -45,6 +45,7 @@ class NBA_Player:
         self.first_name = player_search[0]['first_name']
         self.last_name = player_search[0]['last_name']
         self.is_active = player_search[0]['is_active']
+        self.print_name = print_name
         # Create a df that outlines the players career
         df = self.get_career()
         df = df[df['Team'] != 'TOT'][['Season', 'Team', 'TEAM_ID']].copy()
@@ -66,6 +67,12 @@ class NBA_Player:
 
         if print_name:
             print(self.name)
+    
+    def __str__(self):
+        return self.name
+    
+    def __repr__(self):
+        return f"NBA_Player(player_name={self.name}, print_name={self.print_name})"
     
     def get_season(self, season=datetime.datetime.today().year - 1, season_type='regular'):
         '''
@@ -364,6 +371,12 @@ class NBA_Season:
         except:
             # The specified season doeesn't contain playoff games
             self.playoff_start = None
+    
+    def __str__(self):
+        return self.season_str + ' NBA Season'
+    
+    def __repr__(self):
+        return f"NBA_Season(season={self.season})"
     
     # Private method
     def __clean_games(self, df):
