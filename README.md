@@ -27,7 +27,8 @@ __*.gitignore*__ - shows github what files to ignore when I commit my changes.
     - [x] colors and background color
     - [x] limiters for the shots
     - [x] kwargs handling
-    - [ ] team_id df in \_\_init__ method
+    - [x] team_id df in \_\_init__ method
+    - [ ] add abbreviation functionality for get_shot_chart
     - [ ] shart design
     - [ ] add filters on chart itself as text
     - [ ] team logo on chart?
