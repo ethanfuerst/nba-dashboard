@@ -286,7 +286,7 @@ class NBA_Player:
             LastNGames - integer
                 Will return the last n games from the season specified
             Location - One of 'Home', 'Road'
-            OpponentTeamID - null
+            OpponentTeam - Abbreviation, like DAL or LAL
             Outcome - One of 'W' or 'L'
             Period - 1, 2, 3, 4 or 5 (OT)
             PlayerPosition - One of 'Guard', 'Center', 'Forward'
@@ -302,11 +302,8 @@ class NBA_Player:
         df
             df of data from API
         '''
-        # Start with just seasons then do teams and seasons
-        # If given a list fo season start and end, create a list of all team ids and seasons
-        # dict of python variables and api variables
         reassign_dict = dict(zip(['AheadBehind', 'ClutchTime', 'DateFrom', 'DateTo', 'GameSegment', 'LastNGames', 'Location', 
-                                'Month', 'OpponentTeamID', 'Outcome', 'Period', 'PlayerPosition', 'PointDiff', 'RookieYear', 
+                                'Month', 'OpponentTeam', 'Outcome', 'Period', 'PlayerPosition', 'PointDiff', 'RookieYear', 
                                 'SeasonSegment', 'SeasonType', 'VsConference', 'VsDivision'], 
                                 ['ahead_behind_nullable', 'clutch_time_nullable', 'date_from_nullable', 
                                 'date_to_nullable', 'game_segment_nullable', 'last_n_games', 'location_nullable', 
@@ -316,6 +313,15 @@ class NBA_Player:
         new_limiters = {}
         for key in limiters:
             new_limiters[reassign_dict[key]] = limiters[key]
+        
+        def get_team_id(abbrev):
+            '''Returns team_id when given an abbreviation'''
+            return pd.DataFrame(teams.get_teams())[pd.DataFrame(teams.get_teams())['abbreviation'] == abbrev]['id'].iloc[0]
+        # Changes team abbrev to team_id
+        if 'opponent_team_id' in new_limiters.keys():
+            new_limiters['opponent_team_id'] = get_team_id(new_limiters['opponent_team_id'])
+        
+        # If given a list of season start and end, create a list of all team ids and seasons
         if seasons is None:
             f_seas = int(self.career['Years'].iloc[0][:4])
             seasons = [f_seas]
