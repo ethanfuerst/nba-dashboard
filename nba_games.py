@@ -311,9 +311,8 @@ class NBA_Player:
                                 'month', 'opponent_team_id', 'outcome_nullable', 'period', 'player_position_nullable', 
                                 'point_diff_nullable', 'rookie_year_nullable', 'season_segment_nullable', 
                                 'season_type_all_star', 'vs_conference_nullable', 'vs_division_nullable']))
-        new_limiters = {}
-        for key in limiters:
-            new_limiters[reassign_dict[key]] = limiters[key]
+        
+        new_limiters = {reassign_dict[key]: value for key, value in limiters.items()}
         
         # str_create = new_limiters
 
