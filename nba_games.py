@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Circle, Rectangle, Arc
 import datetime
 import html5lib
-from nba_api.stats.static import players
-from nba_api.stats.endpoints import commonplayerinfo, playergamelog, playercareerstats, shotchartdetail
+from nba_api.stats.static import players, teams
+from nba_api.stats.endpoints import *
 
 # Custom errors
 class PlayerNotFoundError(Exception):
@@ -30,6 +30,15 @@ class NBA_Player:
         print_name (boolean, default: True)
             Will print the name of the player on default to make sure that you're querying the player that you want.
             If you don't want this done, you can pass it False
+        
+        Attributes:
+            self.player_id
+            self.name
+            self.first_name
+            self.last_name
+            self.is_active
+            self.career
+            self.league - df of teams in the league
         '''
 
         # Search for the player to get the id
@@ -64,6 +73,8 @@ class NBA_Player:
         df = df.rename({'TEAM_ID': 'Team ID'}, axis='columns')
         df = df.reset_index(drop=True)
         self.career = df
+
+        self.league = pd.DataFrame(teams.get_teams())
 
         if print_name:
             print(self.name)
@@ -377,6 +388,12 @@ class NBA_Season:
             The season that you want to pull data from. 
                 Ex. 2008
             If the season you inputted isn't an integer, a TypeError will be thrown.
+
+        Attributes:
+            self.season
+            self.season_str
+            self.games - df of all games in a season
+            self.league - df of teams in the league
         '''
 
         try:
@@ -412,6 +429,7 @@ class NBA_Season:
         games.rename(columns={'Unnamed: 7': 'OT'}, inplace=True)
 
         self.games = games
+        self.league = pd.DataFrame(teams.get_teams())
 
         try:
             self.playoff_start = self.games[self.games['Date'] == 'playoffs'].index[0]
