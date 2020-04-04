@@ -246,7 +246,7 @@ class NBA_Player:
 
         return df
     
-    def get_shot_chart(self, seasons=None, show_misses=False):
+    def get_shot_chart(self, seasons=None, show_misses=False, return_df=False, **limiters):
         '''
         Returns a matplotlib fig of the player's shot chart given certain parameters.
 
@@ -260,16 +260,42 @@ class NBA_Player:
             If the player doesn't have data recorded for a year passed, then a SeasonNotFoundError will be thrown.
             If the seasons range contains years that the player didn't play then only years with data will be shown.
         
+        show_misses (boolean, default: False)
+            If misses are to be shown
+        
+        return_df (boolean, defalut: False)
+            If df containing shots will be returned
+        
+        **limiters (assorted data types)
+            These will filter the shots on the shot chart.
+            ahead_behind_nullable - One of 'Ahead or Behind', 'Ahead or Tied', 'Behind or Tied'
+            clutch_time_nullable - One of 'Last (1-5) Minutes' or 'Last (30 or 10) Seconds'
+            date_from_nullable - ex. 12-14-2019 or 12-2019
+            date_to_nullable - ex. 01-24-2020 or 01-2020
+            * must specify both date_from_nullable and date_to_nullable
+            game_segment_nullable - One of 'First Half', 'Overtime', 'Second Half'
+            last_n_games - integer
+            location_nullable - One of 'Home', 'Road'
+            opponent_team_id - null
+            outcome_nullable - One of 'W' or 'L'
+            period - 1, 2, 3, 4 or 5 (OT)
+            player_position_nullable - One of 'Guard', 'Center', 'Forward'
+            point_diff_nullable - integer
+            season_segment_nullable - One of 'Post All-Star', 'Pre All-Star'
+            season_type_all_star - One of 'Regular Season', 'Pre Season', 'Playoffs', 'All Star'
+            vs_conference_nullable - One of 'East', 'West'
+            vs_division_nullable - One of 'Atlantic', 'Central', 'Northwest', 'Pacific', 'Southeast', 'Southwest', 'East', 'West'
+        
+        
         Returns:
 
-        fig
-            Matplotlib figure of shotchart
+        df
+            df of data from API
         '''
         # Start with just seasons then do teams and seasons
         # If given a list fo season start and end, create a list of all team ids and seasons
-        # Default season is the first season of the first team
-        # if team_id is None:
-        #     team_id = self.career['Team ID'].iloc[0]
+        # dict of python variables and api variables
+        d = dict(zip(['ahead_behind_nullable', 'clutch_time_nullable', 'date_from_nullable', 'date_to_nullable', 'game_segment_nullable', 'last_n_games', 'location_nullable', 'month', 'opponent_team_id', 'outcome_nullable', 'period', 'player_position_nullable', 'point_diff_nullable', 'rookie_year_nullable', 'season_segment_nullable', 'season_type_all_star', 'vs_conference_nullable', 'vs_division_nullable'], ['AheadBehind', 'ClutchTime', 'DateFrom', 'DateTo', 'GameSegment', 'LastNGames', 'Location', 'Month', 'OpponentTeamID', 'Outcome', 'Period', 'PlayerPosition', 'PointDiff', 'RookieYear', 'SeasonSegment', 'SeasonType', 'VsConference', 'VsDivision']))
         if seasons is None:
             f_seas = int(self.career['Years'].iloc[0][:4])
             seasons = [f_seas]
@@ -291,7 +317,7 @@ class NBA_Player:
         df = pd.DataFrame()
         for i in range(len(season_df)):
             log = shotchartdetail.ShotChartDetail(team_id=season_df.iloc[i]['Team ID'], player_id=self.player_id, \
-             season_nullable=season_df.iloc[i]['season'], context_measure_simple=['FGA', 'FG3A'])
+             season_nullable=season_df.iloc[i]['season'], context_measure_simple=['FGA', 'FG3A'], **limiters)
             df_1 = log.get_data_frames()[0]
             df_1['Season'] = season_df.iloc[i]['season']
             df = pd.concat([df, df_1])
@@ -300,13 +326,14 @@ class NBA_Player:
 
         if len(df) == 0:
             if len(seasons) == 1:
-                raise SeasonNotFoundError(str(self.name) + ' has no data recorded for the ' + str(seasons[0]) + ' season')
+                raise SeasonNotFoundError(str(self.name) + ' has no data recorded for the ' + str(seasons[0]) + ' season with those limiters')
             else:
-                raise SeasonNotFoundError(str(self.name) + ' has no data recorded for the ' + str(seasons[0]) + '-' + str(seasons[1]) + ' seasons')
+                raise SeasonNotFoundError(str(self.name) + ' has no data recorded for the ' + str(seasons[0]) + '-' + str(seasons[1]) + ' seasons with those limiters')
         
         plt = self._make_shot_chart(df, show_misses=show_misses)
         plt.show()
-        return df
+        if return_df:
+            return df
 
     def _make_shot_chart(self, df, show_misses=False):
         # This method will create the shot chart given a df created from the get_shot_chart method
