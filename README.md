@@ -29,6 +29,7 @@ __*.gitignore*__ - shows github what files to ignore when I commit my changes.
     - [x] kwargs handling
     - [x] team_id df in \_\_init__ method
     - [x] add abbreviation functionality for get_shot_chart
+    - [ ] hex size as frequency
     - [ ] date_from/to and seasons conflict?
     - [ ] chart design
     - [ ] add filters on chart itself as text
