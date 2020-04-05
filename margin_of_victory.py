@@ -3,7 +3,8 @@ import pandas as pd
 import numpy as np
 import datetime
 import html5lib
-from nba_games import NBA_Season, thres_games
+from nba_season import NBA_Season
+from nba_methods import thres_games
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from textwrap import wrap

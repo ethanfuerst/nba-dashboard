@@ -9,6 +9,9 @@ import datetime
 import html5lib
 from nba_api.stats.static import players, teams
 from nba_api.stats.endpoints import commonplayerinfo, playergamelog, playercareerstats, shotchartdetail, shotchartlineupdetail
+from nba_season import NBA_Season
+from nba_methods import make_shot_chart
+
 
 # Custom errors
 class PlayerNotFoundError(Exception):
@@ -259,7 +262,7 @@ class NBA_Player:
     
     def get_shot_chart(self, seasons=None, show_misses=False, return_df=False, kind='normal', **limiters):
         '''
-        Returns a matplotlib fig of the player's shot chart given certain parameters.
+        Returns a matplotlib df and shows a plt of the player's shot chart given certain parameters.
 
         Parameters:
 
@@ -394,209 +397,9 @@ class NBA_Player:
             else:
                 raise SeasonNotFoundError(str(self.name) + ' has no data recorded for the ' + str(seasons[0]) + '-' + str(seasons[1]) + ' seasons with those limiters')
         
-        plt = self._make_shot_chart(to_plot, title, kind, show_misses=show_misses)
+        plt = make_shot_chart(to_plot, title, kind, show_misses=show_misses)
         plt.show()
         if return_df:
             return to_plot
-
-    def _make_shot_chart(self, df, title, kind='normal', color_scale=50 , show_misses=False):
-        # This method will create the shot chart given a df created from the get_shot_chart method
-        background_color = '#d9d9d9'
-        fig, ax = plt.subplots(facecolor=background_color, figsize=(10,10))
-        fig.patch.set_facecolor(background_color)
-        ax.patch.set_facecolor(background_color)
-        plt.title(title, fontdict={'fontsize': 14})
-        df_1 = df[df['SHOT_MADE_FLAG_x'] == 1].copy()
-        if kind == 'normal':
-            plt.scatter(df_1['LOC_X'], df_1['LOC_Y'], s=10, marker='o', c='#007A33')
-            if show_misses:
-                df_2 = df[df['SHOT_MADE_FLAG'] == 0].copy()
-                plt.scatter(df_2['LOC_X'], df_2['LOC_Y'], s=10, marker='o', c='#C80A18')
-        elif kind == 'hex':
-            ax.hexbin(df_1['LOC_X'], df_1['LOC_Y'],C=df_1['PCT_DIFF'],bins=20, gridsize=50, \
-                cmap=cm.get_cmap('RdYlBu_r', 10), extent=[-275, 275, -50, 425], edgecolors='black')
         else:
-            pass
-        court_elements = draw_court()
-        for element in court_elements:
-            ax.add_patch(element)
-        plt.xlim(-250,250)
-        plt.ylim(422.5, -47.5)
-        plt.axis(False)
-        return plt
-
-
-class NBA_Season:
-    def __init__(self, season=datetime.datetime.today().year - 1):
-        '''
-        Season object using data from basketball-reference.com
-
-        Parameters:
-
-        season (int, default: current year - 1)
-            The season that you want to pull data from. 
-                Ex. 2008
-            If the season you inputted isn't an integer, a TypeError will be thrown.
-
-        Attributes:
-            self.season
-            self.season_str
-            self.games - df of all games in a season
-            self.league - df of teams in the league
-        '''
-
-        try:
-            season = int(season)
-        except:
-            # This is probably because they inputted a string for season, and we need an int
-            raise TypeError("Wrong variable type for season. Integer expected.")
-        self.season = season
-        self.season_str = str(season) + "-" + str(season + 1)[2:]
-
-        # basketball-reference references the season by the second year in each season, so we need to add 1 to the season
-        season = self.season + 1
-        # The season goes from October to June usually, so we will go from July to June to capture all data
-        months = [datetime.date(2019, i, 1).strftime('%B').lower() for i in list(range(7, 13)) + list(range(1,7))]
-
-        # Getting the list of URLs with our months list
-        urls = []
-        for i in months:
-            urls.append('https://www.basketball-reference.com/leagues/NBA_' + str(season) + '_games-' + str(i) + '.html')
-        
-        games = pd.DataFrame()
-        for url in urls:
-            try:
-                month = pd.read_html(url)[0]
-                month.drop(['Notes','Unnamed: 6'], axis=1, inplace=True)
-                month.dropna(subset=['PTS'], inplace=True)
-                games = pd.concat([games, month], sort=False)
-            except:
-                pass
-        
-        # Reset the index and rename the overtime column
-        games.reset_index(inplace=True, drop=True)
-        games.rename(columns={'Unnamed: 7': 'OT'}, inplace=True)
-
-        self.games = games
-        self.league = pd.DataFrame(teams.get_teams())
-
-        try:
-            self.playoff_start = self.games[self.games['Date'] == 'playoffs'].index[0]
-        except:
-            # The specified season doeesn't contain playoff games
-            self.playoff_start = None
-    
-    def __str__(self):
-        return self.season_str + ' NBA Season'
-    
-    def __repr__(self):
-        return f"NBA_Season(season={self.season})"
-    
-    # Private method
-    def __clean_games(self, df):
-        df['Season'] = self.season_str
-        df['Year'] = pd.to_datetime(df['Date']).dt.year
-        df['PTS'] = df['PTS'].astype(int)
-        df['PTS.1'] = df['PTS.1'].astype(int)
-        df['MOV'] = abs(df['PTS'] - df['PTS.1'])
-        df['Date'] = pd.to_datetime(df['Date'])
-        df['Start (ET)'] = pd.to_datetime(df['Start (ET)'])
-        df['OT'] = df['OT'].fillna('No overtime')
-        return df
-    
-    def get_season(self):
-        if self.playoff_start == None:
-            return self.__clean_games(self.games.copy())
-        else:
-            return self.__clean_games(self.games[self.games.index < self.playoff_start].copy())
-    
-    def get_play(self):
-        if self.playoff_start == None:
-            raise SeasonNotFoundError("There are no play recorded for the " + self.season_str + " season.")
-        else:
-            return self.__clean_games(self.games[self.games.index > self.playoff_start].copy())
-
-def thres_games(startyear=2000, endyear=datetime.datetime.today().year - 1, thres = 40):
-    '''
-    Returns a df detailing the number of games won by a number >= the threshold specified.
-
-    Parameters:
-
-
-    startyear (int, default: 2001)
-        The first season that you want to be in the df.
-            ex. 2015
-
-    endyear (int, default: current year - 1)
-        The last season that you want to be in the df.
-            ex. 2019
-    
-    thres (int, default: 40)
-        The margin of victory threshold for the df.
-            ex. 30
-    
-
-    Returns:
-
-    df
-        A pd.DataFrame() containing the season data with the following columns:
-            ['Season', 'Count', 'Game Nums', 'Projected']
-            'Count' is the number of games over thres.
-            'Projected' is for current seasons in play only.
-    '''
-
-    # Need to make sure that startyear, endyear and thres are all integers
-    try:
-        startyear = int(startyear)
-        endyear = int(endyear)
-        thres = int(thres)
-    except:
-        # This is probably because they inputted a string for season, and we need an int
-        raise TypeError("Wrong variable type for startyear, endyear or thres. Integer expected.")
-    # Need to check that endyear season exists
-    try:
-        # If there is data for endyear, we are good.
-        Season(endyear)
-    except:
-        # If we can't get data from endyear, then raise SeasonNotFoundError
-        raise SeasonNotFoundError("There is no data for the " + str(endyear) + " season yet.")
-
-    years = [i for i in range(startyear, endyear + 1)]
-    tot = []
-    for i in years:
-        curr_season = NBA_Season(i)
-        year = curr_season.get_season()
-        num_games = len(year)
-        season = "'" +str(i)[2:] + " - '" + str(i + 1)[2:]
-        game_nums = list(year[year['MOV'] >= thres].index + 1)
-        year = year[year['MOV'] >= thres].copy()
-        count = len(year)
-        Projected = int(((count / num_games) * 1230) - count)
-        tot.append([season, count, game_nums, Projected])
-    
-    return pd.DataFrame(tot, columns=['Season', 'Count', 'Game Nums', 'Projected'])
-
-def draw_court(color='black', lw=2):
-    '''
-    From http://savvastjortjoglou.com/nba-shot-sharts.html
-    '''
-    hoop = Circle((0, 0), radius=7.5, linewidth=lw, color=color, fill=False)
-    backboard = Rectangle((-30, -7.5), 60, -1, linewidth=lw, color=color)
-    outer_box = Rectangle((-80, -47.5), 160, 190, linewidth=lw, color=color, fill=False)
-    inner_box = Rectangle((-60, -47.5), 120, 190, linewidth=lw, color=color, fill=False)
-    top_free_throw = Arc((0, 142.5), 120, 120, theta1=0, theta2=180, linewidth=lw, color=color, fill=False)
-    bottom_free_throw = Arc((0, 142.5), 120, 120, theta1=180, theta2=0, linewidth=lw, color=color, linestyle='dashed')
-    restricted = Arc((0, 0), 80, 80, theta1=0, theta2=180, linewidth=lw, color=color)
-    corner_three_a = Rectangle((-220, -47.5), 0, 140, linewidth=lw, color=color)
-    corner_three_b = Rectangle((220, -47.5), 0, 140, linewidth=lw, color=color)
-    three_arc = Arc((0, 0), 475, 475, theta1=22, theta2=158, linewidth=lw, color=color)
-    center_outer_arc = Arc((0, 422.5), 120, 120, theta1=180, theta2=0, linewidth=lw, color=color)
-    center_inner_arc = Arc((0, 422.5), 40, 40, theta1=180, theta2=0, linewidth=lw, color=color)
-    outer_lines = Rectangle((-250, -47.5), 500, 470, linewidth=lw, color=color, fill=False)
-
-    court_elements = [hoop, backboard, outer_box, inner_box, top_free_throw,
-                        bottom_free_throw, restricted, corner_three_a,
-                        corner_three_b, three_arc, center_outer_arc,
-                        center_inner_arc, outer_lines]
-
-    return court_elements
+            return
