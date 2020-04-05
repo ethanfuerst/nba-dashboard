@@ -1,12 +1,14 @@
 import pandas as pd
 pd.options.display.max_columns = None
 import numpy as np
+import seaborn as sns
 import matplotlib.pyplot as plt
+from matplotlib import cm
 from matplotlib.patches import Circle, Rectangle, Arc
 import datetime
 import html5lib
 from nba_api.stats.static import players, teams
-from nba_api.stats.endpoints import commonplayerinfo, playergamelog, playercareerstats, shotchartdetail
+from nba_api.stats.endpoints import commonplayerinfo, playergamelog, playercareerstats, shotchartdetail, shotchartlineupdetail
 
 # Custom errors
 class PlayerNotFoundError(Exception):
@@ -255,7 +257,7 @@ class NBA_Player:
 
         return df
     
-    def get_shot_chart(self, seasons=None, show_misses=False, return_df=False, **limiters):
+    def get_shot_chart(self, seasons=None, show_misses=False, return_df=False, kind='normal', **limiters):
         '''
         Returns a matplotlib fig of the player's shot chart given certain parameters.
 
@@ -276,6 +278,10 @@ class NBA_Player:
         return_df (boolean, defalut: False)
             If df containing shots will be returned
         
+        kind
+            'normal' or 'hex'
+            kind of shot chart
+
         **limiters (assorted data types)
             These will filter the shots on the shot chart.
             AheadBehind - One of 'Ahead or Behind', 'Ahead or Tied', 'Behind or Tied'
@@ -330,6 +336,9 @@ class NBA_Player:
             d_to = datetime.datetime.strptime(new_limiters['date_to_nullable'], '%m-%d-%Y').strftime("%B %-d, %Y")
             title += ' from ' + d_from + ' to ' + d_to
         else:
+            if seasons is None:
+                f_seas = int(self.career['Years'].iloc[0][:4])
+                seasons = [f_seas]
             if len(seasons) == 1:
                 title += ' in the ' + str(str(seasons[0]) + "-" + str(seasons[0] + 1)[2:]) + ' season'
             elif seasons[1] - seasons[0] == 1:
@@ -338,9 +347,6 @@ class NBA_Player:
                 title += ' from the ' + str(str(seasons[0]) + "-" + str(seasons[0] + 1)[2:]) + ' to ' +str(str(seasons[1]) + "-" + str(seasons[1] + 1)[2:]) + ' seasons'
 
         # If given a list of season start and end, create a list of all team ids and seasons
-        if seasons is None:
-            f_seas = int(self.career['Years'].iloc[0][:4])
-            seasons = [f_seas]
         if len(seasons) > 2 or type(seasons) != list or type(seasons[0]) != int:
             raise TypeError('The seasons variable must be a list of length 2 or 1 with years in integer form. Example: [2005, 2018]')
         else:
@@ -357,14 +363,30 @@ class NBA_Player:
         season_df['season'] = season_df['season'].apply(lambda x: str(x) + "-" + str(x + 1)[2:])
         # Now create the df for the shot chart creation with the dfs given
         df = pd.DataFrame()
+        avgs = pd.DataFrame()
         for i in range(len(season_df)):
             log = shotchartdetail.ShotChartDetail(team_id=season_df.iloc[i]['Team ID'], player_id=self.player_id, \
-             season_nullable=season_df.iloc[i]['season'], context_measure_simple=['FGA', 'FG3A'], **new_limiters)
+                season_nullable=season_df.iloc[i]['season'], context_measure_simple=['FGA', 'FG3A'], **new_limiters)
             df_1 = log.get_data_frames()[0]
+            df_2 = log.get_data_frames()[1]
             df_1['Season'] = season_df.iloc[i]['season']
             df = pd.concat([df, df_1])
+            avgs = pd.concat([avgs, df_2])
         
         df.reset_index(inplace=True, drop=True)
+
+        shots_group = df.groupby(by=['GRID_TYPE', 'SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE']).sum().reset_index()[['SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE', 'SHOT_ATTEMPTED_FLAG', 'SHOT_MADE_FLAG']].copy()
+        shots_group['AVG_FG_PCT'] = round(shots_group['SHOT_MADE_FLAG'] / shots_group['SHOT_ATTEMPTED_FLAG'], 3)
+
+        avgs = avgs.groupby(by=['GRID_TYPE', 'SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE']).sum().reset_index()
+        avgs['AVG_FG_PCT'] = round(avgs['FGM'] / avgs['FGA'], 3)
+        avgs = avgs.drop('FG_PCT', axis=1)
+
+        merged = pd.merge(shots_group, avgs, on=['SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE']).copy()
+        merged = merged.rename({'AVG_FG_PCT_x': 'PLAYER_PCT', 'AVG_FG_PCT_y':'LEAGUE_PCT'}, axis=1).copy()
+        merged['PCT_DIFF'] = merged['PLAYER_PCT'] - merged['LEAGUE_PCT']
+
+        to_plot = pd.merge(df, merged, on=['SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE'])[['LOC_X', 'LOC_Y', 'SHOT_ATTEMPTED_FLAG_x',	'SHOT_MADE_FLAG_x', 'SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE', 'PCT_DIFF']]
 
         if len(df) == 0:
             if len(seasons) == 1:
@@ -372,22 +394,29 @@ class NBA_Player:
             else:
                 raise SeasonNotFoundError(str(self.name) + ' has no data recorded for the ' + str(seasons[0]) + '-' + str(seasons[1]) + ' seasons with those limiters')
         
-        plt = self._make_shot_chart(df, title, show_misses=show_misses)
+        plt = self._make_shot_chart(to_plot, title, kind, show_misses=show_misses)
         plt.show()
         if return_df:
-            return df
+            return to_plot
 
-    def _make_shot_chart(self, df, title, show_misses=False):
+    def _make_shot_chart(self, df, title, kind='normal', color_scale=50 , show_misses=False):
         # This method will create the shot chart given a df created from the get_shot_chart method
-        fig, ax = plt.subplots(facecolor='#d9d9d9', figsize=(10,10))
-        fig.patch.set_facecolor('#d9d9d9')
-        ax.patch.set_facecolor('#d9d9d9')
+        background_color = '#d9d9d9'
+        fig, ax = plt.subplots(facecolor=background_color, figsize=(10,10))
+        fig.patch.set_facecolor(background_color)
+        ax.patch.set_facecolor(background_color)
         plt.title(title, fontdict={'fontsize': 14})
-        df_1 = df[df['SHOT_MADE_FLAG'] == 1].copy()
-        plt.scatter(df_1['LOC_X'], df_1['LOC_Y'], s=10, marker='o', c='#007A33')
-        if show_misses:
-            df_2 = df[df['SHOT_MADE_FLAG'] == 0].copy()
-            plt.scatter(df_2['LOC_X'], df_2['LOC_Y'], s=10, marker='o', c='#C80A18')
+        df_1 = df[df['SHOT_MADE_FLAG_x'] == 1].copy()
+        if kind == 'normal':
+            plt.scatter(df_1['LOC_X'], df_1['LOC_Y'], s=10, marker='o', c='#007A33')
+            if show_misses:
+                df_2 = df[df['SHOT_MADE_FLAG'] == 0].copy()
+                plt.scatter(df_2['LOC_X'], df_2['LOC_Y'], s=10, marker='o', c='#C80A18')
+        elif kind == 'hex':
+            ax.hexbin(df_1['LOC_X'], df_1['LOC_Y'],C=df_1['PCT_DIFF'],bins=20, gridsize=50, \
+                cmap=cm.get_cmap('RdYlBu_r', 10), extent=[-275, 275, -50, 425], edgecolors='black')
+        else:
+            pass
         court_elements = draw_court()
         for element in court_elements:
             ax.add_patch(element)
