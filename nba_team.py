@@ -8,7 +8,7 @@ from matplotlib.patches import Circle, Rectangle, Arc
 import datetime
 import html5lib
 from nba_api.stats.static import players, teams
-from nba_api.stats.endpoints import commonplayerinfo, playergamelog, playercareerstats, shotchartdetail, shotchartlineupdetail
+from nba_api.stats.endpoints import commonplayerinfo, boxscoretraditionalv2, playergamelog, playercareerstats, teamgamelog, shotchartdetail, shotchartlineupdetail
 from nba_season import NBA_Season
 from nba_methods import make_shot_chart
 
@@ -19,7 +19,77 @@ class PlayerNotFoundError(Exception):
 class SeasonNotFoundError(Exception):
     pass
 
+class TeamNotFoundError(Exception):
+    pass
+
 
 class NBA_Team():
-    def __init__(self, team_name):
+    def __init__(self, team_abbrev):
+        
+        
+        self.league = pd.DataFrame(teams.get_teams())
+        if team_abbrev not in self.league['abbreviation'].to_list():
+            raise TeamNotFoundError('Team not found. Check the abbreviation.')
+        self.abbrev = team_abbrev
+        self.id = self.league[self.league['abbreviation'] == self.abbrev]['id'].iloc[0]
+        self.full_name = self.league[self.league['abbreviation'] == self.abbrev]['full_name'].iloc[0]
+        self.nickname = self.league[self.league['abbreviation'] == self.abbrev]['nickname'].iloc[0]
+        self.city = self.league[self.league['abbreviation'] == self.abbrev]['city'].iloc[0]
+        self.state = self.league[self.league['abbreviation'] == self.abbrev]['state'].iloc[0]
+        self.year_founded = self.league[self.league['abbreviation'] == self.abbrev]['year_founded'].iloc[0]
+
         return
+
+    def get_season(self, season):
+        # Overview of games including ids
+        # team game log
+        log = teamgamelog.TeamGameLog(team_id=self.id,season=season)
+        return log.get_data_frames()[0]
+    
+    def get_season_games(self):
+        return
+
+    def get_game_shots(self, game_id, kind='normal', show_misses=False):
+        # Need game ID
+        # Query data
+        log = boxscoretraditionalv2.BoxScoreTraditionalV2(game_id=game_id)
+        df = log.get_data_frames()[0]
+        df = df[df['TEAM_ID'] == self.id].copy()
+        # get list of all players that logged game minutes
+        player_list = df[df['MIN'] != None]['PLAYER_ID'].to_list()
+        # get all shot charts from that game
+        shots = pd.DataFrame()
+        avgs = pd.DataFrame()
+        for i in player_list:
+            log = shotchartdetail.ShotChartDetail(team_id=self.id, game_id_nullable=game_id, player_id=i, context_measure_simple=['FGA', 'FG3A'])
+            df_1 = log.get_data_frames()[0]
+            shots = pd.concat([shots, df_1])
+            df_2 = log.get_data_frames()[1]
+            avgs = pd.concat([avgs, df_2])
+        shots = shots.reset_index()
+        avgs = avgs.reset_index()
+
+        # fix data types
+        shots[['SHOT_DISTANCE', 'LOC_X', 'LOC_Y', 'SHOT_ATTEMPTED_FLAG', 'SHOT_MADE_FLAG']] = shots[['SHOT_DISTANCE', 'LOC_X', 'LOC_Y', 'SHOT_ATTEMPTED_FLAG', 'SHOT_MADE_FLAG']].astype('int32')
+
+        # Transform data
+        shots_group = shots.groupby(by=['GRID_TYPE', 'SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE']).sum().reset_index()[['SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE', 'SHOT_ATTEMPTED_FLAG', 'SHOT_MADE_FLAG']].copy()
+        shots_group['AVG_FG_PCT'] = round(shots_group['SHOT_MADE_FLAG'] / shots_group['SHOT_ATTEMPTED_FLAG'], 3)
+
+        avgs = avgs.groupby(by=['GRID_TYPE', 'SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE']).sum().reset_index()
+        avgs['AVG_FG_PCT'] = round(avgs['FGM'] / avgs['FGA'], 3)
+        avgs = avgs.drop('FG_PCT', axis=1)
+
+        merged = pd.merge(shots_group, avgs, on=['SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE']).copy()
+        merged = merged.rename({'AVG_FG_PCT_x': 'TEAM_PCT', 'AVG_FG_PCT_y':'LEAGUE_PCT'}, axis=1).copy()
+        merged['PCT_DIFF'] = merged['TEAM_PCT'] - merged['LEAGUE_PCT']
+
+        to_plot = pd.merge(shots, merged, on=['SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE'])[['LOC_X', 'LOC_Y', 'SHOT_ATTEMPTED_FLAG_x',	'SHOT_MADE_FLAG_x', 'SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE', 'PCT_DIFF']]
+
+        opponent = self.league[self.league['abbreviation'] ==  shots.iloc[0]['VTM']]['full_name'].iloc[0]
+        game_date = datetime.datetime.strptime(shots.iloc[0]['GAME_DATE'], '%Y%m%d').strftime("%B %-d, %Y")
+        title = 'The ' + self.full_name + ' against the ' + opponent + ' on ' + game_date
+
+        # Make shot chart
+        plt = make_shot_chart(to_plot, title, kind, show_misses=show_misses)
+        return plt

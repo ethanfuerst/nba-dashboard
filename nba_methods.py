@@ -105,7 +105,7 @@ def draw_court(color='black', lw=2):
     return court_elements
 
 
-def make_shot_chart(self, df, title, kind='normal', color_scale=50 , show_misses=False):
+def make_shot_chart(df, title, kind='normal', color_scale=50 , show_misses=False):
         '''
         Returns a matplotlib fig of the player's shot chart given certain parameters.
 
