@@ -4,12 +4,15 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib import cm
-from matplotlib.patches import Circle, Rectangle, Arc
+from matplotlib.patches import Circle, Rectangle, Arc, PathPatch
+from matplotlib.collections import PatchCollection
+from matplotlib.path import Path
 import datetime
 import html5lib
 from nba_api.stats.static import players, teams
 from nba_api.stats.endpoints import commonplayerinfo, playergamelog, playercareerstats, shotchartdetail, shotchartlineupdetail
 from nba_season import NBA_Season
+
 
 # Custom errors
 class PlayerNotFoundError(Exception):

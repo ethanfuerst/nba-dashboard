@@ -365,7 +365,7 @@ class NBA_Player:
         # Change format of season column to work with the API
         season_df['season'] = season_df['season'].apply(lambda x: str(x) + "-" + str(x + 1)[2:])
         # Now create the df for the shot chart creation with the dfs given
-        df = pd.DataFrame()
+        shots = pd.DataFrame()
         avgs = pd.DataFrame()
         for i in range(len(season_df)):
             log = shotchartdetail.ShotChartDetail(team_id=season_df.iloc[i]['Team ID'], player_id=self.player_id, \
@@ -373,25 +373,28 @@ class NBA_Player:
             df_1 = log.get_data_frames()[0]
             df_2 = log.get_data_frames()[1]
             df_1['Season'] = season_df.iloc[i]['season']
-            df = pd.concat([df, df_1])
+            shots = pd.concat([shots, df_1])
             avgs = pd.concat([avgs, df_2])
         
-        df.reset_index(inplace=True, drop=True)
+        shots.reset_index(inplace=True, drop=True)
 
-        shots_group = df.groupby(by=['GRID_TYPE', 'SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE']).sum().reset_index()[['SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE', 'SHOT_ATTEMPTED_FLAG', 'SHOT_MADE_FLAG']].copy()
+        shots['ZONE'] = shots['SHOT_ZONE_AREA'] + ' ' + shots['SHOT_ZONE_BASIC']
+        avgs['ZONE'] = avgs['SHOT_ZONE_AREA'] + ' ' + avgs['SHOT_ZONE_BASIC']
+
+        shots_group = shots.groupby(by=['ZONE']).sum().reset_index()[['ZONE', 'SHOT_ATTEMPTED_FLAG', 'SHOT_MADE_FLAG']].copy()
         shots_group['AVG_FG_PCT'] = round(shots_group['SHOT_MADE_FLAG'] / shots_group['SHOT_ATTEMPTED_FLAG'], 3)
 
-        avgs = avgs.groupby(by=['GRID_TYPE', 'SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE']).sum().reset_index()
+        avgs = avgs.groupby(by=['ZONE']).sum().reset_index()
         avgs['AVG_FG_PCT'] = round(avgs['FGM'] / avgs['FGA'], 3)
         avgs = avgs.drop('FG_PCT', axis=1)
 
-        merged = pd.merge(shots_group, avgs, on=['SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE']).copy()
+        merged = pd.merge(shots_group, avgs, on=['ZONE']).copy()
         merged = merged.rename({'AVG_FG_PCT_x': 'PLAYER_PCT', 'AVG_FG_PCT_y':'LEAGUE_PCT'}, axis=1).copy()
         merged['PCT_DIFF'] = merged['PLAYER_PCT'] - merged['LEAGUE_PCT']
 
-        to_plot = pd.merge(df, merged, on=['SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE'])[['LOC_X', 'LOC_Y', 'SHOT_ATTEMPTED_FLAG_x',	'SHOT_MADE_FLAG_x', 'SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE', 'PCT_DIFF']]
+        to_plot = pd.merge(shots, merged, on=['ZONE'])[['LOC_X', 'LOC_Y', 'SHOT_ATTEMPTED_FLAG_x',	'SHOT_MADE_FLAG_x', 'ZONE', 'PCT_DIFF']]
 
-        if len(df) == 0:
+        if len(shots) == 0:
             if len(seasons) == 1:
                 raise SeasonNotFoundError(str(self.name) + ' has no data recorded for the ' + str(seasons[0]) + ' season with those limiters')
             else:
