@@ -32,5 +32,4 @@ __*.gitignore*__ - shows github what files to ignore when I commit my changes.
     - [ ] hex size as frequency
     - [ ] date_from/to and seasons conflict?
     - [ ] chart design
-    - [ ] add filters on chart itself as text
     - [ ] team logo on chart?
