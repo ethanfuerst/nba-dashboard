@@ -96,4 +96,4 @@ class NBA_Team():
 
         # Make shot chart
         plt = make_shot_chart(to_plot, title, kind, show_misses=show_misses)
-        return plt
+        return to_plot

@@ -140,7 +140,7 @@ def make_shot_chart(df, title, kind='normal', color_scale=50 , show_misses=False
         if kind == 'normal':
             plt.scatter(df_1['LOC_X'], df_1['LOC_Y'], s=10, marker='o', c='#007A33')
             if show_misses:
-                df_2 = df[df['SHOT_MADE_FLAG'] == 0].copy()
+                df_2 = df[df['SHOT_MADE_FLAG_x'] == 0].copy()
                 plt.scatter(df_2['LOC_X'], df_2['LOC_Y'], s=10, marker='o', c='#C80A18')
         elif kind == 'hex':
             ax.hexbin(df_1['LOC_X'], df_1['LOC_Y'],C=df_1['PCT_DIFF'],bins=20, gridsize=50, \
