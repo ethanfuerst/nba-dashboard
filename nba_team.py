@@ -57,6 +57,14 @@ class NBA_Team():
         chart_params (dict)
             See the make_shot_chart() method for list of paramters
         
+        
+        Returns:
+
+        df
+            df of data from API
+        
+        plt
+            plt object of the shotchart
         '''
         # Query data
         log = boxscoretraditionalv2.BoxScoreTraditionalV2(game_id=game_id)
