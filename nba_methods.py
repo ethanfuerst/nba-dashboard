@@ -185,7 +185,8 @@ def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, 
                 df_2 = df[df['SHOT_MADE_FLAG_x'] == 0].copy()
                 plt.scatter(df_2['LOC_X'], df_2['LOC_Y'], s=miss_marker_size, marker=miss_marker, c=miss_marker_color)
         elif kind == 'hex':
-            hexbin = ax.hexbin(df_1['LOC_X'], df_1['LOC_Y'],C=1-df_1['PCT_DIFF'],bins=20, gridsize=hex_grid, extent=[-275, 275, -50, 425])
+            df_1['PCT_DIFF_scaled'] = df_1['PCT_DIFF'] + .5
+            hexbin = ax.hexbin(df_1['LOC_X'], df_1['LOC_Y'],C=df_1['PCT_DIFF_scaled'], bins=20, gridsize=hex_grid, extent=[-275, 275, -50, 425])
 
             # Creates size differences
             offsets = hexbin.get_offsets()
@@ -203,7 +204,11 @@ def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, 
             pc = PatchCollection(patches, cmap=cm.get_cmap('RdYlBu_r', 10),  edgecolors='black')
             pc.set_array(values)
             ax.add_collection(pc)
-            hexbin.remove()
+            # hexbin.remove()
+
+            cb = fig.colorbar(hexbin, ax=ax)
+            cb.set_label('Color Scale')
+
         else:
             # Might make another kind of shot chart later
             pass
