@@ -108,23 +108,62 @@ def draw_court(color='black', lw=2):
     return court_elements
 
 
-def make_shot_chart(df, title, kind='normal', color_scale=50 , show_misses=False):
+def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, context_size=12, 
+                        show_misses=False, make_marker='o', miss_marker= 'o', make_marker_size=11, miss_marker_size=11, make_marker_color='#007A33', miss_marker_color='#C80A18',
+                        hex_grid=50):
         '''
         Returns a matplotlib fig of the player's shot chart given certain parameters.
 
         Parameters:
-
         
-        kind
+        kind (string, default: 'normal')
             'normal' or 'hex'
-            kind of shot chart
-            normal - shows makes as dots
-            hex - shows frequency of shots in area as 
+            Kind of shot chart
+            'normal' - shows makes as dots
+                Best for single game
+            'hex' - shows frequency of shots in area as size of hex and color of zone compared to league average in zone
+                Best for multiple games or players
+        
+        title (string, default: None)
+            The title on the top of the figure
 
-        **format (assorted data types)
-            These will format the shot chart.
+        title_size (integer, default: 14)
+            The title on the top of the figure
         
+        context (string, default: None)
+            Text on the bottom of the plot.
+            Used to add context about a plot.
         
+        context_size (integer, default: 12)
+            context fontsize
+
+        'normal' parameters:
+            show_misses (boolean, default: False)
+                Only for kind = 'normal'
+            
+            make_marker (string, default: 'o')
+                Marker for the made shots
+
+            miss_marker (string, default: 'o')
+                Marker for missed shots
+
+            make_marker_size (integer, default: 11)
+                Marker size for made shots
+
+            miss_marker_size (integer, default: 11)
+                Marker size for missed shots
+
+            make_marker_color (string, default: '#007A33' - green)
+                Marker color for made shots
+
+            miss_marker_color (string, default: '#C80A18' - red)
+                Marker color for missed shots
+
+        'hex' parameters:
+            hex_grid (integer, default: 50)
+                Number of hexes in the axis of each grid
+                Larger number = smaller hexes
+
         Returns:
 
         plt
@@ -135,21 +174,47 @@ def make_shot_chart(df, title, kind='normal', color_scale=50 , show_misses=False
         fig, ax = plt.subplots(facecolor=background_color, figsize=(10,10))
         fig.patch.set_facecolor(background_color)
         ax.patch.set_facecolor(background_color)
-        plt.title(title, fontdict={'fontsize': 14})
+
+        if title is not None:
+            plt.title(title, fontdict={'fontsize': title_size})
+        
         df_1 = df[df['SHOT_MADE_FLAG_x'] == 1].copy()
         if kind == 'normal':
-            plt.scatter(df_1['LOC_X'], df_1['LOC_Y'], s=10, marker='o', c='#007A33')
+            plt.scatter(df_1['LOC_X'], df_1['LOC_Y'], s=make_marker_size, marker=make_marker, c=make_marker_color)
             if show_misses:
                 df_2 = df[df['SHOT_MADE_FLAG_x'] == 0].copy()
-                plt.scatter(df_2['LOC_X'], df_2['LOC_Y'], s=10, marker='o', c='#C80A18')
+                plt.scatter(df_2['LOC_X'], df_2['LOC_Y'], s=miss_marker_size, marker=miss_marker, c=miss_marker_color)
         elif kind == 'hex':
-            ax.hexbin(df_1['LOC_X'], df_1['LOC_Y'],C=df_1['PCT_DIFF'],bins=20, gridsize=50, \
-                cmap=cm.get_cmap('RdYlBu_r', 10), extent=[-275, 275, -50, 425], edgecolors='black')
+            hexbin = ax.hexbin(df_1['LOC_X'], df_1['LOC_Y'],C=1-df_1['PCT_DIFF'],bins=20, gridsize=hex_grid, extent=[-275, 275, -50, 425])
+
+            # Creates size differences
+            offsets = hexbin.get_offsets()
+            orgpath = hexbin.get_paths()[0]
+            verts = orgpath.vertices
+            values = hexbin.get_array()
+            ma = values.max()
+            patches = []
+            for offset,val in zip(offsets,values):
+                v1 = verts*val/ma+offset
+                path = Path(v1, orgpath.codes)
+                patch = PathPatch(path)
+                patches.append(patch)
+
+            pc = PatchCollection(patches, cmap=cm.get_cmap('RdYlBu_r', 10),  edgecolors='black')
+            pc.set_array(values)
+            ax.add_collection(pc)
+            hexbin.remove()
         else:
+            # Might make another kind of shot chart later
             pass
+        
         court_elements = draw_court()
         for element in court_elements:
             ax.add_patch(element)
+        
+        if context is not None:
+            ax.text(0, 435, s=context, fontsize=context_size, ha='center')
+
         plt.xlim(-250,250)
         plt.ylim(422.5, -47.5)
         plt.axis(False)

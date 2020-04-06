@@ -49,8 +49,15 @@ class NBA_Team():
     def get_season_games(self):
         return
 
-    def get_game_shots(self, game_id, kind='normal', show_misses=False):
-        # Need game ID
+    def get_shot_chart(self, game_id, chart_params={}):
+        '''
+        game_id (string or int, required)
+            The id of the game for the shotchart
+        
+        chart_params (dict)
+            See the make_shot_chart() method for list of paramters
+        
+        '''
         # Query data
         log = boxscoretraditionalv2.BoxScoreTraditionalV2(game_id=game_id)
         df = log.get_data_frames()[0]
@@ -93,7 +100,8 @@ class NBA_Team():
         opponent = self.league[self.league['abbreviation'] ==  shots.iloc[0]['VTM']]['full_name'].iloc[0]
         game_date = datetime.datetime.strptime(shots.iloc[0]['GAME_DATE'], '%Y%m%d').strftime("%B %-d, %Y")
         title = 'The ' + self.full_name + ' against the ' + opponent + ' on ' + game_date
+        chart_params['title'] = title
 
         # Make shot chart
-        plt = make_shot_chart(to_plot, title, kind, show_misses=show_misses)
-        return to_plot
+        plt = make_shot_chart(to_plot, **chart_params)
+        return to_plot, plt

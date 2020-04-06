@@ -260,7 +260,7 @@ class NBA_Player:
 
         return df
     
-    def get_shot_chart(self, seasons=None, show_misses=False, return_df=False, kind='normal', **limiters):
+    def get_shot_chart(self, seasons=None, chart_params={}, **limiters):
         '''
         Returns a matplotlib df and shows a plt of the player's shot chart given certain parameters.
 
@@ -275,15 +275,11 @@ class NBA_Player:
             If the player doesn't have data recorded for a year passed, then a SeasonNotFoundError will be thrown.
             If the seasons range contains years that the player didn't play then only years with data will be shown.
         
-        show_misses (boolean, default: False)
-            If misses are to be shown
-        
         return_df (boolean, defalut: False)
             If df containing shots will be returned
-        
-        kind
-            'normal' or 'hex'
-            kind of shot chart
+
+        chart_params (dict)
+            See the make_shot_chart method() for list of paramters
 
         **limiters (assorted data types)
             These will filter the shots on the shot chart.
@@ -311,6 +307,9 @@ class NBA_Player:
 
         df
             df of data from API
+        
+        plt
+            plt object of the shotchart
         '''
         reassign_dict = dict(zip(['AheadBehind', 'ClutchTime', 'DateFrom', 'DateTo', 'GameSegment', 'LastNGames', 'Location', 
                                 'Month', 'OpponentTeam', 'Outcome', 'Period', 'PlayerPosition', 'PointDiff', 'RookieYear', 
@@ -348,6 +347,8 @@ class NBA_Player:
                 title += ' in the ' + str(str(seasons[0]) + "-" + str(seasons[0] + 1)[2:]) + ' and ' +str(str(seasons[1]) + "-" + str(seasons[1] + 1)[2:]) + ' seasons'
             else:
                 title += ' from the ' + str(str(seasons[0]) + "-" + str(seasons[0] + 1)[2:]) + ' to ' +str(str(seasons[1]) + "-" + str(seasons[1] + 1)[2:]) + ' seasons'
+        if 'title' not in chart_params.keys():
+            chart_params['title'] = title
 
         # If given a list of season start and end, create a list of all team ids and seasons
         if len(seasons) > 2 or type(seasons) != list or type(seasons[0]) != int:
@@ -400,9 +401,6 @@ class NBA_Player:
             else:
                 raise SeasonNotFoundError(str(self.name) + ' has no data recorded for the ' + str(seasons[0]) + '-' + str(seasons[1]) + ' seasons with those limiters')
         
-        plt = make_shot_chart(to_plot, title, kind, show_misses=show_misses)
+        plt = make_shot_chart(to_plot, **chart_params)
         plt.show()
-        if return_df:
-            return to_plot
-        else:
-            return
+        return to_plot, plt
