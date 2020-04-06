@@ -299,6 +299,7 @@ class NBA_Player:
             PointDiff - integer
             SeasonSegment - One of 'Post All-Star', 'Pre All-Star'
             SeasonType - One of 'Regular Season', 'Pre Season', 'Playoffs', 'All Star'
+            GameID - Use self.career and the NBA_Team class to get the full schedule with game_ids
             VsConference - One of 'East', 'West'
             VsDivision  - One of 'Atlantic', 'Central', 'Northwest', 'Pacific', 'Southeast', 'Southwest', 'East', 'West'
         
@@ -311,10 +312,10 @@ class NBA_Player:
         plt
             plt object of the shotchart
         '''
-        reassign_dict = dict(zip(['AheadBehind', 'ClutchTime', 'DateFrom', 'DateTo', 'GameSegment', 'LastNGames', 'Location', 
+        reassign_dict = dict(zip(['GameID', 'AheadBehind', 'ClutchTime', 'DateFrom', 'DateTo', 'GameSegment', 'LastNGames', 'Location', 
                                 'Month', 'OpponentTeam', 'Outcome', 'Period', 'PlayerPosition', 'PointDiff', 'RookieYear', 
                                 'SeasonSegment', 'SeasonType', 'VsConference', 'VsDivision'], 
-                                ['ahead_behind_nullable', 'clutch_time_nullable', 'date_from_nullable', 
+                                ['game_id_nullable','ahead_behind_nullable', 'clutch_time_nullable', 'date_from_nullable', 
                                 'date_to_nullable', 'game_segment_nullable', 'last_n_games', 'location_nullable', 
                                 'month', 'opponent_team_id', 'outcome_nullable', 'period', 'player_position_nullable', 
                                 'point_diff_nullable', 'rookie_year_nullable', 'season_segment_nullable', 
