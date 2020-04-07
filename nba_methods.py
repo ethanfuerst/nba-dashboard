@@ -187,25 +187,7 @@ def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, 
                 plt.scatter(df_2['LOC_X'], df_2['LOC_Y'], s=miss_marker_size, marker=miss_marker, c=miss_marker_color)
         elif kind == 'hex':
             df_1['PCT_DIFF_scaled'] = df_1['PCT_DIFF'] + .5
-            hexbin = ax.hexbin(df_1['LOC_X'], df_1['LOC_Y'],C=df_1['PCT_DIFF_scaled'], bins=20, gridsize=hex_grid, extent=[-275, 275, -50, 425])
-
-            # Creates size differences
-            offsets = hexbin.get_offsets()
-            orgpath = hexbin.get_paths()[0]
-            verts = orgpath.vertices
-            values = hexbin.get_array()
-            ma = values.max()
-            patches = []
-            for offset,val in zip(offsets,values):
-                v1 = verts*val/ma+offset
-                path = Path(v1, orgpath.codes)
-                patch = PathPatch(path)
-                patches.append(patch)
-
-            pc = PatchCollection(patches, cmap=cm.get_cmap('RdYlBu_r'),  edgecolors='black')
-            pc.set_array(values)
-            ax.add_collection(pc)
-            # hexbin.remove()
+            ax.hexbin(df_1['LOC_X'], df_1['LOC_Y'],C=df_1['PCT_DIFF_scaled'], bins=20, gridsize=hex_grid, extent=[-275, 275, -50, 425])
 
             plt.legend(handles=[mpatches.Patch(color='#A70022', label='Above league average'),
                     mpatches.Patch(color='#303297', label='Below league average')], 
