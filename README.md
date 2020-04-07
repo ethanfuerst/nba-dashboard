@@ -29,8 +29,8 @@ __*.gitignore*__ - shows github what files to ignore when I commit my changes.
     - [x] kwargs handling
     - [x] team_id df in \_\_init__ method
     - [x] add abbreviation functionality for get_shot_chart
+    - [x] chart design
+      - [x] add colorbar for hexbins
+      - [x] hardwood floor? or other texture?
     - [ ] hex size as frequency
-    - [ ] chart design
-      - [ ] add colorbar for hexbins
-      - [ ] hardwood floor? or other texture?
     - [ ] team logo on chart?
