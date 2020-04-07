@@ -8,6 +8,7 @@ from matplotlib.patches import Circle, Rectangle, Arc, PathPatch
 import matplotlib.patches as mpatches
 from matplotlib.collections import PatchCollection
 from matplotlib.path import Path
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import datetime
 import html5lib
 from nba_api.stats.static import players, teams
@@ -186,15 +187,11 @@ def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, 
                 df_2 = df[df['SHOT_MADE_FLAG_x'] == 0].copy()
                 plt.scatter(df_2['LOC_X'], df_2['LOC_Y'], s=miss_marker_size, marker=miss_marker, c=miss_marker_color)
         elif kind == 'hex':
-            df_1['PCT_DIFF_scaled'] = df_1['PCT_DIFF'] + .5
-            ax.hexbin(df_1['LOC_X'], df_1['LOC_Y'],C=df_1['PCT_DIFF_scaled'], bins=20, gridsize=hex_grid, extent=[-275, 275, -50, 425])
-
-            plt.legend(handles=[mpatches.Patch(color='#A70022', label='Above league average'),
-                    mpatches.Patch(color='#303297', label='Below league average')], 
-                    facecolor='#d9d9d9', loc='lower left', edgecolor='black', framealpha=1)
+            df_1['PCT_DIFF_scaled'] = df_1['PCT_DIFF']
+            hexbins = ax.hexbin(df_1['LOC_X'], df_1['LOC_Y'],C=df_1['PCT_DIFF_scaled'], bins=20, gridsize=hex_grid, 
+                        extent=[-275, 275, -50, 425], cmap=cm.get_cmap('RdYlBu_r'), edgecolors='black')
             plt.text(196, 414, 'The larger hexagons\nrepresent a higher\ndensity of shots',
                         horizontalalignment='center', bbox=dict(facecolor='#d9d9d9', boxstyle='round'))
-
         else:
             # Might make another kind of shot chart later
             pass
@@ -212,4 +209,14 @@ def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, 
         plt.xlim(-250,250)
         plt.ylim(422.5, -47.5)
         plt.axis(False)
+
+        if kind == 'hex':
+            axins1 = inset_axes(ax, width="15%", height="2%", loc='lower left')
+            cbar = fig.colorbar(hexbins, cax=axins1, orientation="horizontal", ticks=[-1, 1])
+            # change to 25th and 75th percentile of range of colors
+            cbar.set_ticks([0, 17])
+            cbar.set_ticklabels(['Below', 'Above'])
+            axins1.xaxis.set_ticks_position('top')
+            cbar.ax.set_title('Compared to \nLeague Average', fontsize=10)
+
         return plt
