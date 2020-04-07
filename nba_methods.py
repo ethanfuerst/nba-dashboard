@@ -5,6 +5,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from matplotlib.patches import Circle, Rectangle, Arc, PathPatch
+import matplotlib.patches as mpatches
 from matplotlib.collections import PatchCollection
 from matplotlib.path import Path
 import datetime
@@ -201,13 +202,17 @@ def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, 
                 patch = PathPatch(path)
                 patches.append(patch)
 
-            pc = PatchCollection(patches, cmap=cm.get_cmap('RdYlBu_r', 10),  edgecolors='black')
+            pc = PatchCollection(patches, cmap=cm.get_cmap('RdYlBu_r'),  edgecolors='black')
             pc.set_array(values)
             ax.add_collection(pc)
             # hexbin.remove()
 
-            cb = fig.colorbar(hexbin, ax=ax)
-            cb.set_label('Color Scale')
+            plt.legend(handles=[mpatches.Patch(color='#A70022', label='Above league average'),
+                                mpatches.Patch(color='#303297', label='Below league average')], 
+                                facecolor='#c3c3c3', loc='lower left', edgecolor='black')
+            plt.text(196, 414, 'The larger hexagons\nrepresent a higher\ndensity of shots', 
+                        horizontalalignment='center', bbox=dict(facecolor='#c3c3c3', boxstyle='round', alpha=1))
+
 
         else:
             # Might make another kind of shot chart later
