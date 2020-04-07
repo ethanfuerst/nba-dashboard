@@ -208,11 +208,10 @@ def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, 
             # hexbin.remove()
 
             plt.legend(handles=[mpatches.Patch(color='#A70022', label='Above league average'),
-                                mpatches.Patch(color='#303297', label='Below league average')], 
-                                facecolor='#c3c3c3', loc='lower left', edgecolor='black')
-            plt.text(196, 414, 'The larger hexagons\nrepresent a higher\ndensity of shots', 
-                        horizontalalignment='center', bbox=dict(facecolor='#c3c3c3', boxstyle='round', alpha=1))
-
+                    mpatches.Patch(color='#303297', label='Below league average')], 
+                    facecolor='#d9d9d9', loc='lower left', edgecolor='black', framealpha=1)
+            plt.text(196, 414, 'The larger hexagons\nrepresent a higher\ndensity of shots',
+                        horizontalalignment='center', bbox=dict(facecolor='#d9d9d9', boxstyle='round'))
 
         else:
             # Might make another kind of shot chart later
@@ -221,6 +220,9 @@ def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, 
         court_elements = draw_court()
         for element in court_elements:
             ax.add_patch(element)
+        
+        img = plt.imread("basketball-floor-texture.png")
+        plt.imshow(img,zorder=0, extent=[-275, 275, -50, 425])
         
         if context is not None:
             ax.text(0, 435, s=context, fontsize=context_size, ha='center')
