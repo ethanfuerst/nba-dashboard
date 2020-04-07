@@ -5,6 +5,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from matplotlib.patches import Circle, Rectangle, Arc
+import matplotlib.patches as mpatches
 import datetime
 import html5lib
 from nba_api.stats.static import players, teams
