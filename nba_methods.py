@@ -111,7 +111,7 @@ def draw_court(color='black', lw=2):
 
 
 def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, context_size=12, 
-                        show_misses=False, make_marker='o', miss_marker= 'o', make_marker_size=11, miss_marker_size=11, make_marker_color='#007A33', miss_marker_color='#C80A18',
+                        show_misses=True, make_marker='o', miss_marker= 'o', make_marker_size=11, miss_marker_size=11, make_marker_color='#007A33', miss_marker_color='#C80A18',
                         hex_grid=50):
         '''
         Returns a matplotlib fig of the player's shot chart given certain parameters.
@@ -140,8 +140,7 @@ def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, 
             context fontsize
 
         'normal' parameters:
-            show_misses (boolean, default: False)
-                Only for kind = 'normal'
+            show_misses (boolean, default: True)
             
             make_marker (string, default: 'o')
                 Marker for the made shots
@@ -180,15 +179,16 @@ def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, 
         if title is not None:
             plt.title(title, fontdict={'fontsize': title_size})
         
-        df_1 = df[df['SHOT_MADE_FLAG_x'] == 1].copy()
+        df['PCT_DIFF_scaled'] = df['PCT_DIFF']
+
         if kind == 'normal':
+            df_1 = df[df['SHOT_MADE_FLAG_x'] == 1].copy()
             plt.scatter(df_1['LOC_X'], df_1['LOC_Y'], s=make_marker_size, marker=make_marker, c=make_marker_color)
             if show_misses:
                 df_2 = df[df['SHOT_MADE_FLAG_x'] == 0].copy()
                 plt.scatter(df_2['LOC_X'], df_2['LOC_Y'], s=miss_marker_size, marker=miss_marker, c=miss_marker_color)
         elif kind == 'hex':
-            df_1['PCT_DIFF_scaled'] = df_1['PCT_DIFF']
-            hexbins = ax.hexbin(df_1['LOC_X'], df_1['LOC_Y'],C=df_1['PCT_DIFF_scaled'], bins=20, gridsize=hex_grid, 
+            hexbins = ax.hexbin(df['LOC_X'], df['LOC_Y'],C=df['PCT_DIFF_scaled'], bins=20, gridsize=hex_grid, 
                         extent=[-275, 275, -50, 425], cmap=cm.get_cmap('RdYlBu_r'), edgecolors='black')
             plt.text(196, 414, 'The larger hexagons\nrepresent a higher\ndensity of shots',
                         horizontalalignment='center', bbox=dict(facecolor='#d9d9d9', boxstyle='round'))
@@ -213,8 +213,10 @@ def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, 
         if kind == 'hex':
             axins1 = inset_axes(ax, width="15%", height="2%", loc='lower left')
             cbar = fig.colorbar(hexbins, cax=axins1, orientation="horizontal", ticks=[-1, 1])
-            # change to 25th and 75th percentile of range of colors
-            cbar.set_ticks([0, 17])
+            interval = hexbins.get_clim()[1] - hexbins.get_clim()[0]
+            ltick = hexbins.get_clim()[0] + (interval * .2)
+            rtick = hexbins.get_clim()[1] - (interval * .2)
+            cbar.set_ticks([ltick, rtick])
             cbar.set_ticklabels(['Below', 'Above'])
             axins1.xaxis.set_ticks_position('top')
             cbar.ax.set_title('Compared to \nLeague Average', fontsize=10)
