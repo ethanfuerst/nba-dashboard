@@ -189,7 +189,7 @@ def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, 
                 plt.scatter(df_2['LOC_X'], df_2['LOC_Y'], s=miss_marker_size, marker=miss_marker, c=miss_marker_color)
         elif kind == 'hex':
             hexbins = ax.hexbin(df['LOC_X'], df['LOC_Y'],C=df['PCT_DIFF_scaled'], bins=20, gridsize=hex_grid, 
-                        extent=[-275, 275, -50, 425], cmap=cm.get_cmap('RdYlBu_r'), edgecolors='black')
+                        extent=[-275, 275, -50, 425], cmap=cm.get_cmap('RdYlBu_r'))
             plt.text(196, 414, 'The larger hexagons\nrepresent a higher\ndensity of shots',
                         horizontalalignment='center', bbox=dict(facecolor='#d9d9d9', boxstyle='round'))
         else:
@@ -220,5 +220,23 @@ def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, 
             cbar.set_ticklabels(['Below', 'Above'])
             axins1.xaxis.set_ticks_position('top')
             cbar.ax.set_title('Compared to \nLeague Average', fontsize=10)
+
+            # Sizes are wrong
+            offsets = hexbins.get_offsets()
+            orgpath = hexbins.get_paths()[0]
+            verts = orgpath.vertices
+            values = hexbins.get_array()
+            ma = values.max()
+            patches = []
+            for offset,val in zip(offsets,values):
+                v1 = verts*val/ma+offset
+                path = Path(v1, orgpath.codes)
+                patch = PathPatch(path)
+                patches.append(patch)
+
+            pc = PatchCollection(patches, cmap=cm.get_cmap('RdYlBu_r'), edgecolors='black')
+            pc.set_array(values)
+            ax.add_collection(pc)
+            hexbins.remove()
 
         return plt
