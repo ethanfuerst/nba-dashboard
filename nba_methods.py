@@ -111,7 +111,7 @@ def draw_court(color='black', lw=2):
 
 
 def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, context_size=12, 
-                        show_misses=True, make_marker='o', miss_marker= 'o', make_marker_size=11, miss_marker_size=11, make_marker_color='#007A33', miss_marker_color='#C80A18',
+                        show_misses=True, make_marker='o', miss_marker= 'x', make_marker_size=18, miss_marker_size=20, make_marker_color='#007A33', miss_marker_color='#C80A18',
                         hex_grid=50):
         '''
         Returns a matplotlib fig of the player's shot chart given certain parameters.
@@ -145,13 +145,13 @@ def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, 
             make_marker (string, default: 'o')
                 Marker for the made shots
 
-            miss_marker (string, default: 'o')
+            miss_marker (string, default: 'x')
                 Marker for missed shots
 
-            make_marker_size (integer, default: 11)
+            make_marker_size (integer, default: 18)
                 Marker size for made shots
 
-            miss_marker_size (integer, default: 11)
+            miss_marker_size (integer, default: 20)
                 Marker size for missed shots
 
             make_marker_color (string, default: '#007A33' - green)
