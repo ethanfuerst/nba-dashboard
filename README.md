@@ -28,7 +28,8 @@ __*.gitignore*__ - shows github what files to ignore when I commit my changes.
     - [x] chart design
       - [x] add colorbar for hexbins
       - [x] hardwood floor? or other texture?
-      - [ ] legend as color scale
-        - [ ] move color ticks to percentile of cbar
+      - [x] legend as color scale
+        - [x] move color ticks to percentile of cbar
+    - [ ] determine zones
     - [ ] hex size as frequency
     - [ ] team logo on chart?
