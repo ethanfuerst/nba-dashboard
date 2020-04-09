@@ -280,7 +280,7 @@ class NBA_Player:
             If df containing shots will be returned
 
         chart_params (dict)
-            See the make_shot_chart method() for list of paramters
+            See the make_shot_chart() method for list of paramters
 
         **limiters (assorted data types)
             These will filter the shots on the shot chart.
