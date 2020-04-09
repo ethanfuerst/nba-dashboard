@@ -11,7 +11,7 @@ import html5lib
 from nba_api.stats.static import players, teams
 from nba_api.stats.endpoints import commonplayerinfo, playergamelog, playercareerstats, shotchartdetail, shotchartlineupdetail
 from nba_season import NBA_Season
-from nba_methods import make_shot_chart
+from nba_methods import make_shot_chart, shots_grouper
 
 
 # Custom errors
@@ -381,28 +381,14 @@ class NBA_Player:
         
         shots.reset_index(inplace=True, drop=True)
 
-        shots['ZONE'] = shots['SHOT_ZONE_AREA'] + ' ' + shots['SHOT_ZONE_BASIC']
-        avgs['ZONE'] = avgs['SHOT_ZONE_AREA'] + ' ' + avgs['SHOT_ZONE_BASIC']
-
-        shots_group = shots.groupby(by=['ZONE']).sum().reset_index()[['ZONE', 'SHOT_ATTEMPTED_FLAG', 'SHOT_MADE_FLAG']].copy()
-        shots_group['AVG_FG_PCT'] = round(shots_group['SHOT_MADE_FLAG'] / shots_group['SHOT_ATTEMPTED_FLAG'], 3)
-
-        avgs = avgs.groupby(by=['ZONE']).sum().reset_index()
-        avgs['AVG_FG_PCT'] = round(avgs['FGM'] / avgs['FGA'], 3)
-        avgs = avgs.drop('FG_PCT', axis=1)
-
-        merged = pd.merge(shots_group, avgs, on=['ZONE']).copy()
-        merged = merged.rename({'AVG_FG_PCT_x': 'PLAYER_PCT', 'AVG_FG_PCT_y':'LEAGUE_PCT'}, axis=1).copy()
-        merged['PCT_DIFF'] = merged['PLAYER_PCT'] - merged['LEAGUE_PCT']
-
-        to_plot = pd.merge(shots, merged, on=['ZONE'])[['LOC_X', 'LOC_Y', 'SHOT_ATTEMPTED_FLAG_x',	'SHOT_MADE_FLAG_x', 'ZONE', 'PCT_DIFF']]
-
         if len(shots) == 0:
             if len(seasons) == 1:
                 raise SeasonNotFoundError(str(self.name) + ' has no data recorded for the ' + str(seasons[0]) + ' season with those limiters')
             else:
                 raise SeasonNotFoundError(str(self.name) + ' has no data recorded for the ' + str(seasons[0]) + '-' + str(seasons[1]) + ' seasons with those limiters')
         
+        to_plot = shots_grouper(shots,avgs)
+
         plt = make_shot_chart(to_plot, **chart_params)
         plt.show()
         return to_plot, plt

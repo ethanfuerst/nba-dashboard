@@ -109,134 +109,157 @@ def draw_court(color='black', lw=2):
 
     return court_elements
 
+def shots_grouper(shots, avgs):
+    '''
+    returns df ready for make_shot_chart from shots, avgs dfs
+    '''
+    # Change zones
+    shots['ZONE'] = shots['SHOT_ZONE_AREA'] + ' ' + shots['SHOT_ZONE_BASIC']
+    avgs['ZONE'] = avgs['SHOT_ZONE_AREA'] + ' ' + avgs['SHOT_ZONE_BASIC']
+
+    shots_group = shots.groupby(by=['ZONE']).sum().reset_index()[['ZONE', 'SHOT_ATTEMPTED_FLAG', 'SHOT_MADE_FLAG']].copy()
+    shots_group['AVG_FG_PCT'] = round(shots_group['SHOT_MADE_FLAG'] / shots_group['SHOT_ATTEMPTED_FLAG'], 3)
+
+    avgs = avgs.groupby(by=['ZONE']).sum().reset_index()
+    avgs['AVG_FG_PCT'] = round(avgs['FGM'] / avgs['FGA'], 3)
+    avgs = avgs.drop('FG_PCT', axis=1)
+
+    merged = pd.merge(shots_group, avgs, on=['ZONE']).copy()
+    merged = merged.rename({'AVG_FG_PCT_x': 'PLAYER_PCT', 'AVG_FG_PCT_y':'LEAGUE_PCT'}, axis=1).copy()
+    merged['PCT_DIFF'] = merged['PLAYER_PCT'] - merged['LEAGUE_PCT']
+
+    to_plot = pd.merge(shots, merged, on=['ZONE'])[['LOC_X', 'LOC_Y', 'SHOT_ATTEMPTED_FLAG_x',	'SHOT_MADE_FLAG_x', 'ZONE', 'PCT_DIFF']]
+
+    return to_plot
+
 
 def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, context_size=12, 
                         show_misses=True, make_marker='o', miss_marker= 'x', make_marker_size=18, miss_marker_size=20, make_marker_color='#007A33', miss_marker_color='#C80A18',
                         hex_grid=50):
-        '''
-        Returns a matplotlib fig of the player's shot chart given certain parameters.
+    '''
+    Returns a matplotlib fig of the player's shot chart given certain parameters.
 
-        Parameters:
+    Parameters:
+    
+    kind (string, default: 'normal')
+        'normal' or 'hex'
+        Kind of shot chart
+        'normal' - shows makes as dots
+            Best for single game
+        'hex' - shows frequency of shots in area as size of hex and color of zone compared to league average in zone
+            Best for multiple games or players
+    
+    title (string, default: None)
+        The title on the top of the figure
+
+    title_size (integer, default: 14)
+        The title on the top of the figure
+    
+    context (string, default: None)
+        Text on the bottom of the plot.
+        Used to add context about a plot.
+    
+    context_size (integer, default: 12)
+        context fontsize
+
+    'normal' parameters:
+        show_misses (boolean, default: True)
         
-        kind (string, default: 'normal')
-            'normal' or 'hex'
-            Kind of shot chart
-            'normal' - shows makes as dots
-                Best for single game
-            'hex' - shows frequency of shots in area as size of hex and color of zone compared to league average in zone
-                Best for multiple games or players
-        
-        title (string, default: None)
-            The title on the top of the figure
+        make_marker (string, default: 'o')
+            Marker for the made shots
 
-        title_size (integer, default: 14)
-            The title on the top of the figure
-        
-        context (string, default: None)
-            Text on the bottom of the plot.
-            Used to add context about a plot.
-        
-        context_size (integer, default: 12)
-            context fontsize
+        miss_marker (string, default: 'x')
+            Marker for missed shots
 
-        'normal' parameters:
-            show_misses (boolean, default: True)
-            
-            make_marker (string, default: 'o')
-                Marker for the made shots
+        make_marker_size (integer, default: 18)
+            Marker size for made shots
 
-            miss_marker (string, default: 'x')
-                Marker for missed shots
+        miss_marker_size (integer, default: 20)
+            Marker size for missed shots
 
-            make_marker_size (integer, default: 18)
-                Marker size for made shots
+        make_marker_color (string, default: '#007A33' - green)
+            Marker color for made shots
 
-            miss_marker_size (integer, default: 20)
-                Marker size for missed shots
+        miss_marker_color (string, default: '#C80A18' - red)
+            Marker color for missed shots
 
-            make_marker_color (string, default: '#007A33' - green)
-                Marker color for made shots
+    'hex' parameters:
+        hex_grid (integer, default: 50)
+            Number of hexes in the axis of each grid
+            Larger number = smaller hexes
 
-            miss_marker_color (string, default: '#C80A18' - red)
-                Marker color for missed shots
+    Returns:
 
-        'hex' parameters:
-            hex_grid (integer, default: 50)
-                Number of hexes in the axis of each grid
-                Larger number = smaller hexes
+    plt
+        plt of shot data
+    '''
+    # This method will create the shot chart given a df created from the get_shot_chart method
+    background_color = '#d9d9d9'
+    fig, ax = plt.subplots(facecolor=background_color, figsize=(10,10))
+    fig.patch.set_facecolor(background_color)
+    ax.patch.set_facecolor(background_color)
 
-        Returns:
+    if title is not None:
+        plt.title(title, fontdict={'fontsize': title_size})
+    
+    df['PCT_DIFF_scaled'] = df['PCT_DIFF']
 
-        plt
-            plt of shot data
-        '''
-        # This method will create the shot chart given a df created from the get_shot_chart method
-        background_color = '#d9d9d9'
-        fig, ax = plt.subplots(facecolor=background_color, figsize=(10,10))
-        fig.patch.set_facecolor(background_color)
-        ax.patch.set_facecolor(background_color)
+    if kind == 'normal':
+        df_1 = df[df['SHOT_MADE_FLAG_x'] == 1].copy()
+        plt.scatter(df_1['LOC_X'], df_1['LOC_Y'], s=make_marker_size, marker=make_marker, c=make_marker_color)
+        if show_misses:
+            df_2 = df[df['SHOT_MADE_FLAG_x'] == 0].copy()
+            plt.scatter(df_2['LOC_X'], df_2['LOC_Y'], s=miss_marker_size, marker=miss_marker, c=miss_marker_color)
+    elif kind == 'hex':
+        hexbins = ax.hexbin(df['LOC_X'], df['LOC_Y'],C=df['PCT_DIFF_scaled'], bins=20, gridsize=hex_grid, 
+                    extent=[-275, 275, -50, 425], cmap=cm.get_cmap('RdYlBu_r'))
+        plt.text(196, 414, 'The larger hexagons\nrepresent a higher\ndensity of shots',
+                    horizontalalignment='center', bbox=dict(facecolor='#d9d9d9', boxstyle='round'))
+    else:
+        # Might make another kind of shot chart later
+        pass
+    
+    court_elements = draw_court()
+    for element in court_elements:
+        ax.add_patch(element)
+    
+    img = plt.imread("basketball-floor-texture.png")
+    plt.imshow(img,zorder=0, extent=[-275, 275, -50, 425])
+    
+    if context is not None:
+        ax.text(0, 435, s=context, fontsize=context_size, ha='center')
 
-        if title is not None:
-            plt.title(title, fontdict={'fontsize': title_size})
-        
-        df['PCT_DIFF_scaled'] = df['PCT_DIFF']
+    plt.xlim(-250,250)
+    plt.ylim(422.5, -47.5)
+    plt.axis(False)
 
-        if kind == 'normal':
-            df_1 = df[df['SHOT_MADE_FLAG_x'] == 1].copy()
-            plt.scatter(df_1['LOC_X'], df_1['LOC_Y'], s=make_marker_size, marker=make_marker, c=make_marker_color)
-            if show_misses:
-                df_2 = df[df['SHOT_MADE_FLAG_x'] == 0].copy()
-                plt.scatter(df_2['LOC_X'], df_2['LOC_Y'], s=miss_marker_size, marker=miss_marker, c=miss_marker_color)
-        elif kind == 'hex':
-            hexbins = ax.hexbin(df['LOC_X'], df['LOC_Y'],C=df['PCT_DIFF_scaled'], bins=20, gridsize=hex_grid, 
-                        extent=[-275, 275, -50, 425], cmap=cm.get_cmap('RdYlBu_r'))
-            plt.text(196, 414, 'The larger hexagons\nrepresent a higher\ndensity of shots',
-                        horizontalalignment='center', bbox=dict(facecolor='#d9d9d9', boxstyle='round'))
-        else:
-            # Might make another kind of shot chart later
-            pass
-        
-        court_elements = draw_court()
-        for element in court_elements:
-            ax.add_patch(element)
-        
-        img = plt.imread("basketball-floor-texture.png")
-        plt.imshow(img,zorder=0, extent=[-275, 275, -50, 425])
-        
-        if context is not None:
-            ax.text(0, 435, s=context, fontsize=context_size, ha='center')
+    if kind == 'hex':
+        axins1 = inset_axes(ax, width="15%", height="2%", loc='lower left')
+        cbar = fig.colorbar(hexbins, cax=axins1, orientation="horizontal", ticks=[-1, 1])
+        interval = hexbins.get_clim()[1] - hexbins.get_clim()[0]
+        ltick = hexbins.get_clim()[0] + (interval * .2)
+        rtick = hexbins.get_clim()[1] - (interval * .2)
+        cbar.set_ticks([ltick, rtick])
+        cbar.set_ticklabels(['Below', 'Above'])
+        axins1.xaxis.set_ticks_position('top')
+        cbar.ax.set_title('Compared to \nLeague Average', fontsize=10)
 
-        plt.xlim(-250,250)
-        plt.ylim(422.5, -47.5)
-        plt.axis(False)
+        # Sizes are wrong
+        offsets = hexbins.get_offsets()
+        orgpath = hexbins.get_paths()[0]
+        verts = orgpath.vertices
+        values = hexbins.get_array()
+        ma = values.max()
+        patches = []
+        for offset,val in zip(offsets,values):
+            v1 = verts*val/ma+offset
+            path = Path(v1, orgpath.codes)
+            patch = PathPatch(path)
+            patches.append(patch)
 
-        if kind == 'hex':
-            axins1 = inset_axes(ax, width="15%", height="2%", loc='lower left')
-            cbar = fig.colorbar(hexbins, cax=axins1, orientation="horizontal", ticks=[-1, 1])
-            interval = hexbins.get_clim()[1] - hexbins.get_clim()[0]
-            ltick = hexbins.get_clim()[0] + (interval * .2)
-            rtick = hexbins.get_clim()[1] - (interval * .2)
-            cbar.set_ticks([ltick, rtick])
-            cbar.set_ticklabels(['Below', 'Above'])
-            axins1.xaxis.set_ticks_position('top')
-            cbar.ax.set_title('Compared to \nLeague Average', fontsize=10)
+        pc = PatchCollection(patches, cmap=cm.get_cmap('RdYlBu_r'), edgecolors='black')
+        pc.set_array(values)
+        ax.add_collection(pc)
+        hexbins.remove()
 
-            # Sizes are wrong
-            offsets = hexbins.get_offsets()
-            orgpath = hexbins.get_paths()[0]
-            verts = orgpath.vertices
-            values = hexbins.get_array()
-            ma = values.max()
-            patches = []
-            for offset,val in zip(offsets,values):
-                v1 = verts*val/ma+offset
-                path = Path(v1, orgpath.codes)
-                patch = PathPatch(path)
-                patches.append(patch)
-
-            pc = PatchCollection(patches, cmap=cm.get_cmap('RdYlBu_r'), edgecolors='black')
-            pc.set_array(values)
-            ax.add_collection(pc)
-            hexbins.remove()
-
-        return plt
+    return plt
