@@ -109,13 +109,51 @@ def draw_court(color='black', lw=2):
 
     return court_elements
 
+def zone_label(row):
+    '''
+    Creates zone for shots
+    '''
+    if row['SHOT_ZONE_BASIC'] == 'Mid-Range':
+        # Mid Range
+        if row['SHOT_ZONE_AREA'] == 'Left Side(L)':
+            return 'Mid-Range (L)'
+        elif row['SHOT_ZONE_AREA'] == 'Right Side(L)':
+            return 'Mid-Range (R)'
+        elif row['SHOT_ZONE_AREA'] == 'Left Side Center(LC)':
+            return 'Mid-Range (LC)'
+        elif row['SHOT_ZONE_AREA'] == 'Right Side Center(LC)':
+            return 'Mid-Range (RC)'
+        else:
+            return 'Mid Range (C)'
+    elif row['SHOT_ZONE_BASIC'] == 'Left Corner 3':
+        return 'Left Corner 3'
+    elif row['SHOT_ZONE_BASIC'] == 'Right Corner 3':
+        return 'Right Corner 3'
+    elif row['SHOT_ZONE_BASIC'] == 'Above the Break 3':
+        # 3's
+        if row['SHOT_ZONE_AREA'] == 'Left Side Center(LC)':
+            return '3 Pointer (LC)'
+        elif row['SHOT_ZONE_AREA'] == 'Right Side Center(LC)':
+            return '3 Pointer (RC)'
+        elif row['SHOT_ZONE_AREA'] == 'Center(C)':
+            return '3 Pointer (C)'
+        else:
+            return 'Backcourt'
+    elif row['SHOT_ZONE_BASIC'] == 'In The Paint (Non-RA)':
+        # paint shots
+        return 'In The Paint'
+    elif row['SHOT_ZONE_BASIC'] == 'Restricted Area':
+        return 'Restricted Area'
+    else:
+        return 'Backcourt'
+
 def shots_grouper(shots, avgs):
     '''
     returns df ready for make_shot_chart from shots, avgs dfs
     '''
     # Change zones
-    shots['ZONE'] = shots['SHOT_ZONE_AREA'] + ' ' + shots['SHOT_ZONE_BASIC']
-    avgs['ZONE'] = avgs['SHOT_ZONE_AREA'] + ' ' + avgs['SHOT_ZONE_BASIC']
+    shots['ZONE'] = shots.apply(lambda row: zone_label(row), axis=1)
+    avgs['ZONE'] = avgs.apply(lambda row: zone_label(row), axis=1)
 
     shots_group = shots.groupby(by=['ZONE']).sum().reset_index()[['ZONE', 'SHOT_ATTEMPTED_FLAG', 'SHOT_MADE_FLAG']].copy()
     shots_group['AVG_FG_PCT'] = round(shots_group['SHOT_MADE_FLAG'] / shots_group['SHOT_ATTEMPTED_FLAG'], 3)
@@ -211,7 +249,7 @@ def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, 
             df_2 = df[df['SHOT_MADE_FLAG_x'] == 0].copy()
             plt.scatter(df_2['LOC_X'], df_2['LOC_Y'], s=miss_marker_size, marker=miss_marker, c=miss_marker_color)
     elif kind == 'hex':
-        hexbins = ax.hexbin(df['LOC_X'], df['LOC_Y'],C=df['PCT_DIFF_scaled'], bins=20, gridsize=hex_grid, 
+        hexbins = ax.hexbin(df['LOC_X'], df['LOC_Y'], gridsize=hex_grid, 
                     extent=[-275, 275, -50, 425], cmap=cm.get_cmap('RdYlBu_r'))
         plt.text(196, 414, 'The larger hexagons\nrepresent a higher\ndensity of shots',
                     horizontalalignment='center', bbox=dict(facecolor='#d9d9d9', boxstyle='round'))
