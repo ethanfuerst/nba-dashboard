@@ -113,16 +113,22 @@ def zone_label(row):
     '''
     Creates zone for shots
     '''
-    if row['SHOT_ZONE_BASIC'] == 'Mid-Range':
-        # Mid Range
+    if row['SHOT_ZONE_RANGE'] == '8-16 ft.':
         if row['SHOT_ZONE_AREA'] == 'Left Side(L)':
-            return 'Mid-Range (L)'
+            return '8-16 ft. (L)'
         elif row['SHOT_ZONE_AREA'] == 'Right Side(L)':
-            return 'Mid-Range (R)'
+            return '8-16 ft. (R)'
+        else:
+            return '8-16 ft. (C)'
+    if row['SHOT_ZONE_RANGE'] == '16-24 ft.':
+        if row['SHOT_ZONE_AREA'] == 'Left Side(L)':
+            return '16-24 ft. (L)'
+        elif row['SHOT_ZONE_AREA'] == 'Right Side(L)':
+            return '16-24 ft. (R)'
         elif row['SHOT_ZONE_AREA'] == 'Left Side Center(LC)':
-            return 'Mid-Range (LC)'
+            return '16-24 ft. (LC)'
         elif row['SHOT_ZONE_AREA'] == 'Right Side Center(LC)':
-            return 'Mid-Range (RC)'
+            return '16-24 ft. (RC)'
         else:
             return 'Mid Range (C)'
     elif row['SHOT_ZONE_BASIC'] == 'Left Corner 3':
@@ -139,11 +145,8 @@ def zone_label(row):
             return '3 Pointer (C)'
         else:
             return 'Backcourt'
-    elif row['SHOT_ZONE_BASIC'] == 'In The Paint (Non-RA)':
-        # paint shots
-        return 'In The Paint'
-    elif row['SHOT_ZONE_BASIC'] == 'Restricted Area':
-        return 'Restricted Area'
+    elif row['SHOT_ZONE_RANGE'] == 'Less Than 8 ft.':
+        return 'Less Than 8 ft.'
     else:
         return 'Backcourt'
 
