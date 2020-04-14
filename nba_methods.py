@@ -268,6 +268,7 @@ def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, 
     plt.imshow(img,zorder=0, extent=[-275, 275, -50, 425])
     
     if context is not None:
+        # If multiple lines then add 15 to second variable for each additional line
         ax.text(0, 435, s=context, fontsize=context_size, ha='center')
 
     plt.xlim(-250,250)

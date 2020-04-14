@@ -275,9 +275,6 @@ class NBA_Player:
             If nothing is passed, it will return just the first season of the players career.
             If the player doesn't have data recorded for a year passed, then a SeasonNotFoundError will be thrown.
             If the seasons range contains years that the player didn't play then only years with data will be shown.
-        
-        return_df (boolean, defalut: False)
-            If df containing shots will be returned
 
         chart_params (dict)
             See the make_shot_chart() method for list of paramters
@@ -339,6 +336,7 @@ class NBA_Player:
             d_from = datetime.datetime.strptime(new_limiters['date_from_nullable'], '%m-%d-%Y').strftime("%B %-d, %Y")
             d_to = datetime.datetime.strptime(new_limiters['date_to_nullable'], '%m-%d-%Y').strftime("%B %-d, %Y")
             title += ' from ' + d_from + ' to ' + d_to
+            # Seasons and dateto/from have to both be specifed - need to fix this
         else:
             if seasons is None:
                 f_seas = int(self.career['Years'].iloc[0][:4])
