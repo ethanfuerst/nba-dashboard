@@ -175,7 +175,8 @@ def shots_grouper(shots, avgs):
 
 
 def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, context_size=12, 
-                        show_misses=True, make_marker='o', miss_marker= 'x', make_marker_size=18, miss_marker_size=20, make_marker_color='#007A33', miss_marker_color='#C80A18',
+                        show_misses=True, make_marker='o', miss_marker= 'x', make_marker_size=100, miss_marker_size=96, make_marker_color='#007A33', miss_marker_color='#C80A18',
+                        make_width=1, miss_width=1,
                         hex_grid=50):
     '''
     Returns a matplotlib fig of the player's shot chart given certain parameters.
@@ -223,6 +224,12 @@ def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, 
 
         miss_marker_color (string, default: '#C80A18' - red)
             Marker color for missed shots
+        
+        make_width (integer, default: 1)
+            Width of marker for made shots
+
+        miss_width (integer, default: 1)
+            Width of marker for missed shots
 
     'hex' parameters:
         hex_grid (integer, default: 50)
@@ -247,10 +254,11 @@ def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, 
 
     if kind == 'normal':
         df_1 = df[df['SHOT_MADE_FLAG_x'] == 1].copy()
-        plt.scatter(df_1['LOC_X'], df_1['LOC_Y'], s=make_marker_size, marker=make_marker, c=make_marker_color)
+        plt.scatter(df_1['LOC_X'], df_1['LOC_Y'], s=make_marker_size, marker=make_marker, c=make_marker_color, linewidth=make_width)
         if show_misses:
             df_2 = df[df['SHOT_MADE_FLAG_x'] == 0].copy()
-            plt.scatter(df_2['LOC_X'], df_2['LOC_Y'], s=miss_marker_size, marker=miss_marker, c=miss_marker_color)
+            # linewidths increase
+            plt.scatter(df_2['LOC_X'], df_2['LOC_Y'], s=miss_marker_size, marker=miss_marker, c=miss_marker_color, linewidth=miss_width)
     elif kind == 'hex':
         hexbins = ax.hexbin(df['LOC_X'], df['LOC_Y'], gridsize=hex_grid, 
                     extent=[-275, 275, -50, 425], cmap=cm.get_cmap('RdYlBu_r'))
@@ -268,8 +276,8 @@ def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, 
     plt.imshow(img,zorder=0, extent=[-275, 275, -50, 425])
     
     if context is not None:
-        # If multiple lines then add 15 to second variable for each additional line
-        ax.text(0, 435, s=context, fontsize=context_size, ha='center')
+        # If multiple lines then add context size to second variable for each additional line
+        ax.text(0, 435 + (context_size * context.count('\n')), s=context, fontsize=context_size, ha='center')
 
     plt.xlim(-250,250)
     plt.ylim(422.5, -47.5)
