@@ -32,5 +32,6 @@ __*.gitignore*__ - shows github what files to ignore when I commit my changes.
         - [x] move color ticks to percentile of cbar
     - [x] determine zones
     - [x] hex size as frequency
-      - [ ] fix hex size plot error
+      - [x] fix hex size plot error
+    - [ ] fix team/date error (can pass in 0 for teamid)
     - [ ] team logo on chart?
