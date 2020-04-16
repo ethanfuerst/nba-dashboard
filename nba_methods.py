@@ -307,7 +307,7 @@ def make_shot_chart(df, kind='normal', show_misses=True,
         values1 = hexbin.get_array()
         # scale factor - usually 4 or 5 works
         values1 = np.array([scale_factor if i > scale_factor else i for i in values1])
-        values1 = ((values1 - 1.0)/(x-1.0))*(1.0-.4) + .4
+        values1 = ((values1 - 1.0)/(scale_factor-1.0))*(1.0-.4) + .4
         values2 = hexbin2.get_array()
         patches = []
 
