@@ -307,8 +307,8 @@ class NBA_Player:
         df
             df of data from API
         
-        plt
-            plt object of the shotchart
+        fig
+            fig object of the shotchart
         '''
         reassign_dict = dict(zip(['GameID', 'AheadBehind', 'ClutchTime', 'DateFrom', 'DateTo', 'GameSegment', 'LastNGames', 'Location', 
                                 'Month', 'OpponentTeam', 'Outcome', 'Period', 'PlayerPosition', 'PointDiff', 'RookieYear', 
@@ -387,6 +387,5 @@ class NBA_Player:
         
         to_plot = shots_grouper(shots,avgs)
 
-        plt = make_shot_chart(to_plot, **chart_params)
-        plt.show()
-        return to_plot, plt
+        fig = make_shot_chart(to_plot, **chart_params)
+        return to_plot, fig
