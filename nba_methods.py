@@ -174,10 +174,14 @@ def shots_grouper(shots, avgs):
     return to_plot
 
 
-def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, context_size=12, 
-                        show_misses=True, make_marker='o', miss_marker= 'x', make_marker_size=100, miss_marker_size=96, make_marker_color='#007A33', miss_marker_color='#C80A18',
+def make_shot_chart(df, kind='normal', show_misses=True, 
+                        title=None, title_size=14, 
+                        context=None, context_size=12, 
+                        make_marker='o', miss_marker= 'x', 
+                        make_marker_size=100, miss_marker_size=96, 
+                        make_marker_color='#007A33', miss_marker_color='#C80A18',
                         make_width=1, miss_width=1,
-                        hex_grid=50):
+                        hex_grid=50, scale_factor=5):
     '''
     Returns a matplotlib fig of the player's shot chart given certain parameters.
 
@@ -190,6 +194,8 @@ def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, 
             Best for single game
         'hex' - shows frequency of shots in area as size of hex and color of zone compared to league average in zone
             Best for multiple games or players
+
+    show_misses (boolean, default: True)
     
     title (string, default: None)
         The title on the top of the figure
@@ -205,8 +211,6 @@ def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, 
         context fontsize
 
     'normal' parameters:
-        show_misses (boolean, default: True)
-        
         make_marker (string, default: 'o')
             Marker for the made shots
 
@@ -235,11 +239,15 @@ def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, 
         hex_grid (integer, default: 50)
             Number of hexes in the axis of each grid
             Larger number = smaller hexes
+        
+        scale_factor (integer, default: 5)
+            Number of points in a hex to register as max size
+            Usually between 4-6 works but it's a preference thing.
 
     Returns:
 
-    plt
-        plt of shot data
+    fig
+        fig of shot data
     '''
     # This method will create the shot chart given a df created from the get_shot_chart method
     background_color = '#d9d9d9'
@@ -249,8 +257,6 @@ def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, 
 
     if title is not None:
         plt.title(title, fontdict={'fontsize': title_size})
-    
-    df['PCT_DIFF_scaled'] = df['PCT_DIFF']
 
     if kind == 'normal':
         df_1 = df[df['SHOT_MADE_FLAG_x'] == 1].copy()
@@ -259,14 +265,14 @@ def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, 
             df_2 = df[df['SHOT_MADE_FLAG_x'] == 0].copy()
             # linewidths increase
             plt.scatter(df_2['LOC_X'], df_2['LOC_Y'], s=miss_marker_size, marker=miss_marker, c=miss_marker_color, linewidth=miss_width)
-    elif kind == 'hex':
-        hexbins = ax.hexbin(df['LOC_X'], df['LOC_Y'], gridsize=hex_grid, 
-                    extent=[-275, 275, -50, 425], cmap=cm.get_cmap('RdYlBu_r'))
+    else:
+        if not show_misses:
+            df = df[df['SHOT_MADE_FLAG_x'] == 1].copy()
+        hexbin = ax.hexbin(df['LOC_X'], df['LOC_Y'], C=df['PCT_DIFF'], gridsize=hex_grid, edgecolors='black',cmap=cm.get_cmap('RdYlBu_r'), extent=[-275, 275, -50, 425], reduce_C_function=np.bincount)
+        hexbin2 = ax.hexbin(df['LOC_X'], df['LOC_Y'], C=df['PCT_DIFF'], gridsize=hex_grid, edgecolors='black',cmap=cm.get_cmap('RdYlBu_r'), extent=[-275, 275, -50, 425], reduce_C_function=np.mean)
+
         plt.text(196, 414, 'The larger hexagons\nrepresent a higher\ndensity of shots',
                     horizontalalignment='center', bbox=dict(facecolor='#d9d9d9', boxstyle='round'))
-    else:
-        # Might make another kind of shot chart later
-        pass
     
     court_elements = draw_court()
     for element in court_elements:
@@ -283,33 +289,49 @@ def make_shot_chart(df, kind='normal', title=None, title_size=14, context=None, 
     plt.ylim(422.5, -47.5)
     plt.axis(False)
 
-    if kind == 'hex':
+    if kind != 'normal':
         axins1 = inset_axes(ax, width="15%", height="2%", loc='lower left')
-        cbar = fig.colorbar(hexbins, cax=axins1, orientation="horizontal", ticks=[-1, 1])
-        interval = hexbins.get_clim()[1] - hexbins.get_clim()[0]
-        ltick = hexbins.get_clim()[0] + (interval * .2)
-        rtick = hexbins.get_clim()[1] - (interval * .2)
+        cbar = fig.colorbar(hexbin, cax=axins1, orientation="horizontal", ticks=[-1, 1])
+        interval = hexbin.get_clim()[1] - hexbin.get_clim()[0]
+        ltick = hexbin.get_clim()[0] + (interval * .2)
+        rtick = hexbin.get_clim()[1] - (interval * .2)
         cbar.set_ticks([ltick, rtick])
         cbar.set_ticklabels(['Below', 'Above'])
         axins1.xaxis.set_ticks_position('top')
         cbar.ax.set_title('Compared to \nLeague Average', fontsize=10)
 
         # Sizes are wrong
-        offsets = hexbins.get_offsets()
-        orgpath = hexbins.get_paths()[0]
+        offsets = hexbin.get_offsets()
+        orgpath = hexbin.get_paths()[0]
         verts = orgpath.vertices
-        values = hexbins.get_array()
-        ma = values.max()
+        values1 = hexbin.get_array()
+        # scale factor - usually 4 or 5 works
+        values1 = np.array([scale_factor if i > scale_factor else i for i in values1])
+        values1 = ((values1 - 1.0)/(x-1.0))*(1.0-.4) + .4
+        values2 = hexbin2.get_array()
         patches = []
-        for offset,val in zip(offsets,values):
-            v1 = verts*val/ma+offset
+
+        for offset,val in zip(offsets,values1):
+            v1 =  verts*val + offset
             path = Path(v1, orgpath.codes)
             patch = PathPatch(path)
             patches.append(patch)
 
         pc = PatchCollection(patches, cmap=cm.get_cmap('RdYlBu_r'), edgecolors='black')
-        pc.set_array(values)
-        ax.add_collection(pc)
-        hexbins.remove()
+        if pc.get_clim()[0] is None:
+            bottom = abs(df['PCT_DIFF'].min())
+            top = abs(df['PCT_DIFF'].max())
+        else:
+            top = abs(pc.get_clim()[1])
+            bottom = abs(pc.get_clim()[0])
+        m = min(top, bottom)
+        if m < .025:
+            m = .025
+        pc.set_clim([-1 * m, m])
+        pc.set_array(values2)
 
-    return plt
+        ax.add_collection(pc)
+        hexbin.remove()
+        hexbin2.remove()
+
+    return fig
