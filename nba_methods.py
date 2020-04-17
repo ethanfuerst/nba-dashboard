@@ -169,7 +169,15 @@ def shots_grouper(shots, avgs):
     merged = merged.rename({'AVG_FG_PCT_x': 'PLAYER_PCT', 'AVG_FG_PCT_y':'LEAGUE_PCT'}, axis=1).copy()
     merged['PCT_DIFF'] = merged['PLAYER_PCT'] - merged['LEAGUE_PCT']
 
-    to_plot = pd.merge(shots, merged, on=['ZONE'])[['LOC_X', 'LOC_Y', 'SHOT_ATTEMPTED_FLAG_x',	'SHOT_MADE_FLAG_x', 'ZONE', 'PCT_DIFF']]
+    to_plot = pd.merge(shots, merged, on=['ZONE'])[['LOC_X', 'LOC_Y', 'SHOT_TYPE',
+                                                'SHOT_MADE_FLAG_x', 'ZONE', 
+                                                'PLAYER_PCT', 'LEAGUE_PCT', 'PCT_DIFF']]
+    to_plot['SHOT_TYPE'] = to_plot['SHOT_TYPE'].astype(str).str[0].astype(int)
+    to_plot.columns = ['X', 'Y', 'PTS', 'SHOT_MADE', 'ZONE', 'PLAYER_PCT', 'LEAGUE_PCT', 'PCT_DIFF']
+    
+    to_plot['P_PPS'] = to_plot['PLAYER_PCT'] * to_plot['PTS']
+    to_plot['L_PPS'] = to_plot['LEAGUE_PCT'] * to_plot['PTS']
+    to_plot['D_PPS'] = to_plot['P_PPS'] - to_plot['L_PPS']
 
     return to_plot
 
@@ -178,10 +186,10 @@ def make_shot_chart(df, kind='normal', show_misses=True,
                         title=None, title_size=14, 
                         context=None, context_size=12, 
                         make_marker='o', miss_marker= 'x', 
-                        make_marker_size=100, miss_marker_size=96, 
+                        make_marker_size=90, miss_marker_size=86, 
                         make_marker_color='#007A33', miss_marker_color='#C80A18',
-                        make_width=1, miss_width=1,
-                        hex_grid=50, scale_factor=5):
+                        make_width=1, miss_width=3,
+                        hex_grid=50, scale_factor=5, scale='P_PPS'):
     '''
     Returns a matplotlib fig of the player's shot chart given certain parameters.
 
@@ -232,7 +240,7 @@ def make_shot_chart(df, kind='normal', show_misses=True,
         make_width (integer, default: 1)
             Width of marker for made shots
 
-        miss_width (integer, default: 1)
+        miss_width (integer, default: 3)
             Width of marker for missed shots
 
     'hex' parameters:
@@ -243,6 +251,10 @@ def make_shot_chart(df, kind='normal', show_misses=True,
         scale_factor (integer, default: 5)
             Number of points in a hex to register as max size
             Usually between 4-6 works but it's a preference thing.
+        
+        scale (string, default: P_PPS)
+            Must be one of 'PCT_DIFF', 'P_PPS', 'D_PPS'
+            The value that the zones will be colored by
 
     Returns:
 
@@ -255,25 +267,29 @@ def make_shot_chart(df, kind='normal', show_misses=True,
     fig.patch.set_facecolor(background_color)
     ax.patch.set_facecolor(background_color)
 
+    df_t = df.copy()
+
+    if scale == 'P_PPS':
+        df_t['P_PPS'] = df_t['P_PPS']/3
+
     if title is not None:
         plt.title(title, fontdict={'fontsize': title_size})
 
     if kind == 'normal':
-        df_1 = df[df['SHOT_MADE_FLAG_x'] == 1].copy()
-        plt.scatter(df_1['LOC_X'], df_1['LOC_Y'], s=make_marker_size, marker=make_marker, c=make_marker_color, linewidth=make_width)
+        df_1 = df_t[df_t['SHOT_MADE'] == 1].copy()
+        plt.scatter(df_1['X'], df_1['Y'], s=make_marker_size, marker=make_marker, c=make_marker_color, linewidth=make_width)
         if show_misses:
-            df_2 = df[df['SHOT_MADE_FLAG_x'] == 0].copy()
+            df_2 = df[df['SHOT_MADE'] == 0].copy()
             # linewidths increase
-            plt.scatter(df_2['LOC_X'], df_2['LOC_Y'], s=miss_marker_size, marker=miss_marker, c=miss_marker_color, linewidth=miss_width)
+            plt.scatter(df_2['X'], df_2['Y'], s=miss_marker_size, marker=miss_marker, c=miss_marker_color, linewidth=miss_width)
     else:
         if not show_misses:
-            df = df[df['SHOT_MADE_FLAG_x'] == 1].copy()
-        hexbin = ax.hexbin(df['LOC_X'], df['LOC_Y'], C=df['PCT_DIFF'], gridsize=hex_grid, edgecolors='black',cmap=cm.get_cmap('RdYlBu_r'), extent=[-275, 275, -50, 425], reduce_C_function=np.bincount)
-        hexbin2 = ax.hexbin(df['LOC_X'], df['LOC_Y'], C=df['PCT_DIFF'], gridsize=hex_grid, edgecolors='black',cmap=cm.get_cmap('RdYlBu_r'), extent=[-275, 275, -50, 425], reduce_C_function=np.mean)
+            df_t = df_t[df_t['SHOT_MADE'] == 1].copy()
+        hexbin = ax.hexbin(df_t['X'], df_t['Y'], C=df_t[scale].values, gridsize=hex_grid, edgecolors='black',cmap=cm.get_cmap('RdYlBu_r'), extent=[-275, 275, -50, 425], reduce_C_function=np.bincount)
+        hexbin2 = ax.hexbin(df_t['X'], df_t['Y'], C=df_t[scale].values, gridsize=hex_grid, edgecolors='black',cmap=cm.get_cmap('RdYlBu_r'), extent=[-275, 275, -50, 425], reduce_C_function=np.mean)
 
         plt.text(196, 414, 'The larger hexagons\nrepresent a higher\ndensity of shots',
                     horizontalalignment='center', bbox=dict(facecolor='#d9d9d9', boxstyle='round'))
-    
     court_elements = draw_court()
     for element in court_elements:
         ax.add_patch(element)
@@ -289,16 +305,25 @@ def make_shot_chart(df, kind='normal', show_misses=True,
     plt.ylim(422.5, -47.5)
     plt.axis(False)
 
-    if kind != 'normal':
-        axins1 = inset_axes(ax, width="15%", height="2%", loc='lower left')
+    if kind == 'hex':
+        axins1 = inset_axes(ax, width="16%", height="2%", loc='lower left')
         cbar = fig.colorbar(hexbin, cax=axins1, orientation="horizontal", ticks=[-1, 1])
         interval = hexbin.get_clim()[1] - hexbin.get_clim()[0]
         ltick = hexbin.get_clim()[0] + (interval * .2)
         rtick = hexbin.get_clim()[1] - (interval * .2)
         cbar.set_ticks([ltick, rtick])
-        cbar.set_ticklabels(['Below', 'Above'])
         axins1.xaxis.set_ticks_position('top')
-        cbar.ax.set_title('Compared to \nLeague Average', fontsize=10)
+        if scale == 'PCT_DIFF':
+            legend_text = '% Compared to \nLeague Average'
+            tick_labels = ['Below', 'Above']
+        elif scale == 'P_PPS':
+            legend_text = 'Efficiency by Zone'
+            tick_labels = ['Lower', 'Higher']
+        else:
+            legend_text = 'Efficiency compared to \nLeague Average'
+            tick_labels = ['Lower', 'Higher']
+        cbar.ax.set_title(legend_text, fontsize=10)
+        cbar.set_ticklabels(tick_labels)
 
         # Sizes are wrong
         offsets = hexbin.get_offsets()
@@ -318,16 +343,26 @@ def make_shot_chart(df, kind='normal', show_misses=True,
             patches.append(patch)
 
         pc = PatchCollection(patches, cmap=cm.get_cmap('RdYlBu_r'), edgecolors='black')
-        if pc.get_clim()[0] is None:
-            bottom = abs(df['PCT_DIFF'].min())
-            top = abs(df['PCT_DIFF'].max())
+        if scale == 'PCT_DIFF':
+            if pc.get_clim()[0] is None:
+                bottom = abs(df_t[scale].min())
+                top = abs(df_t[scale].max())
+            else:
+                top = abs(pc.get_clim()[1])
+                bottom = abs(pc.get_clim()[0])
+            m = min(top, bottom)
+            # Need one extreme of the comparison to be at least 1.5 percent off from average
+            if m < .025:
+                m = .025
+            pc.set_clim([-1 * m, m])
+        # pps is .4 to 1.something 
+        elif scale in ['P_PPS', 'L_PPS']:
+            # for 2: 20% to 60%
+            # for 3: 13% to 40%
+            pc.set_clim([0.13333, .4])
         else:
-            top = abs(pc.get_clim()[1])
-            bottom = abs(pc.get_clim()[0])
-        m = min(top, bottom)
-        if m < .025:
-            m = .025
-        pc.set_clim([-1 * m, m])
+            pc.set_clim([-.05,.05])
+        
         pc.set_array(values2)
 
         ax.add_collection(pc)
