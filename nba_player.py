@@ -82,6 +82,8 @@ class NBA_Player:
 
         if print_name:
             print(self.name)
+        
+        return
     
     def __str__(self):
         return self.name
@@ -283,8 +285,8 @@ class NBA_Player:
             These will filter the shots on the shot chart.
             AheadBehind - One of 'Ahead or Behind', 'Ahead or Tied', 'Behind or Tied'
             ClutchTime - One of 'Last (1-5) Minutes' or 'Last (30 or 10) Seconds'
-            DateFrom - ex. 12-14-2019 or 12-2019
-            DateTo - ex. 01-24-2020 or 01-2020
+            DateFrom - ex. 12-14-2019
+            DateTo - ex. 01-24-2020
                 Must specify both date_from_nullable and date_to_nullable
             GameSegment - One of 'First Half', 'Overtime', 'Second Half'
             LastNGames - integer
@@ -320,13 +322,11 @@ class NBA_Player:
                                 'season_type_all_star', 'vs_conference_nullable', 'vs_division_nullable']))
         
         new_limiters = {reassign_dict[key]: value for key, value in limiters.items()}
-        
-        # str_create = new_limiters
 
+        # Changes team abbrev to team_id
         def get_team_id(abbrev):
             '''Returns team_id when given an abbreviation'''
             return pd.DataFrame(teams.get_teams())[pd.DataFrame(teams.get_teams())['abbreviation'] == abbrev]['id'].iloc[0]
-        # Changes team abbrev to team_id
         if 'opponent_team_id' in new_limiters.keys():
             new_limiters['opponent_team_id'] = get_team_id(new_limiters['opponent_team_id'])
         
@@ -350,32 +350,45 @@ class NBA_Player:
         if 'title' not in chart_params.keys():
             chart_params['title'] = title
 
-        # If given a list of season start and end, create a list of all team ids and seasons
-        if len(seasons) > 2 or type(seasons) != list or type(seasons[0]) != int:
-            raise TypeError('The seasons variable must be a list of length 2 or 1 with years in integer form. Example: [2005, 2018]')
-        else:
-            # Get the seasons from ref between two dates
-            first = seasons[0]
-            if len(seasons) == 1:
-                last = seasons[0]
-            else:
-                last = seasons[1]
-            # Get all seasons and team ID between first and last
-            season_df = self._career[(self._career['season'].astype(int) >= first) & (self._career['season'].astype(int) <= last)].reset_index(drop=True).copy()
-
-        # Change format of season column to work with the API
-        season_df['season'] = season_df['season'].apply(lambda x: str(x) + "-" + str(x + 1)[2:])
-        # Now create the df for the shot chart creation with the dfs given
         shots = pd.DataFrame()
         avgs = pd.DataFrame()
-        for i in range(len(season_df)):
-            log = shotchartdetail.ShotChartDetail(team_id=season_df.iloc[i]['Team ID'], player_id=self.player_id, \
-                season_nullable=season_df.iloc[i]['season'], context_measure_simple=['FGA', 'FG3A'], **new_limiters)
+
+        # if dates are not null
+        if 'date_to_nullable' in new_limiters.keys():
+            # Query with dates
+            log = shotchartdetail.ShotChartDetail(team_id=0, player_id=self.player_id, 
+                                                    context_measure_simple=['FGA', 'FG3A'], **new_limiters)
             df_1 = log.get_data_frames()[0]
             df_2 = log.get_data_frames()[1]
-            df_1['Season'] = season_df.iloc[i]['season']
+            # df_1['Season'] = season_df.iloc[i]['season']
             shots = pd.concat([shots, df_1])
             avgs = pd.concat([avgs, df_2])
+        # elif seasons not null
+        else:
+            # Query with seasons
+            if len(seasons) > 2 or type(seasons) != list or type(seasons[0]) != int:
+                raise TypeError('The seasons variable must be a list of length 2 or 1 with years in integer form. Example: [2005, 2018]')
+            else:
+                # Get the seasons from ref between two dates
+                first = seasons[0]
+                if len(seasons) == 1:
+                    last = seasons[0]
+                else:
+                    last = seasons[1]
+                # Get all seasons and team ID between first and last
+                season_df = self._career[(self._career['season'].astype(int) >= first) & (self._career['season'].astype(int) <= last)].reset_index(drop=True).copy()
+
+            # Change format of season column to work with the API
+            season_df['season'] = season_df['season'].apply(lambda x: str(x) + "-" + str(x + 1)[2:])
+            # Now create the df for the shot chart creation with the dfs given
+            for i in range(len(season_df)):
+                log = shotchartdetail.ShotChartDetail(team_id=0, player_id=self.player_id, \
+                    season_nullable=season_df.iloc[i]['season'], context_measure_simple=['FGA', 'FG3A'], **new_limiters)
+                df_1 = log.get_data_frames()[0]
+                df_2 = log.get_data_frames()[1]
+                df_1['Season'] = season_df.iloc[i]['season']
+                shots = pd.concat([shots, df_1])
+                avgs = pd.concat([avgs, df_2])
         
         shots.reset_index(inplace=True, drop=True)
 
