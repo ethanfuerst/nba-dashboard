@@ -33,5 +33,7 @@ __*.gitignore*__ - shows github what files to ignore when I commit my changes.
     - [x] determine zones
     - [x] hex size as frequency
       - [x] fix hex size plot error
-    - [ ] fix team/date error (can pass in 0 for teamid)
+    - [x] fix team/date error (can pass in 0 for teamid)
+    - [ ] fix nba_team.py
+    - [ ] fix scale error in nba_methods
     - [ ] team logo on chart?
