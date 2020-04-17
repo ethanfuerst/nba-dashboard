@@ -183,8 +183,8 @@ def shots_grouper(shots, avgs):
 
 
 def make_shot_chart(df, kind='normal', show_misses=True, 
-                        title=None, title_size=14, 
-                        context=None, context_size=12, 
+                        title=None, title_size=22, 
+                        context=None, context_size=14, 
                         make_marker='o', miss_marker= 'x', 
                         make_marker_size=90, miss_marker_size=86, 
                         make_marker_color='#007A33', miss_marker_color='#C80A18',
@@ -208,14 +208,14 @@ def make_shot_chart(df, kind='normal', show_misses=True,
     title (string, default: None)
         The title on the top of the figure
 
-    title_size (integer, default: 14)
+    title_size (integer, default: 22)
         The title on the top of the figure
     
     context (string, default: None)
         Text on the bottom of the plot.
         Used to add context about a plot.
     
-    context_size (integer, default: 12)
+    context_size (integer, default: 14)
         context fontsize
 
     'normal' parameters:
@@ -273,7 +273,7 @@ def make_shot_chart(df, kind='normal', show_misses=True,
         df_t['P_PPS'] = df_t['P_PPS']/3
 
     if title is not None:
-        plt.title(title, fontdict={'fontsize': title_size})
+        plt.title(title, pad=10, fontdict={'fontsize': title_size, 'fontweight':'semibold'})
 
     if kind == 'normal':
         df_1 = df_t[df_t['SHOT_MADE'] == 1].copy()
