@@ -270,6 +270,7 @@ def make_shot_chart(df, kind='normal', show_misses=True,
     df_t = df.copy()
 
     if scale == 'P_PPS':
+        # error if highest val is 1
         df_t['P_PPS'] = df_t['P_PPS']/3
 
     if title is not None:
