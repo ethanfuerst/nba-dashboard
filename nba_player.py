@@ -284,7 +284,7 @@ class NBA_Player:
         **limiters (assorted data types)
             These will filter the shots on the shot chart.
             AheadBehind - One of 'Ahead or Behind', 'Ahead or Tied', 'Behind or Tied'
-            ClutchTime - One of 'Last (1-5) Minutes' or 'Last (30 or 10) Seconds'
+            ClutchTime - One of 'Last (1-5) Minute(s)' or 'Last (30 or 10) Seconds'
             DateFrom - ex. 12-14-2019
             DateTo - ex. 01-24-2020
                 Must specify both date_from_nullable and date_to_nullable
