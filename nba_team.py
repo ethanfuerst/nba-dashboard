@@ -66,6 +66,7 @@ class NBA_Team():
         plt
             plt object of the shotchart
         '''
+        # doesn't work with playoff games
         # Query data
         log = boxscoretraditionalv2.BoxScoreTraditionalV2(game_id=game_id)
         df = log.get_data_frames()[0]
