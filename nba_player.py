@@ -259,6 +259,7 @@ class NBA_Player:
                 'PF', 'PTS', 'PLUS_MINUS']].copy()
         cols_as_int = ['MIN', 'FGM', 'FGA', 'FG3M', 'FG3A', 'FTM', 'FTA', 'OREB', 'DREB', 'REB', 
                         'AST', 'STL', 'BLK', 'TOV', 'PF', 'PTS', 'PLUS_MINUS']
+        # error with all star data here
         df[cols_as_int] = df[cols_as_int].astype(int)
 
         return df
