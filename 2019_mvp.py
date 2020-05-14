@@ -10,7 +10,7 @@ from nba_player import NBA_Player
 from nba_season import NBA_Season
 from nba_methods import make_shot_chart, shots_grouper
 
-# Link to post
+# https://www.tidbitstatistics.com/nba_mvp/
 # Note: if reg season continues this will change
 
 gia = NBA_Player('giannis antetokounmpo', print_name=False)
