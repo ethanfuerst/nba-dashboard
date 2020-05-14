@@ -2,7 +2,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from nba_games import NBA_Player
+from nba_player import NBA_Player
 
 #%%
 df = NBA_Player('luka doncic').get_season(2019)
