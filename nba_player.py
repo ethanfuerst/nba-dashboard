@@ -267,6 +267,7 @@ class NBA_Player:
     def get_shot_chart(self, seasons=None, chart_params={}, **limiters):
         '''
         Returns a matplotlib df and shows a plt of the player's shot chart given certain parameters.
+        Can filter that df and pass to make_shot_chart to limit the shots plotted by shot type (ex. Jump shot, Dunk, etc.)
 
         Parameters:
 

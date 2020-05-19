@@ -169,11 +169,13 @@ def shots_grouper(shots, avgs):
     merged = merged.rename({'AVG_FG_PCT_x': 'PLAYER_PCT', 'AVG_FG_PCT_y':'LEAGUE_PCT'}, axis=1).copy()
     merged['PCT_DIFF'] = merged['PLAYER_PCT'] - merged['LEAGUE_PCT']
 
-    to_plot = pd.merge(shots, merged, on=['ZONE'])[['LOC_X', 'LOC_Y', 'SHOT_TYPE',
+    to_plot = pd.merge(shots, merged, on=['ZONE'])[['LOC_X', 'LOC_Y', 'SHOT_TYPE', 'ACTION_TYPE',
                                                 'SHOT_MADE_FLAG_x', 'ZONE', 
                                                 'PLAYER_PCT', 'LEAGUE_PCT', 'PCT_DIFF']]
+    # This SHOT_TYPE is how many points the attempted shot was for. Renamed to PTS
     to_plot['SHOT_TYPE'] = to_plot['SHOT_TYPE'].astype(str).str[0].astype(int)
-    to_plot.columns = ['X', 'Y', 'PTS', 'SHOT_MADE', 'ZONE', 'PLAYER_PCT', 'LEAGUE_PCT', 'PCT_DIFF']
+    # From here on SHOT_TYPE refers to ACTION_TYPE
+    to_plot.columns = ['X', 'Y', 'PTS', 'SHOT_TYPE', 'SHOT_MADE', 'ZONE', 'PLAYER_PCT', 'LEAGUE_PCT', 'PCT_DIFF']
     
     to_plot['P_PPS'] = to_plot['PLAYER_PCT'] * to_plot['PTS']
     to_plot['L_PPS'] = to_plot['LEAGUE_PCT'] * to_plot['PTS']
