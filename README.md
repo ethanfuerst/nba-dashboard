@@ -4,18 +4,28 @@ This project is where I keep all my files that I use when I analyze all sorts of
 
 ## Files in this repository
 
-__*margin_of_victory.py*__ - .py file with analysis that showed the '19 - '20 season is set to have the most 40-point blowouts of all time. [Here is my completed analysis.](https://www.tidbitstatistics.com/NBA-blowouts/)
+### Jupyter notebooks
 
-__*nba_games.py*__ - .py file with methods and classes to help pull data from [basketball-reference.com](https://www.basketball-reference.com), [NPA API](https://github.com/swar/nba_api/), and other sources.
+__*margin_of_victory.ipynb*__ - analysis that showed the '19 - '20 season is set to have the most 40-point blowouts of all time. (as of 12/26/19) [Here is my completed analysis.](https://www.tidbitstatistics.com/NBA-blowouts/)
 
-__*player_games.py*__ - .py file to pull a players game log for a season
+__*2020_mvp.ipynb*__ - analysis of the 2020 NBA MVP race between LeBron and Giannis (as of 5/30/20) [Here is my completed analysis.](https://www.tidbitstatistics.com/nba-mvp/)
 
-__*.gitignore*__ - shows github what files to ignore when I commit my changes.
+__*2020_mvp.ipynb*__ - points per shot analysis - work in progress
+
+### Python files
+
+__*nba_player.py*__ - contains NBA_Player() object
+
+__*nba_team.py*__ - contains NBA_Team() object
+
+__*nba_season.py*__ - contains NBA_Season() object
+
+__*nba_methods.py*__ - contains various methods to support NBA-related objects I have built in other files
 
 ## TODO
 
 - [ ] why are there so many blowouts this year? - create new .py file and dig in to it
-- [ ] dig in to ppfta, ppfga, pp3pa on player_games.py
+- [ ] dig in to ppfta, ppfga, pp3pa on pps.ipynb
 - [ ] add get_shot_chart() method to NBA_Player class
   - [x] pull data frames
   - [ ] create shot chart from data frames
