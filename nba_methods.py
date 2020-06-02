@@ -16,7 +16,7 @@ from nba_api.stats.endpoints import commonplayerinfo, playergamelog, playercaree
 from nba_season import NBA_Season
 
 
-# Custom errors
+# - Custom errors
 class PlayerNotFoundError(Exception):
     pass
 
@@ -53,20 +53,20 @@ def thres_games(startyear=2000, endyear=datetime.datetime.today().year - 1, thre
             'Projected' is for current seasons in play only.
     '''
 
-    # Need to make sure that startyear, endyear and thres are all integers
+    # - Need to make sure that startyear, endyear and thres are all integers
     try:
         startyear = int(startyear)
         endyear = int(endyear)
         thres = int(thres)
     except:
-        # This is probably because they inputted a string for season, and we need an int
+        # - This is probably because they inputted a string for season, and we need an int
         raise TypeError("Wrong variable type for startyear, endyear or thres. Integer expected.")
-    # Need to check that endyear season exists
+    # - Need to check that endyear season exists
     try:
-        # If there is data for endyear, we are good.
+        # - If there is data for endyear, we are good.
         Season(endyear)
     except:
-        # If we can't get data from endyear, then raise SeasonNotFoundError
+        # - If we can't get data from endyear, then raise SeasonNotFoundError
         raise SeasonNotFoundError("There is no data for the " + str(endyear) + " season yet.")
 
     years = [i for i in range(startyear, endyear + 1)]
@@ -154,7 +154,7 @@ def shots_grouper(shots, avgs):
     '''
     returns df ready for make_shot_chart from shots, avgs dfs
     '''
-    # Change zones
+    # - Change zones
     shots['ZONE'] = shots.apply(lambda row: zone_label(row), axis=1)
     avgs['ZONE'] = avgs.apply(lambda row: zone_label(row), axis=1)
 
@@ -172,9 +172,9 @@ def shots_grouper(shots, avgs):
     to_plot = pd.merge(shots, merged, on=['ZONE'])[['LOC_X', 'LOC_Y', 'SHOT_TYPE', 'ACTION_TYPE',
                                                 'SHOT_MADE_FLAG_x', 'ZONE', 
                                                 'PLAYER_PCT', 'LEAGUE_PCT', 'PCT_DIFF']]
-    # This SHOT_TYPE is how many points the attempted shot was for. Renamed to PTS
+    # - This SHOT_TYPE is how many points the attempted shot was for. Renamed to PTS
     to_plot['SHOT_TYPE'] = to_plot['SHOT_TYPE'].astype(str).str[0].astype(int)
-    # From here on SHOT_TYPE refers to ACTION_TYPE
+    # * From here on SHOT_TYPE refers to ACTION_TYPE
     to_plot.columns = ['X', 'Y', 'PTS', 'SHOT_TYPE', 'SHOT_MADE', 'ZONE', 'PLAYER_PCT', 'LEAGUE_PCT', 'PCT_DIFF']
     
     to_plot['P_PPS'] = to_plot['PLAYER_PCT'] * to_plot['PTS']
@@ -263,7 +263,7 @@ def make_shot_chart(df, kind='normal', show_misses=True,
     fig
         fig of shot data
     '''
-    # This method will create the shot chart given a df created from the get_shot_chart method
+    # - This method will create the shot chart given a df created from the get_shot_chart method
     background_color = '#d9d9d9'
     fig, ax = plt.subplots(facecolor=background_color, figsize=(10,10))
     fig.patch.set_facecolor(background_color)
@@ -272,7 +272,7 @@ def make_shot_chart(df, kind='normal', show_misses=True,
     df_t = df.copy()
 
     if scale == 'P_PPS':
-        # error if highest val is 1
+        # - error if highest val is 1
         df_t['P_PPS'] = df_t['P_PPS']/3
 
     if title is not None:
@@ -283,7 +283,7 @@ def make_shot_chart(df, kind='normal', show_misses=True,
         plt.scatter(df_1['X'], df_1['Y'], s=make_marker_size, marker=make_marker, c=make_marker_color, linewidth=make_width)
         if show_misses:
             df_2 = df[df['SHOT_MADE'] == 0].copy()
-            # linewidths increase
+            # - linewidths increase
             plt.scatter(df_2['X'], df_2['Y'], s=miss_marker_size, marker=miss_marker, c=miss_marker_color, linewidth=miss_width)
     else:
         if not show_misses:
@@ -301,7 +301,7 @@ def make_shot_chart(df, kind='normal', show_misses=True,
     plt.imshow(img,zorder=0, extent=[-275, 275, -50, 425])
     
     if context is not None:
-        # If multiple lines then add context size to second variable for each additional line
+        # - If multiple lines then add context size to second variable for each additional line
         ax.text(0, 435 + (context_size * context.count('\n')), s=context, fontsize=context_size, ha='center')
 
     plt.xlim(-250,250)
@@ -328,12 +328,11 @@ def make_shot_chart(df, kind='normal', show_misses=True,
         cbar.ax.set_title(legend_text, fontsize=10)
         cbar.set_ticklabels(tick_labels)
 
-        # Sizes are wrong
         offsets = hexbin.get_offsets()
         orgpath = hexbin.get_paths()[0]
         verts = orgpath.vertices
         values1 = hexbin.get_array()
-        # scale factor - usually 4 or 5 works
+        # - scale factor - usually 4 or 5 works
         values1 = np.array([scale_factor if i > scale_factor else i for i in values1])
         values1 = ((values1 - 1.0)/(scale_factor-1.0))*(1.0-.4) + .4
         values2 = hexbin2.get_array()
@@ -354,14 +353,14 @@ def make_shot_chart(df, kind='normal', show_misses=True,
                 top = abs(pc.get_clim()[1])
                 bottom = abs(pc.get_clim()[0])
             m = min(top, bottom)
-            # Need one extreme of the comparison to be at least 1.5 percent off from average
+            # - Need one extreme of the comparison to be at least 1.5 percent off from average
             if m < .025:
                 m = .025
             pc.set_clim([-1 * m, m])
-        # pps is .4 to 1.something 
+        # - pps is .4 to 1.something 
         elif scale in ['P_PPS', 'L_PPS']:
-            # for 2: 20% to 60%
-            # for 3: 13% to 40%
+            # - for 2: 20% to 60%
+            # - for 3: 13% to 40%
             pc.set_clim([0.13333, .4])
         else:
             pc.set_clim([-.05,.05])

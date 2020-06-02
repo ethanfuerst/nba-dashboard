@@ -1,5 +1,5 @@
 # %%
-# PPS means points per shot
+# - PPS means points per shot
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -39,6 +39,6 @@ df[(df['PPFTA'] <= df['PPFGA']) & (df['PPFGA'] <= df['PP3PA'])]
 
 
 # %%
-# See where ppfta =< ppfga =< pp3pa
-# Count games where above is true
+# todo See where ppfta =< ppfga =< pp3pa
+# todo Count games where above is true
 

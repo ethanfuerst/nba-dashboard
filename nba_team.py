@@ -12,7 +12,7 @@ from nba_api.stats.endpoints import commonplayerinfo, boxscoretraditionalv2, pla
 from nba_season import NBA_Season
 from nba_methods import make_shot_chart, shots_grouper
 
-# Custom errors
+# - Custom errors
 class PlayerNotFoundError(Exception):
     pass
 
@@ -41,8 +41,8 @@ class NBA_Team():
         return
 
     def get_season(self, season):
-        # Overview of games including ids
-        # team game log
+        # - Overview of games including ids
+        # - team game log
         log = teamgamelog.TeamGameLog(team_id=self.id,season=season)
         return log.get_data_frames()[0]
     
@@ -66,14 +66,14 @@ class NBA_Team():
         plt
             plt object of the shotchart
         '''
-        # doesn't work with playoff games
-        # Query data
+        # ! doesn't work with playoff games
+        # - Query data
         log = boxscoretraditionalv2.BoxScoreTraditionalV2(game_id=game_id)
         df = log.get_data_frames()[0]
         df = df[df['TEAM_ID'] == self.id].copy()
-        # get list of all players that logged game minutes
+        # - get list of all players that logged game minutes
         player_list = df[df['MIN'] != None]['PLAYER_ID'].to_list()
-        # get all shot charts from that game
+        # - get all shot charts from that game
         shots = pd.DataFrame()
         avgs = pd.DataFrame()
         for i in player_list:
@@ -86,7 +86,7 @@ class NBA_Team():
         shots = shots.reset_index()
         avgs = avgs.reset_index()
 
-        # fix data types
+        # - fix data types
         shots[['SHOT_DISTANCE', 'LOC_X', 'LOC_Y', 'SHOT_ATTEMPTED_FLAG', 'SHOT_MADE_FLAG']] = shots[['SHOT_DISTANCE', 'LOC_X', 'LOC_Y', 'SHOT_ATTEMPTED_FLAG', 'SHOT_MADE_FLAG']].astype('int32')
 
         to_plot = shots_grouper(shots,avgs)
@@ -96,7 +96,7 @@ class NBA_Team():
         title = 'The ' + self.full_name + ' against the ' + opponent + ' on ' + game_date
         chart_params['title'] = title
 
-        # Make shot chart
+        # - Make shot chart
         plt = make_shot_chart(to_plot, **chart_params)
         plt.show()
         return to_plot, plt

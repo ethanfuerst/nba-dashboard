@@ -14,7 +14,7 @@ from nba_season import NBA_Season
 from nba_methods import make_shot_chart, shots_grouper
 
 
-# Custom errors
+# - Custom errors
 class PlayerNotFoundError(Exception):
     pass
 
@@ -47,21 +47,21 @@ class NBA_Player:
             self.league - df of teams in the league
         '''
 
-        # Search for the player to get the id
+        # - Search for the player to get the id
         player_search = players.find_players_by_full_name(player_name)
 
-        # If no results for the player, throw an error
+        # - If no results for the player, throw an error
         if len(player_search) == 0:
             raise PlayerNotFoundError('Name not found in database. Try being more specific or look for the player here: https://stats.nba.com/players/')
 
-        # Get the id from the result of my search
+        # - Get the id from the result of my search
         self.player_id = player_search[0]['id']
         self.name = player_search[0]['full_name']
         self.first_name = player_search[0]['first_name']
         self.last_name = player_search[0]['last_name']
         self.is_active = player_search[0]['is_active']
         self.print_name = print_name
-        # Create a df that outlines the players career
+        # - Create a df that outlines the players career
         df = self.get_career()
         df = df[df['Team'] != 'TOT'][['Season', 'Team', 'TEAM_ID']].copy()
         df['start'] = df['Season'].apply(lambda x: int(x[:4]))
@@ -121,20 +121,20 @@ class NBA_Player:
                 'FT_PCT', 'TS_PCT', 'OREB', 'DREB', 'REB', 'AST', 'STL', 'BLK', 'TOV', 'PF',
                 'PTS', 'PLUS_MINUS']
         '''
-        # Change season_type to 'regular' if not specified correctly
+        # - Change season_type to 'regular' if not specified correctly
         if season_type not in ['regular', 'preseason', 'playoffs', 'allstar']:
             season_type = 'regular'
         
         s_types = {'regular':'Regular Season', 'preseason':'Pre-Season', 'playoffs':'Playoffs', 'allstar':'All-Star'}
         s_type = s_types[season_type]
 
-        # playergamelog is a nba_api endpoint that contains the dataframes
+        # - playergamelog is a nba_api endpoint that contains the dataframes
         try:
             log = playergamelog.PlayerGameLog(player_id=self.player_id, season=season, season_type_all_star=s_type)
         except:
             return pd.DataFrame()
 
-        # If no results for the season, throw an error
+        # - If no results for the season, throw an error
         if len(log.get_data_frames()[0]) == 0:
             raise SeasonNotFoundError(self.name + " doesn't have data recorded for the " +  str(season) + " season." )
 
@@ -143,7 +143,7 @@ class NBA_Player:
         df['Season'] = str(season) + "-" + str(season + 1)[2:]
         df['TS_PCT'] = round(df['PTS'] / (2*(df['FGA'] + (.44 * df['FTA']))),3)
 
-        # Drop the 'video available' column and reorder
+        # - Drop the 'video available' column and reorder
         df = df[['Season', 'Player', 'Game_ID', 'GAME_DATE', 'MATCHUP', 'WL',
                 'MIN', 'FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A', 'FG3_PCT', 'FTM', 'FTA',
                 'FT_PCT', 'TS_PCT', 'OREB', 'DREB', 'REB', 'AST', 'STL', 'BLK', 'TOV', 'PF',
@@ -171,7 +171,7 @@ class NBA_Player:
                 'FG3_PCT', 'FTM', 'FTA', 'FT_PCT', 'TS_PCT', 'OREB', 'DREB', 'REB', 'AST', 
                 'STL', 'BLK', 'TOV', 'PF', 'PTS']
         '''
-        # see more on https://github.com/swar/nba_api/blob/master/docs/nba_api/stats/endpoints/playercareerstats.md
+        # - see more on https://github.com/swar/nba_api/blob/master/docs/nba_api/stats/endpoints/playercareerstats.md
         log = playercareerstats.PlayerCareerStats(player_id=self.player_id, per_mode36='Totals')
         df = log.get_data_frames()[0]
 
@@ -180,7 +180,7 @@ class NBA_Player:
         df['Team'] = df['TEAM_ABBREVIATION'].copy()
         df['TS_PCT'] = round(df['PTS'] / (2*(df['FGA'] + (.44 * df['FTA']))),3)
 
-        # Specify column order
+        # - Specify column order
         df = df[['Player', 'Season', 'Team', 'TEAM_ID', 
                 'PLAYER_AGE', 'GP', 'GS', 'MIN', 'FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A',
                 'FG3_PCT', 'FTM', 'FTA', 'FT_PCT', 'TS_PCT', 'OREB', 'DREB', 'REB', 'AST', 
@@ -215,11 +215,11 @@ class NBA_Player:
                 'FG3_PCT', 'FTM', 'FTA', 'FT_PCT', 'TS_PCT', 'OREB', 'DREB', 'REB', 'AST', 
                 'STL', 'BLK', 'TOV', 'PF', 'PTS']
         '''
-        # Get list of seasons with data
+        # - Get list of seasons with data
         career_seasons = self.get_career()
         seasons = [int(i[:4]) for i in career_seasons['Season'].values.astype(str)]
 
-        # Get data from each season
+        # - Get data from each season
         df = pd.DataFrame()
         for i in seasons:
             if season_type == 'preseason' or season_type == 'all' or season_type == 'no_all_star':
@@ -259,7 +259,7 @@ class NBA_Player:
                 'PF', 'PTS', 'PLUS_MINUS']].copy()
         cols_as_int = ['MIN', 'FGM', 'FGA', 'FG3M', 'FG3A', 'FTM', 'FTA', 'OREB', 'DREB', 'REB', 
                         'AST', 'STL', 'BLK', 'TOV', 'PF', 'PTS', 'PLUS_MINUS']
-        # error with all star data here
+        # ! error with all star data here
         df[cols_as_int] = df[cols_as_int].astype(int)
 
         return df
@@ -325,20 +325,19 @@ class NBA_Player:
         
         new_limiters = {reassign_dict[key]: value for key, value in limiters.items()}
 
-        # Changes team abbrev to team_id
+        # - Changes team abbrev to team_id
         def get_team_id(abbrev):
             '''Returns team_id when given an abbreviation'''
             return pd.DataFrame(teams.get_teams())[pd.DataFrame(teams.get_teams())['abbreviation'] == abbrev]['id'].iloc[0]
         if 'opponent_team_id' in new_limiters.keys():
             new_limiters['opponent_team_id'] = get_team_id(new_limiters['opponent_team_id'])
         
-        # Create title
+        # - Create title
         title = self.name
         if 'date_to_nullable' in new_limiters.keys():
             d_from = datetime.datetime.strptime(new_limiters['date_from_nullable'], '%m-%d-%Y').strftime("%B %-d, %Y")
             d_to = datetime.datetime.strptime(new_limiters['date_to_nullable'], '%m-%d-%Y').strftime("%B %-d, %Y")
             title += ' from ' + d_from + ' to ' + d_to
-            # Seasons and dateto/from have to both be specifed - need to fix this
         else:
             if seasons is None:
                 f_seas = int(self.career['Years'].iloc[0][:4])
@@ -355,9 +354,9 @@ class NBA_Player:
         shots = pd.DataFrame()
         avgs = pd.DataFrame()
 
-        # if dates are not null
+        # - if dates are not null
         if 'date_to_nullable' in new_limiters.keys():
-            # Query with dates
+            # - Query with dates
             log = shotchartdetail.ShotChartDetail(team_id=0, player_id=self.player_id, 
                                                     context_measure_simple=['FGA', 'FG3A'], **new_limiters)
             df_1 = log.get_data_frames()[0]
@@ -365,24 +364,24 @@ class NBA_Player:
             # df_1['Season'] = season_df.iloc[i]['season']
             shots = pd.concat([shots, df_1])
             avgs = pd.concat([avgs, df_2])
-        # elif seasons not null
+        # - else when seasons not null
         else:
-            # Query with seasons
+            # - Query with seasons
             if len(seasons) > 2 or type(seasons) != list or type(seasons[0]) != int:
                 raise TypeError('The seasons variable must be a list of length 2 or 1 with years in integer form. Example: [2005, 2018]')
             else:
-                # Get the seasons from ref between two dates
+                # - Get the seasons from ref between two dates
                 first = seasons[0]
                 if len(seasons) == 1:
                     last = seasons[0]
                 else:
                     last = seasons[1]
-                # Get all seasons and team ID between first and last
+                # - Get all seasons and team ID between first and last
                 season_df = self._career[(self._career['season'].astype(int) >= first) & (self._career['season'].astype(int) <= last)].reset_index(drop=True).copy()
 
-            # Change format of season column to work with the API
+            # - Change format of season column to work with the API
             season_df['season'] = season_df['season'].apply(lambda x: str(x) + "-" + str(x + 1)[2:])
-            # Now create the df for the shot chart creation with the dfs given
+            # - Now create the df for the shot chart creation with the dfs given
             for i in range(len(season_df)):
                 log = shotchartdetail.ShotChartDetail(team_id=0, player_id=self.player_id, \
                     season_nullable=season_df.iloc[i]['season'], context_measure_simple=['FGA', 'FG3A'], **new_limiters)

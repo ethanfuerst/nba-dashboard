@@ -11,7 +11,7 @@ from nba_api.stats.static import players, teams
 from nba_api.stats.endpoints import commonplayerinfo, playergamelog, playercareerstats, shotchartdetail, shotchartlineupdetail
 
 
-# Custom errors
+# - Custom errors
 class PlayerNotFoundError(Exception):
     pass
 
@@ -40,17 +40,18 @@ class NBA_Season:
         try:
             season = int(season)
         except:
-            # This is probably because they inputted a string for season, and we need an int
+            # - This is probably because they inputted a string for season, and we need an int
             raise TypeError("Wrong variable type for season. Integer expected.")
         self.season = season
         self.season_str = str(season) + "-" + str(season + 1)[2:]
 
-        # basketball-reference references the season by the second year in each season, so we need to add 1 to the season
+        # - basketball-reference references the season by the second year in each season, so we need to add 1 to the season
         season = self.season + 1
-        # The season goes from October to June usually, so we will go from July to June to capture all data
+        # - The season goes from October to June usually, so we will go from July to June to capture all data
+        # todo change when NBA season is changed to dec-aug
         months = [datetime.date(2019, i, 1).strftime('%B').lower() for i in list(range(7, 13)) + list(range(1,7))]
 
-        # Getting the list of URLs with our months list
+        # - Getting the list of URLs with our months list
         urls = []
         for i in months:
             urls.append('https://www.basketball-reference.com/leagues/NBA_' + str(season) + '_games-' + str(i) + '.html')
@@ -65,7 +66,7 @@ class NBA_Season:
             except:
                 pass
         
-        # Reset the index and rename the overtime column
+        # - Reset the index and rename the overtime column
         games.reset_index(inplace=True, drop=True)
         games.rename(columns={'Unnamed: 7': 'OT'}, inplace=True)
 
@@ -75,7 +76,7 @@ class NBA_Season:
         try:
             self.playoff_start = self.games[self.games['Date'] == 'playoffs'].index[0]
         except:
-            # The specified season doeesn't contain playoff games
+            # - The specified season doeesn't contain playoff games
             self.playoff_start = None
     
     def __str__(self):
@@ -84,7 +85,7 @@ class NBA_Season:
     def __repr__(self):
         return f"NBA_Season(season={self.season})"
     
-    # Private method
+    # - Private method (I think)
     def __clean_games(self, df):
         df['Season'] = self.season_str
         df['Year'] = pd.to_datetime(df['Date']).dt.year
@@ -107,4 +108,3 @@ class NBA_Season:
             raise SeasonNotFoundError("There are no play recorded for the " + self.season_str + " season.")
         else:
             return self.__clean_games(self.games[self.games.index > self.playoff_start].copy())
-
