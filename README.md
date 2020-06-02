@@ -4,15 +4,13 @@ This project is where I keep all my files that I use when I analyze all sorts of
 
 ## Files in this repository
 
-### Jupyter notebooks
+### .ipynb
 
 __*margin_of_victory.ipynb*__ - analysis that showed the '19 - '20 season is set to have the most 40-point blowouts of all time. (as of 12/26/19) [Here is my completed analysis.](https://www.tidbitstatistics.com/NBA-blowouts/)
 
 __*2020_mvp.ipynb*__ - analysis of the 2020 NBA MVP race between LeBron and Giannis (as of 5/30/20) [Here is my completed analysis.](https://www.tidbitstatistics.com/nba-mvp/)
 
-__*2020_mvp.ipynb*__ - points per shot analysis - work in progress
-
-### Python files
+### .py
 
 __*nba_player.py*__ - contains NBA_Player() object
 
@@ -21,6 +19,8 @@ __*nba_team.py*__ - contains NBA_Team() object
 __*nba_season.py*__ - contains NBA_Season() object
 
 __*nba_methods.py*__ - contains various methods to support NBA-related objects I have built in other files
+
+__*pps.ipynb*__ - points per shot analysis - work in progress
 
 ## TODO
 
