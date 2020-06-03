@@ -194,6 +194,7 @@ def make_shot_chart(df, kind='normal', show_misses=True,
                         hex_grid=50, scale_factor=5, scale='P_PPS'):
     '''
     Returns a matplotlib fig of the player's shot chart given certain parameters.
+    Will create the shot chart given a df created from the get_shot_chart method
 
     Parameters:
     
@@ -263,7 +264,8 @@ def make_shot_chart(df, kind='normal', show_misses=True,
     fig
         fig of shot data
     '''
-    # - This method will create the shot chart given a df created from the get_shot_chart method
+    # * add parameter to toggle scale factor
+    # ? see if I can dynamically pull team logos to add to charts, maybe store them in a folder in this workspace
     background_color = '#d9d9d9'
     fig, ax = plt.subplots(facecolor=background_color, figsize=(10,10))
     fig.patch.set_facecolor(background_color)
