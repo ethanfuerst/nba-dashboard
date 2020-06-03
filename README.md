@@ -44,8 +44,8 @@ __*pps.ipynb*__ - points per shot analysis - work in progress
     - [x] hex size as frequency
       - [x] fix hex size plot error
     - [x] fix team/date error (can pass in 0 for teamid)
+    - [x] fix scale error in nba_methods
     - [ ] parameter for size on/off in hexbins
-    - [ ] fix nba_team.py
-    - [ ] fix scale error in nba_methods
+    - [ ] fix playoff data from nba_team.py
     - [ ] team logo on chart?
 - [ ] make method when given x players it will compare stats similar to MVP analysis blog post
