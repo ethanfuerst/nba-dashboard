@@ -48,3 +48,4 @@ __*pps.ipynb*__ - points per shot analysis - work in progress
     - [ ] fix nba_team.py
     - [ ] fix scale error in nba_methods
     - [ ] team logo on chart?
+- [ ] make method when given x players it will compare stats similar to MVP analysis blog post
