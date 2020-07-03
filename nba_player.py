@@ -271,12 +271,12 @@ class NBA_Player:
 
         Parameters:
 
-        seasons (list of integers, default: None (first season of career))
+        seasons (list of integers, default: None (most recent season of career))
             The seasons (inclusive) for which you'd like to get data from.
             Must be a list of length 1 or two containing integers of the seasons.
             Example: [2005, 2018]
             If seasons, DateFrom and DateTo are passed make sure that the seasons cover the dates.
-            If nothing is passed, it will return just the first season of the players career.
+            If nothing is passed, it will return just the most recent season of the players career.
             If the player doesn't have data recorded for a year passed, then a SeasonNotFoundError will be thrown.
             If the seasons range contains years that the player didn't play then only years with data will be shown.
 
@@ -293,6 +293,7 @@ class NBA_Player:
             GameSegment - One of 'First Half', 'Overtime', 'Second Half'
             LastNGames - integer
                 Will return the last n games from the season specified
+                Default is most recent season played
             Location - One of 'Home', 'Road'
             OpponentTeam - Abbreviation, like DAL or LAL
             Outcome - One of 'W' or 'L'
@@ -340,8 +341,9 @@ class NBA_Player:
             title += ' from ' + d_from + ' to ' + d_to
         else:
             if seasons is None:
-                f_seas = int(self.career['Years'].iloc[0][:4])
-                seasons = [f_seas]
+                # - Will get most recent season
+                l_seas = int(self.career['Years'].iloc[-1][5:]) - 1
+                seasons = [l_seas]
             if len(seasons) == 1:
                 title += ' in the ' + str(str(seasons[0]) + "-" + str(seasons[0] + 1)[2:]) + ' season'
             elif seasons[1] - seasons[0] == 1:
