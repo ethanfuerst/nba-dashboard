@@ -273,8 +273,9 @@ class NBA_Player:
 
         seasons (list of integers, default: None (most recent season of career))
             The seasons (inclusive) for which you'd like to get data from.
-            Must be a list of length 1 or two containing integers of the seasons.
+            Must be a list of length 1 or 2 containing integers of the seasons.
             Example: [2005, 2018]
+                Will return data for the 05-06 season to the 18-19 season
             If seasons, DateFrom and DateTo are passed make sure that the seasons cover the dates.
             If nothing is passed, it will return just the most recent season of the players career.
             If the player doesn't have data recorded for a year passed, then a SeasonNotFoundError will be thrown.
@@ -315,7 +316,7 @@ class NBA_Player:
         fig
             fig object of the shotchart
         '''
-        
+        # todo add 'all' parameter to seasons that returns whole career
         to_plot = self.format_shots(seasons, chart_params, **limiters)
 
         fig = make_shot_chart(to_plot, **chart_params)
