@@ -183,6 +183,7 @@ def shots_grouper(shots, avgs):
 
     return to_plot
 
+#%%
 def make_shot_chart(df, kind='normal', show_misses=True, 
                         title=None, title_size=22, 
                         context=None, context_size=14, show_pct=True,
@@ -313,6 +314,50 @@ def make_shot_chart(df, kind='normal', show_misses=True,
     plt.ylim(422.5, -47.5)
     plt.axis(False)
 
+    if show_pct:
+        att_2 = len(df[(df['PTS'] == 2)])
+        att_3 = len(df[(df['PTS'] == 3)])
+
+        if att_2 != 0:
+            made_2 = len(df[(df['PTS'] == 2) & (df['SHOT_MADE'] == 1)])
+            if made_2 != 0:
+                _2pt = round(round(made_2 / att_2, 4) * 100, 2)
+            else:
+                _2pt = 0
+            _2_str = '2pt%: {0}/{1} for {2}%'.format(made_2, att_2, _2pt)
+        
+        if att_3 != 0:
+            made_3 = len(df[(df['PTS'] == 3) & (df['SHOT_MADE'] == 1)])
+            if made_3 != 0:
+                _3pt = round(round(made_3 / att_3, 4) * 100, 2)
+            else:
+                _3pt = 0
+            _3_str = '3pt%: {0}/{1} for {2}%'.format(made_3, att_3, _3pt)
+        
+        if kind == 'hex':
+            txt_x = 245
+            txt_b = 382.5
+            txt_t = 370
+            f_size = 12
+        else:
+            txt_x = 245
+            txt_b = 417.5
+            txt_t = 400
+            f_size = 15
+
+        if (att_2 == 0) and (att_3 == 0):
+            pass
+        elif (att_2 != 0) and (att_3 == 0):
+            # - just 2pt%
+            plt.text(txt_x, txt_b, _2_str, horizontalalignment='right', verticalalignment='bottom', fontsize=f_size)
+        elif (att_3 != 0) and (att_2 == 0):
+            # - just 3pt%
+            plt.text(txt_x, txt_b, _3_str, horizontalalignment='right', verticalalignment='bottom', fontsize=f_size)
+        else:
+            # - both 2 and 3pt%
+            plt.text(txt_x, txt_t, _2_str, horizontalalignment='right', verticalalignment='bottom', fontsize=f_size)
+            plt.text(txt_x, txt_b, _3_str, horizontalalignment='right', verticalalignment='bottom', fontsize=f_size)
+
     if kind == 'hex':
         axins1 = inset_axes(ax, width="16%", height="2%", loc='lower left')
         cbar = fig.colorbar(hexbin, cax=axins1, orientation="horizontal", ticks=[-1, 1])
@@ -375,50 +420,6 @@ def make_shot_chart(df, kind='normal', show_misses=True,
         ax.add_collection(pc)
         hexbin.remove()
         hexbin2.remove()
-
-    if show_pct:
-        att_2 = len(df[(df['PTS'] == 2)])
-        att_3 = len(df[(df['PTS'] == 3)])
-
-        if att_2 != 0:
-            made_2 = len(df[(df['PTS'] == 2) & (df['SHOT_MADE'] == 1)])
-            if made_2 != 0:
-                _2pt = round(round(made_2 / att_2, 4) * 100, 2)
-            else:
-                _2pt = 0
-            _2_str = '2pt%: {0}/{1} for {2}%'.format(made_2, att_2, _2pt)
-        
-        if att_3 != 0:
-            made_3 = len(df[(df['PTS'] == 3) & (df['SHOT_MADE'] == 1)])
-            if made_3 != 0:
-                _3pt = round(round(made_3 / att_3, 4) * 100, 2)
-            else:
-                _3pt = 0
-            _3_str = '3pt%: {0}/{1} for {2}%'.format(made_3, att_3, _3pt)
-        
-        if kind == 'hex':
-            txt_x = 395
-            txt_b = 270
-            txt_t = 370
-            f_size = 12
-        else:
-            txt_x = 245
-            txt_b = 417.5
-            txt_t = 400
-            f_size = 14
-
-        if (att_2 == 0) and (att_3 == 0):
-            pass
-        elif (att_2 != 0) and (att_3 == 0):
-            # - just 2pt%
-            plt.text(txt_x, txt_b, _2_str, horizontalalignment='right', verticalalignment='bottom', fontsize=f_size)
-        elif (att_3 != 0) and (att_2 == 0):
-            # - just 3pt%
-            plt.text(txt_x, txt_b, _3_str, horizontalalignment='right', verticalalignment='bottom', fontsize=f_size)
-        else:
-            # - both 2 and 3pt%
-            plt.text(txt_x, txt_t, _2_str, horizontalalignment='right', verticalalignment='bottom', fontsize=f_size)
-            plt.text(txt_x, txt_b, _3_str, horizontalalignment='right', verticalalignment='bottom', fontsize=f_size)
 
     return fig
 
