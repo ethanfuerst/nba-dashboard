@@ -315,14 +315,24 @@ class NBA_Player:
         fig
             fig object of the shotchart
         '''
+        
+        to_plot = self.format_shots(seasons, chart_params, **limiters)
+
+        fig = make_shot_chart(to_plot, **chart_params)
+        return to_plot, fig
+
+    def format_shots(self, seasons, chart_params, **limiters):
+        '''
+        Pulls and formats data for get_shot_chart and get_shot_dist (with those parameters)
+        '''
         reassign_dict = dict(zip(['GameID', 'AheadBehind', 'ClutchTime', 'DateFrom', 'DateTo', 'GameSegment', 'LastNGames', 'Location', 
-                                'Month', 'OpponentTeam', 'Outcome', 'Period', 'PlayerPosition', 'PointDiff', 'RookieYear', 
-                                'SeasonSegment', 'SeasonType', 'VsConference', 'VsDivision'], 
-                                ['game_id_nullable','ahead_behind_nullable', 'clutch_time_nullable', 'date_from_nullable', 
-                                'date_to_nullable', 'game_segment_nullable', 'last_n_games', 'location_nullable', 
-                                'month', 'opponent_team_id', 'outcome_nullable', 'period', 'player_position_nullable', 
-                                'point_diff_nullable', 'rookie_year_nullable', 'season_segment_nullable', 
-                                'season_type_all_star', 'vs_conference_nullable', 'vs_division_nullable']))
+                        'Month', 'OpponentTeam', 'Outcome', 'Period', 'PlayerPosition', 'PointDiff', 'RookieYear', 
+                        'SeasonSegment', 'SeasonType', 'VsConference', 'VsDivision'], 
+                        ['game_id_nullable','ahead_behind_nullable', 'clutch_time_nullable', 'date_from_nullable', 
+                        'date_to_nullable', 'game_segment_nullable', 'last_n_games', 'location_nullable', 
+                        'month', 'opponent_team_id', 'outcome_nullable', 'period', 'player_position_nullable', 
+                        'point_diff_nullable', 'rookie_year_nullable', 'season_segment_nullable', 
+                        'season_type_all_star', 'vs_conference_nullable', 'vs_division_nullable']))
         
         new_limiters = {reassign_dict[key]: value for key, value in limiters.items()}
 
@@ -401,7 +411,5 @@ class NBA_Player:
             else:
                 raise SeasonNotFoundError(str(self.name) + ' has no data recorded for the ' + str(seasons[0]) + '-' + str(seasons[1]) + ' seasons with those limiters')
         
-        to_plot = shots_grouper(shots,avgs)
+        return shots_grouper(shots,avgs)
 
-        fig = make_shot_chart(to_plot, **chart_params)
-        return to_plot, fig
