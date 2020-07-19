@@ -183,7 +183,6 @@ def shots_grouper(shots, avgs):
 
     return to_plot
 
-#%%
 def make_shot_chart(df, kind='normal', show_misses=True, 
                         title=None, title_size=22, 
                         context=None, context_size=14, show_pct=True,
@@ -423,8 +422,10 @@ def make_shot_chart(df, kind='normal', show_misses=True,
 
     return fig
 
+#%%
 def make_shot_dist(df, title=None, title_size=22, 
-                        context=None, context_size=14):
+                        context=None, context_size=14,
+                        color=None):
     # todo add bar color - one val or the different shooting %ages
     # todo stacked historgram for makes and misses
 
@@ -433,11 +434,39 @@ def make_shot_dist(df, title=None, title_size=22,
     fig.patch.set_facecolor(background_color)
     ax.patch.set_facecolor(background_color)
 
-    plt.hist(df['SHOT_DISTANCE'], bins=df['SHOT_DISTANCE'].max())
     if title is not None:
         plt.title(title, pad=10, fontdict={'fontsize': title_size, 'fontweight':'semibold'})
     plt.ylabel('Frequency')
     plt.xlabel('Shot Distance')
 
-    return fig
+    bins = df['SHOT_DISTANCE'].max()
 
+    # - if color is none then set to a color
+    if color == 'make_miss':
+        # - stacked bar chart with makes and misses
+        plt.hist([df[df['SHOT_MADE'] == 1]['SHOT_DISTANCE'], df[df['SHOT_MADE'] == 0]['SHOT_DISTANCE']], 
+                color=["#007A33", "#C80A18"], bins=bins, stacked=True)
+    elif color == 'shot_type':
+        # - stacked bar chart by shot type
+        print('')
+    elif color == 'PCT_DIFF':
+        # - change color to be scaled by this column
+        print('')
+    elif color == 'P_PPS':
+        # - change color to be scaled by this column
+        print('')
+    elif color == 'D_PPS':
+        # - change color to be scaled by this column
+        print('')
+    elif color == 'team':
+        # - color by team that player played for when the shot was taken
+        print('')
+    else:
+        # - set a color manually
+        plt.hist(df['SHOT_DISTANCE'], bins=df['SHOT_DISTANCE'].max())
+
+    return
+
+
+
+# %%
