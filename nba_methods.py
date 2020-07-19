@@ -374,3 +374,21 @@ def make_shot_chart(df, kind='normal', show_misses=True,
         hexbin2.remove()
 
     return fig
+
+def make_shot_dist(df, title=None, title_size=22, 
+                        context=None, context_size=14):
+    # todo add bar color - one val or the different shooting %ages
+    # todo stacked historgram for makes and misses
+
+    background_color = '#d9d9d9'
+    fig, ax = plt.subplots(facecolor=background_color, figsize=(10,7))
+    fig.patch.set_facecolor(background_color)
+    ax.patch.set_facecolor(background_color)
+
+    plt.hist(df['SHOT_DISTANCE'], bins=df['SHOT_DISTANCE'].max())
+    if title is not None:
+        plt.title(title, pad=10, fontdict={'fontsize': title_size, 'fontweight':'semibold'})
+    plt.ylabel('Frequency')
+    plt.xlabel('Shot Distance')
+
+    return fig

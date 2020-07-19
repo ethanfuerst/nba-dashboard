@@ -11,7 +11,7 @@ import html5lib
 from nba_api.stats.static import players, teams
 from nba_api.stats.endpoints import commonplayerinfo, playergamelog, playercareerstats, shotchartdetail, shotchartlineupdetail
 from nba_season import NBA_Season
-from nba_methods import make_shot_chart, shots_grouper
+from nba_methods import make_shot_chart, shots_grouper, make_shot_dist
 
 
 # - Custom errors
@@ -266,7 +266,7 @@ class NBA_Player:
     
     def get_shot_chart(self, seasons=None, chart_params={}, **limiters):
         '''
-        Returns a matplotlib df and shows a plt of the player's shot chart given certain parameters.
+        Returns a matplotlib fig and a pandas DataFrame showing the player's shot chart given certain parameters.
         Can filter that df and pass to make_shot_chart to limit the shots plotted by shot type (ex. Jump shot, Dunk, etc.)
 
         Parameters:
@@ -413,3 +413,8 @@ class NBA_Player:
         
         return shots_grouper(shots,avgs)
 
+    def get_shot_dist(self, seasons=None, chart_params={}, **limiters):
+        to_plot = self.format_shots(seasons, chart_params, **limiters)
+
+        fig = make_shot_dist(to_plot, **chart_params)
+        return to_plot, fig
