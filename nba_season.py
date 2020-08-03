@@ -49,7 +49,9 @@ class NBA_Season:
         season = self.season + 1
         # - The season goes from October to June usually, so we will go from July to June to capture all data
         # todo change when NBA season is changed to dec-aug
-        months = [datetime.date(2019, i, 1).strftime('%B').lower() for i in list(range(7, 13)) + list(range(1,7))]
+        # - see how months are formatted on bball ref during october and other months for 2020 season
+        # - see how other seasons are formatted as well 
+        months = [datetime.date(2019, i, 1).strftime('%B').lower() for i in list(range(10, 13)) + list(range(1,10))]
 
         # - Getting the list of URLs with our months list
         urls = []
