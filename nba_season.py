@@ -107,6 +107,6 @@ class NBA_Season:
     
     def get_play(self):
         if self.playoff_start == None:
-            raise SeasonNotFoundError("There are no play recorded for the " + self.season_str + " season.")
+            raise SeasonNotFoundError("There are no playoffs recorded for the " + self.season_str + " season.")
         else:
             return self.__clean_games(self.games[self.games.index > self.playoff_start].copy())
