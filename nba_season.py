@@ -72,7 +72,7 @@ class NBA_Season:
         games.reset_index(inplace=True, drop=True)
         games.rename(columns={'Unnamed: 7': 'OT'}, inplace=True)
 
-        self.games = games
+        self.games = self.__clean_games(games)
         self.league = pd.DataFrame(teams.get_teams())
 
         try:
