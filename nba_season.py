@@ -8,7 +8,7 @@ from matplotlib.patches import Circle, Rectangle, Arc
 import datetime
 import html5lib
 from nba_api.stats.static import players, teams
-from nba_api.stats.endpoints import commonplayerinfo, playergamelog, playercareerstats, shotchartdetail, shotchartlineupdetail
+from nba_api.stats.endpoints import commonplayerinfo, playergamelog, playercareerstats, shotchartdetail, leaguegamelog, shotchartlineupdetail
 
 
 # - Custom errors
@@ -80,6 +80,17 @@ class NBA_Season:
         except:
             # - The specified season doeesn't contain playoff games
             self.playoff_start = None
+        
+        log = leaguegamelog.LeagueGameLog(counter=0, direction='ASC', league_id='00', 
+                player_or_team_abbreviation='T', season=self.season_str, season_type_all_star='Regular Season')
+
+        self.game_log = log.get_data_frames()[0]
+
+        log = leaguegamelog.LeagueGameLog(counter=0, direction='ASC', league_id='00', 
+                player_or_team_abbreviation='T', season=self.season_str, season_type_all_star='Playoffs')
+        
+        self.playoffs = log.get_data_frames()[0]
+
     
     def __str__(self):
         return self.season_str + ' NBA Season'
