@@ -95,13 +95,13 @@ class NBA_Season:
                 player_or_team_abbreviation='P', season=self.season_str, season_type_all_star='Regular Season')
         
         self.reg_player_scoring =  log.get_data_frames()[0]
-        self.reg_player_scoring['OPPOSING_TEAM'] = self.player_scoring['MATCHUP'].str.split(' .* ',expand=True)[1]
+        self.reg_player_scoring['OPPOSING_TEAM'] = self.reg_player_scoring['MATCHUP'].str.split(' .* ',expand=True)[1]
 
         log = log = leaguegamelog.LeagueGameLog(counter=0, direction='ASC', league_id='00', 
                 player_or_team_abbreviation='P', season=self.season_str, season_type_all_star='Playoffs')
         
         self.po_player_scoring =  log.get_data_frames()[0]
-        self.po_player_scoring['OPPOSING_TEAM'] = self.player_scoring['MATCHUP'].str.split(' .* ',expand=True)[1]
+        self.po_player_scoring['OPPOSING_TEAM'] = self.po_player_scoring['MATCHUP'].str.split(' .* ',expand=True)[1]
 
     
     def __str__(self):
