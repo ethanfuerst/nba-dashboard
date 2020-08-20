@@ -31,6 +31,7 @@ df['fg diff'] = df['FG%_pre'] - df['FG%_dur']
 df['3 diff'] = df['3%_pre'] - df['3%_dur']
 df['ft diff'] = df['FT%_pre'] - df['FT%_dur']
 # %%
+# * fg percentage
 fig = go.Figure()
 
 for i in ['fg diff', 'FG%_pre', 'FG%_dur']:
@@ -65,22 +66,23 @@ fig.update_layout(title="Pre-bubble shooting vs. bubble shooting",
                 dict(
                     args=[dict(visible=[True, True, False, False, False, False])
                             ],
-                    label="Sort by the difference in percentage",
+                    label="Difference in percentage",
                     method="update"
                 ),
                 dict(
                     args=[dict(visible=[False, False, True, True, False, False])
                             ],
-                    label="Sort by before the bubble shooting percentage",
+                    label="Pre-bubble shooting percentage",
                     method="update"
                 ),
                 dict(
                     args = [dict(visible=[False, False, False, False, True, True])
                             ],
-                    label="Sort by bubble shooting percentage",
+                    label="Bubble shooting percentage",
                     method="update"
                 )
             ]),
+            # todo change button location
             direction='left',
             showactive=False,
             x=0,
@@ -92,4 +94,135 @@ fig.update_layout(title="Pre-bubble shooting vs. bubble shooting",
 )
 
 fig.show()
+# %%
+# * 3 percentage
+fig = go.Figure()
+
+for i in ['3 diff', '3%_pre', '3%_dur']:
+    df = df.sort_values(i, ascending=False)
+    fig.add_trace(go.Scatter(
+        x=df['3%_pre'],
+        y=df['TEAM_NAME'],
+        marker=dict(color="orange", size=12),
+        mode="markers",
+        name="Pre-bubble",
+        hovertemplate='The '+ df['TEAM_NAME'].astype(str) +' shot %{x}% from 3 before the bubble<extra></extra>'
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=df['3%_dur'],
+        y=df['TEAM_NAME'],
+        marker=dict(color="blue", size=12),
+        mode="markers",
+        name="Bubble",
+        hovertemplate='The '+ df['TEAM_NAME'].astype(str) +' shot %{x}% from 3 in the bubble<extra></extra>'
+    ))
+
+fig.update_layout(title="Pre-bubble shooting vs. bubble shooting",
+        xaxis_title="3 point%",
+        yaxis_title="Team",
+        width=850,
+        height=850,
+        updatemenus=[
+            dict(
+            type = "buttons",
+            buttons=list([
+                dict(
+                    args=[dict(visible=[True, True, False, False, False, False])
+                            ],
+                    label="Difference in percentage",
+                    method="update"
+                ),
+                dict(
+                    args=[dict(visible=[False, False, True, True, False, False])
+                            ],
+                    label="Pre-bubble shooting percentage",
+                    method="update"
+                ),
+                dict(
+                    args = [dict(visible=[False, False, False, False, True, True])
+                            ],
+                    label="Bubble shooting percentage",
+                    method="update"
+                )
+            ]),
+            # todo change button location
+            direction='left',
+            showactive=False,
+            x=0,
+            y=-.3,
+            xanchor="left",
+            yanchor="bottom"
+        ),
+    ]
+)
+
+fig.show()
+
+
+#%%
+# * ft percentage
+fig = go.Figure()
+
+for i in ['ft diff', 'FT%_pre', 'FT%_dur']:
+    df = df.sort_values(i, ascending=False)
+    fig.add_trace(go.Scatter(
+        x=df['FT%_pre'],
+        y=df['TEAM_NAME'],
+        marker=dict(color="orange", size=12),
+        mode="markers",
+        name="Pre-bubble",
+        hovertemplate='The '+ df['TEAM_NAME'].astype(str) +' shot %{x}% from the line before the bubble<extra></extra>'
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=df['FT%_dur'],
+        y=df['TEAM_NAME'],
+        marker=dict(color="blue", size=12),
+        mode="markers",
+        name="Bubble",
+        hovertemplate='The '+ df['TEAM_NAME'].astype(str) +' shot %{x}% from the line in the bubble<extra></extra>'
+    ))
+
+fig.update_layout(title="Pre-bubble shooting vs. bubble shooting",
+        xaxis_title="Free Throw%",
+        yaxis_title="Team",
+        width=850,
+        height=850,
+        updatemenus=[
+            dict(
+            type = "buttons",
+            buttons=list([
+                dict(
+                    args=[dict(visible=[True, True, False, False, False, False])
+                            ],
+                    label="Difference in percentage",
+                    method="update"
+                ),
+                dict(
+                    args=[dict(visible=[False, False, True, True, False, False])
+                            ],
+                    label="Pre-bubble shooting percentage",
+                    method="update"
+                ),
+                dict(
+                    args = [dict(visible=[False, False, False, False, True, True])
+                            ],
+                    label="Bubble shooting percentage",
+                    method="update"
+                )
+            ]),
+            # todo change button location
+            direction='left',
+            showactive=False,
+            x=0,
+            y=-.3,
+            xanchor="left",
+            yanchor="bottom"
+        ),
+    ]
+)
+
+fig.show()
+
 # %%
