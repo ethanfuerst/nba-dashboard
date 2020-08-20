@@ -11,3 +11,6 @@ Icon?
 # Compiled Python files
 *.pyc
 __pycache__
+
+
+season_dash.py
