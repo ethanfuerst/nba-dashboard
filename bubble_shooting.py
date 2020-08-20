@@ -31,33 +31,65 @@ df['fg diff'] = df['FG%_pre'] - df['FG%_dur']
 df['3 diff'] = df['3%_pre'] - df['3%_dur']
 df['ft diff'] = df['FT%_pre'] - df['FT%_dur']
 # %%
-# todo add filter toggle
-df = df.sort_values('fg diff', ascending=False)
 fig = go.Figure()
-fig.add_trace(go.Scatter(
-    x=df['FG%_pre'],
-    y=df['TEAM_NAME'],
-    marker=dict(color="orange", size=12),
-    mode="markers",
-    name="Pre-bubble",
-    hovertemplate='The '+ df['TEAM_NAME'].astype(str) +' shot %{x}% from 2 before the bubble<extra></extra>'
-))
 
-fig.add_trace(go.Scatter(
-    x=df['FG%_dur'],
-    y=df['TEAM_NAME'],
-    marker=dict(color="blue", size=12),
-    mode="markers",
-    name="Bubble",
-    hovertemplate='The '+ df['TEAM_NAME'].astype(str) +' shot %{x}% from 2 in the bubble<extra></extra>'
-))
+for i in ['fg diff', 'FG%_pre', 'FG%_dur']:
+    df = df.sort_values(i, ascending=False)
+    fig.add_trace(go.Scatter(
+        x=df['FG%_pre'],
+        y=df['TEAM_NAME'],
+        marker=dict(color="orange", size=12),
+        mode="markers",
+        name="Pre-bubble",
+        hovertemplate='The '+ df['TEAM_NAME'].astype(str) +' shot %{x}% from 2 before the bubble<extra></extra>'
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=df['FG%_dur'],
+        y=df['TEAM_NAME'],
+        marker=dict(color="blue", size=12),
+        mode="markers",
+        name="Bubble",
+        hovertemplate='The '+ df['TEAM_NAME'].astype(str) +' shot %{x}% from 2 in the bubble<extra></extra>'
+    ))
 
 fig.update_layout(title="Pre-bubble shooting vs. bubble shooting",
-                  xaxis_title="FG%",
-                  yaxis_title="Team",
-                  width=850,
-                  height=850
-                  )
+        xaxis_title="FG%",
+        yaxis_title="Team",
+        width=850,
+        height=850,
+        updatemenus=[
+            dict(
+            type = "buttons",
+            buttons=list([
+                dict(
+                    args=[dict(visible=[True, True, False, False, False, False])
+                            ],
+                    label="Sort by the difference in percentage",
+                    method="update"
+                ),
+                dict(
+                    args=[dict(visible=[False, False, True, True, False, False])
+                            ],
+                    label="Sort by before the bubble shooting percentage",
+                    method="update"
+                ),
+                dict(
+                    args = [dict(visible=[False, False, False, False, True, True])
+                            ],
+                    label="Sort by bubble shooting percentage",
+                    method="update"
+                )
+            ]),
+            direction='left',
+            showactive=False,
+            x=0,
+            y=-.3,
+            xanchor="left",
+            yanchor="bottom"
+        ),
+    ]
+)
 
 fig.show()
 # %%
