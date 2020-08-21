@@ -12,5 +12,7 @@ Icon?
 *.pyc
 __pycache__
 
+# plotly key
+plotly_key.txt
 
 season_dash.py
