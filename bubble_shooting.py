@@ -1,10 +1,12 @@
 #%%
 import pandas as pd
-import math
-from nba_season import NBA_Season
-from nba_api.stats.endpoints import commonplayerinfo, playergamelog, playercareerstats, shotchartdetail, leaguegamelog, shotchartlineupdetail,leaguestandings
+from nba_api.stats.endpoints import leaguegamelog
 import plotly.graph_objects as go
+import chart_studio
+api_key = f = open("plotly_key.txt", "r").readline()
+chart_studio.tools.set_credentials_file(username='ethanfuerst', api_key=api_key)
 
+show_all = True
 #%%
 log = leaguegamelog.LeagueGameLog(counter=0, direction='ASC', league_id='00', 
                 player_or_team_abbreviation='T', season='2019-20', season_type_all_star='Regular Season')
@@ -31,7 +33,7 @@ df['fg diff'] = df['FG%_pre'] - df['FG%_dur']
 df['3 diff'] = df['3%_pre'] - df['3%_dur']
 df['ft diff'] = df['FT%_pre'] - df['FT%_dur']
 # %%
-# * fg percentage
+# - fg percentage
 fig = go.Figure()
 
 for i in ['fg diff', 'FG%_pre', 'FG%_dur']:
@@ -55,10 +57,10 @@ for i in ['fg diff', 'FG%_pre', 'FG%_dur']:
     ))
 
 fig.update_layout(title="Pre-bubble shooting vs. bubble shooting",
-        xaxis_title="FG%",
+        xaxis_title="FG% (use buttons on the side to sort)",
         yaxis_title="Team",
-        width=850,
-        height=850,
+        width=600,
+        height=700,
         updatemenus=[
             dict(
             type = "buttons",
@@ -66,36 +68,38 @@ fig.update_layout(title="Pre-bubble shooting vs. bubble shooting",
                 dict(
                     args=[dict(visible=[True, True, False, False, False, False])
                             ],
-                    label="Difference in percentage",
+                    label="Difference",
                     method="update"
                 ),
                 dict(
                     args=[dict(visible=[False, False, True, True, False, False])
                             ],
-                    label="Pre-bubble shooting percentage",
+                    label="Pre-bubble",
                     method="update"
                 ),
                 dict(
                     args = [dict(visible=[False, False, False, False, True, True])
                             ],
-                    label="Bubble shooting percentage",
+                    label="Bubble",
                     method="update"
                 )
             ]),
-            # todo change button location
-            direction='left',
+            direction='up',
             showactive=False,
-            x=0,
-            y=-.3,
+            x=1.05,
+            y=.5,
             xanchor="left",
             yanchor="bottom"
         ),
     ]
 )
 
-fig.show()
+if show_all:
+    fig.show()
+
+chart_studio.plotly.plot(fig, filename='NBA bubble FG% difference', auto_open=False)
 # %%
-# * 3 percentage
+# - 3 percentage
 fig = go.Figure()
 
 for i in ['3 diff', '3%_pre', '3%_dur']:
@@ -119,10 +123,10 @@ for i in ['3 diff', '3%_pre', '3%_dur']:
     ))
 
 fig.update_layout(title="Pre-bubble shooting vs. bubble shooting",
-        xaxis_title="3 point%",
+        xaxis_title="3 point% (use buttons on the side to sort)",
         yaxis_title="Team",
-        width=850,
-        height=850,
+        width=600,
+        height=700,
         updatemenus=[
             dict(
             type = "buttons",
@@ -130,38 +134,38 @@ fig.update_layout(title="Pre-bubble shooting vs. bubble shooting",
                 dict(
                     args=[dict(visible=[True, True, False, False, False, False])
                             ],
-                    label="Difference in percentage",
+                    label="Difference",
                     method="update"
                 ),
                 dict(
                     args=[dict(visible=[False, False, True, True, False, False])
                             ],
-                    label="Pre-bubble shooting percentage",
+                    label="Pre-bubble",
                     method="update"
                 ),
                 dict(
                     args = [dict(visible=[False, False, False, False, True, True])
                             ],
-                    label="Bubble shooting percentage",
+                    label="Bubble",
                     method="update"
                 )
             ]),
-            # todo change button location
-            direction='left',
+            direction='up',
             showactive=False,
-            x=0,
-            y=-.3,
+            x=1.05,
+            y=.5,
             xanchor="left",
             yanchor="bottom"
         ),
     ]
 )
 
-fig.show()
+if show_all:
+    fig.show()
 
-
+chart_studio.plotly.plot(fig, filename='NBA bubble 3 point% difference', auto_open=False)
 #%%
-# * ft percentage
+# - ft percentage
 fig = go.Figure()
 
 for i in ['ft diff', 'FT%_pre', 'FT%_dur']:
@@ -185,10 +189,10 @@ for i in ['ft diff', 'FT%_pre', 'FT%_dur']:
     ))
 
 fig.update_layout(title="Pre-bubble shooting vs. bubble shooting",
-        xaxis_title="Free Throw%",
+        xaxis_title="FT% (use buttons on the side to sort)",
         yaxis_title="Team",
-        width=850,
-        height=850,
+        width=600,
+        height=700,
         updatemenus=[
             dict(
             type = "buttons",
@@ -196,33 +200,34 @@ fig.update_layout(title="Pre-bubble shooting vs. bubble shooting",
                 dict(
                     args=[dict(visible=[True, True, False, False, False, False])
                             ],
-                    label="Difference in percentage",
+                    label="Difference",
                     method="update"
                 ),
                 dict(
                     args=[dict(visible=[False, False, True, True, False, False])
                             ],
-                    label="Pre-bubble shooting percentage",
+                    label="Pre-bubble",
                     method="update"
                 ),
                 dict(
                     args = [dict(visible=[False, False, False, False, True, True])
                             ],
-                    label="Bubble shooting percentage",
+                    label="Bubble",
                     method="update"
                 )
             ]),
-            # todo change button location
-            direction='left',
+            direction='up',
             showactive=False,
-            x=0,
-            y=-.3,
+            x=1.05,
+            y=.5,
             xanchor="left",
             yanchor="bottom"
         ),
     ]
 )
 
-fig.show()
+if show_all:
+    fig.show()
 
+chart_studio.plotly.plot(fig, filename='NBA bubble FT% difference', auto_open=False)
 # %%
