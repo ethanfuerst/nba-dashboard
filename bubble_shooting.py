@@ -8,7 +8,7 @@ import chart_studio
 api_key = f = open("plotly_key.txt", "r").readline()
 chart_studio.tools.set_credentials_file(username='ethanfuerst', api_key=api_key)
 
-show_all = True
+show_all = False
 #%%
 log = leaguegamelog.LeagueGameLog(counter=0, direction='ASC', league_id='00', 
                 player_or_team_abbreviation='T', season='2019-20', season_type_all_star='Regular Season')
