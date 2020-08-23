@@ -4,11 +4,15 @@ This project is where I keep all my files that I use when I analyze all sorts of
 
 ## Files in this repository
 
-### .ipynb
+### Projects (.ipynb)
+
+#### .ipynb
+
+__*2020_mvp.ipynb*__ - analysis of the 2020 NBA MVP race between LeBron and Giannis (as of 5/30/20) [Here is my completed analysis.](https://tidbitstatistics.com/are-nba-teams-shooting-better-in-the-bubble/)
+
+__*2020_mvp.ipynb*__ - analysis of the 2019-20 season that compared shooting number before and during the bubble. [Here is my completed analysis.](https://www.tidbitstatistics.com/nba-mvp/)
 
 __*margin_of_victory.ipynb*__ - analysis that showed the '19 - '20 season is set to have the most 40-point blowouts of all time. (as of 12/26/19) [Here is my completed analysis.](https://www.tidbitstatistics.com/NBA-blowouts/)
-
-__*2020_mvp.ipynb*__ - analysis of the 2020 NBA MVP race between LeBron and Giannis (as of 5/30/20) [Here is my completed analysis.](https://www.tidbitstatistics.com/nba-mvp/)
 
 ### .py
 
@@ -47,6 +51,7 @@ __*pps.ipynb*__ - points per shot analysis - work in progress
     - [x] fix scale error in nba_methods
     - [x] add 2pt% and 3pt% on chart
       - [x] if hex kind then add above the legends
+    - [ ] fix error for make_shot_chart
     - [ ] parameter for size on/off in hexbins
     - [ ] fix playoff data from nba_team.py
     - [ ] team logo on chart?
