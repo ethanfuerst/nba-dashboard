@@ -293,6 +293,7 @@ def make_shot_chart(df, kind='normal', show_misses=True,
     else:
         if not show_misses:
             df_t = df_t[df_t['SHOT_MADE'] == 1].copy()
+        #! error here for ben simmons shot data with no shots in a hex area I think
         hexbin = ax.hexbin(df_t['X'], df_t['Y'], C=df_t[scale].values, gridsize=hex_grid, edgecolors='black',cmap=cm.get_cmap('RdYlBu_r'), extent=[-275, 275, -50, 425], reduce_C_function=np.bincount)
         hexbin2 = ax.hexbin(df_t['X'], df_t['Y'], C=df_t[scale].values, gridsize=hex_grid, edgecolors='black',cmap=cm.get_cmap('RdYlBu_r'), extent=[-275, 275, -50, 425], reduce_C_function=np.mean)
 
