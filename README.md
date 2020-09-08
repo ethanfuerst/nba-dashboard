@@ -51,7 +51,7 @@ __*pps.ipynb*__ - points per shot analysis - work in progress
     - [x] fix scale error in nba_methods
     - [x] add 2pt% and 3pt% on chart
       - [x] if hex kind then add above the legends
-    - [ ] fix error for make_shot_chart
+    - [x] fix error for make_shot_chart
     - [ ] parameter for size on/off in hexbins
     - [ ] fix playoff data from nba_team.py
     - [ ] team logo on chart?
