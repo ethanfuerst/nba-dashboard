@@ -15,4 +15,4 @@ __pycache__
 # plotly key
 plotly_key.txt
 
-season_dash.py
+misc/
