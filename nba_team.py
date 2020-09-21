@@ -40,44 +40,55 @@ class NBA_Team():
 
         return
 
-    def get_season(self, season):
+    def get_season(self, season, season_type):
+        '''
+        
+        '''
         # - Overview of games including ids
         # - team game log
-        log = teamgamelog.TeamGameLog(team_id=self.id,season=season)
+        log = teamgamelog.TeamGameLog(team_id=self.id,season=season,season_type_all_star=season_type)
         return log.get_data_frames()[0]
     
     def get_season_games(self):
         return
 
-    def get_shot_chart(self, game_id, chart_params={}):
+    def get_shot_chart(self, game_id, playoffs=False, chart_params={}):
         '''
-        game_id (string or int, required)
+        game_id (string, required)
             The id of the game for the shotchart
+
+        playoffs (boolean, default is False)
+            Must be True if game referenced is in the playoffs
         
         chart_params (dict)
             See the make_shot_chart() method for list of paramters
-        
-        
+
         Returns:
 
         df
             df of data from API
-        
+        mavs.get_shot_chart('0041900156')
         plt
             plt object of the shotchart
         '''
-        # ! doesn't work with playoff games
         # - Query data
         log = boxscoretraditionalv2.BoxScoreTraditionalV2(game_id=game_id)
         df = log.get_data_frames()[0]
-        df = df[df['TEAM_ID'] == self.id].copy()
+        opp_team = df[df['TEAM_ABBREVIATION'] != self.abbrev]['TEAM_ID'].iloc[0]
+        df = df[df['TEAM_ABBREVIATION'] == self.abbrev].copy()
         # - get list of all players that logged game minutes
         player_list = df[df['MIN'] != None]['PLAYER_ID'].to_list()
+        if playoffs:
+            season_type = 'Playoffs'
+        else:
+            season_type = 'Regular Season'
         # - get all shot charts from that game
         shots = pd.DataFrame()
         avgs = pd.DataFrame()
         for i in player_list:
-            log = shotchartdetail.ShotChartDetail(team_id=self.id, game_id_nullable=game_id, player_id=i, context_measure_simple=['FGA', 'FG3A'])
+            log = shotchartdetail.ShotChartDetail(team_id=self.id, game_id_nullable=game_id, 
+                                                    player_id=i, context_measure_simple=['FGA', 'FG3A'],
+                                                    season_type_all_star='Playoffs')
             df_1 = log.get_data_frames()[0]
             shots = pd.concat([shots, df_1])
             df_2 = log.get_data_frames()[1]
@@ -91,7 +102,7 @@ class NBA_Team():
 
         to_plot = shots_grouper(shots,avgs)
 
-        opponent = self.league[self.league['abbreviation'] ==  shots.iloc[0]['VTM']]['full_name'].iloc[0]
+        opponent = self.league[self.league['id'] == opp_team]['full_name'].iloc[0]
         game_date = datetime.datetime.strptime(shots.iloc[0]['GAME_DATE'], '%Y%m%d').strftime("%B %-d, %Y")
         title = 'The ' + self.full_name + ' against the ' + opponent + ' on ' + game_date
         chart_params['title'] = title
