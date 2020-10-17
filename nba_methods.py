@@ -190,7 +190,8 @@ def make_shot_chart(df, kind='normal', show_misses=True,
                         make_marker_size=90, miss_marker_size=86, 
                         make_marker_color='#007A33', miss_marker_color='#C80A18',
                         make_width=1, miss_width=3,
-                        hex_grid=50, scale_factor=5, scale='P_PPS'
+                        hex_grid=50, scale_factor=5, min_factor=2,
+                        scale='P_PPS'
                         ):
     '''
     Returns a matplotlib fig of the player's shot chart given certain parameters.
@@ -257,6 +258,10 @@ def make_shot_chart(df, kind='normal', show_misses=True,
         scale_factor (integer, default: 5)
             Number of points in a hex to register as max size
             Usually between 4-6 works but it's a preference thing.
+
+        min_factor (integer, default: 0)
+            Number of points in a hex to register as min size
+            Usually low, like 0-2
         
         scale (string, default: P_PPS)
             Must be one of 'PCT_DIFF', 'P_PPS', 'D_PPS'
@@ -386,7 +391,7 @@ def make_shot_chart(df, kind='normal', show_misses=True,
         verts = orgpath.vertices
         values1 = hexbin.get_array()
         # - scale factor - usually 4 or 5 works
-        values1 = np.array([scale_factor if i > scale_factor else i for i in values1])
+        values1 = np.array([scale_factor if i > scale_factor else 0 if i < min_factor else i for i in values1])
         values1 = ((values1 - 1.0)/(scale_factor-1.0))*(1.0-.4) + .4
         values2 = hexbin2.get_array()
         patches = []
