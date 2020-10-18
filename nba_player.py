@@ -11,7 +11,7 @@ import html5lib
 from nba_api.stats.static import players, teams
 from nba_api.stats.endpoints import commonplayerinfo, playergamelog, playercareerstats, shotchartdetail, shotchartlineupdetail
 from nba_season import NBA_Season
-from nba_methods import make_shot_chart, shots_grouper, make_shot_dist
+from nba_methods import *
 
 
 # - Custom errors
@@ -337,10 +337,6 @@ class NBA_Player:
         
         new_limiters = {reassign_dict[key]: value for key, value in limiters.items()}
 
-        # - Changes team abbrev to team_id
-        def get_team_id(abbrev):
-            '''Returns team_id when given an abbreviation'''
-            return pd.DataFrame(teams.get_teams())[pd.DataFrame(teams.get_teams())['abbreviation'] == abbrev]['id'].iloc[0]
         if 'opponent_team_id' in new_limiters.keys():
             new_limiters['opponent_team_id'] = get_team_id(new_limiters['opponent_team_id'])
         

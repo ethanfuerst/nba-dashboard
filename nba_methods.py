@@ -436,6 +436,11 @@ def make_shot_fig(title, title_size, context, context_size):
 
     return fig, ax
 
+def get_team_id(abbrev):
+    '''Returns team_id when given an abbreviation'''
+    return pd.DataFrame(teams.get_teams())[pd.DataFrame(teams.get_teams())['abbreviation'] == abbrev]['id'].iloc[0]
+        
+
 
 #%%
 def make_shot_dist(df, title=None, title_size=22, 
