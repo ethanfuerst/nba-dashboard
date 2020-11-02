@@ -190,7 +190,8 @@ def make_shot_chart(df, kind='normal', show_misses=True,
                         make_marker_size=90, miss_marker_size=86, 
                         make_marker_color='#007A33', miss_marker_color='#C80A18',
                         make_width=1, miss_width=3,
-                        hex_grid=50, scale_factor=5, scale='P_PPS'
+                        hex_grid=50, scale_factor=5, min_factor=0,
+                        scale='P_PPS'
                         ):
     '''
     Returns a matplotlib fig of the player's shot chart given certain parameters.
@@ -257,6 +258,10 @@ def make_shot_chart(df, kind='normal', show_misses=True,
         scale_factor (integer, default: 5)
             Number of points in a hex to register as max size
             Usually between 4-6 works but it's a preference thing.
+
+        min_factor (integer, default: 0)
+            Number of points in a hex to register as min size
+            Usually low, like 0-2
         
         scale (string, default: P_PPS)
             Must be one of 'PCT_DIFF', 'P_PPS', 'D_PPS'
@@ -269,53 +274,13 @@ def make_shot_chart(df, kind='normal', show_misses=True,
     '''
     # * add parameter to toggle scale factor
     # ? see if I can dynamically pull team logos to add to charts, maybe store them in a folder in this workspace
-    background_color = '#d9d9d9'
-    fig, ax = plt.subplots(facecolor=background_color, figsize=(10,10))
-    fig.patch.set_facecolor(background_color)
-    ax.patch.set_facecolor(background_color)
-
+    fig, ax = make_shot_fig(title, title_size, context, context_size)
+    
     df_t = df.copy()
 
     if scale == 'P_PPS':
         # - error if highest val is 1
         df_t['P_PPS'] = df_t['P_PPS']/3
-
-    if title is not None:
-        plt.title(title, pad=10, fontdict={'fontsize': title_size, 'fontweight':'semibold'})
-
-    if kind == 'normal':
-        df_1 = df_t[df_t['SHOT_MADE'] == 1].copy()
-        plt.scatter(df_1['X'], df_1['Y'], s=make_marker_size, marker=make_marker, c=make_marker_color, linewidth=make_width)
-        if show_misses:
-            df_2 = df[df['SHOT_MADE'] == 0].copy()
-            # - linewidths increase
-            plt.scatter(df_2['X'], df_2['Y'], s=miss_marker_size, marker=miss_marker, c=miss_marker_color, linewidth=miss_width)
-    else:
-        if not show_misses:
-            df_t = df_t[df_t['SHOT_MADE'] == 1].copy()
-        hexbin = ax.hexbin(df_t['X'], df_t['Y'], C=df_t[scale].values
-            , gridsize=hex_grid, edgecolors='black',cmap=cm.get_cmap('RdYlBu_r'), extent=[-275, 275, -50, 425]
-            , reduce_C_function=np.sum)
-        # - color
-        hexbin2 = ax.hexbin(df_t['X'], df_t['Y'], C=df_t[scale].values, gridsize=hex_grid, edgecolors='black',
-            cmap=cm.get_cmap('RdYlBu_r'), extent=[-275, 275, -50, 425], reduce_C_function=np.mean)
-
-        plt.text(196, 414, 'The larger hexagons\nrepresent a higher\ndensity of shots',
-                    horizontalalignment='center', bbox=dict(facecolor='#d9d9d9', boxstyle='round'))
-    court_elements = draw_court()
-    for element in court_elements:
-        ax.add_patch(element)
-    
-    img = plt.imread("basketball-floor-texture.png")
-    plt.imshow(img,zorder=0, extent=[-275, 275, -50, 425])
-    
-    if context is not None:
-        # - If multiple lines then add context size to second variable for each additional line
-        ax.text(0, 435 + (context_size * context.count('\n')), s=context, fontsize=context_size, ha='center')
-
-    plt.xlim(-250,250)
-    plt.ylim(422.5, -47.5)
-    plt.axis(False)
 
     if show_pct:
         att_2 = len(df[(df['PTS'] == 2)])
@@ -360,8 +325,27 @@ def make_shot_chart(df, kind='normal', show_misses=True,
             # - both 2 and 3pt%
             plt.text(txt_x, txt_t, _2_str, horizontalalignment='right', verticalalignment='bottom', fontsize=f_size)
             plt.text(txt_x, txt_b, _3_str, horizontalalignment='right', verticalalignment='bottom', fontsize=f_size)
-
-    if kind == 'hex':
+    
+    if kind == 'normal':
+        df_1 = df_t[df_t['SHOT_MADE'] == 1].copy()
+        plt.scatter(df_1['X'], df_1['Y'], s=make_marker_size, marker=make_marker, c=make_marker_color, linewidth=make_width)
+        if show_misses:
+            df_2 = df[df['SHOT_MADE'] == 0].copy()
+            # - linewidths increase
+            plt.scatter(df_2['X'], df_2['Y'], s=miss_marker_size, marker=miss_marker, c=miss_marker_color, linewidth=miss_width)
+    else:
+        plt.text(196, 414, 'The larger hexagons\nrepresent a higher\ndensity of shots',
+                    horizontalalignment='center', bbox=dict(facecolor='#d9d9d9', boxstyle='round'))
+        
+        if not show_misses:
+            df_t = df_t[df_t['SHOT_MADE'] == 1].copy()
+        hexbin = ax.hexbin(df_t['X'], df_t['Y'], C=df_t[scale].values
+            , gridsize=hex_grid, edgecolors='black',cmap=cm.get_cmap('RdYlBu_r'), extent=[-275, 275, -50, 425]
+            , reduce_C_function=np.sum)
+        # - color
+        hexbin2 = ax.hexbin(df_t['X'], df_t['Y'], C=df_t[scale].values, gridsize=hex_grid, edgecolors='black',
+            cmap=cm.get_cmap('RdYlBu_r'), extent=[-275, 275, -50, 425], reduce_C_function=np.mean)
+        
         axins1 = inset_axes(ax, width="16%", height="2%", loc='lower left')
         cbar = fig.colorbar(hexbin, cax=axins1, orientation="horizontal", ticks=[-1, 1])
         interval = hexbin.get_clim()[1] - hexbin.get_clim()[0]
@@ -386,7 +370,7 @@ def make_shot_chart(df, kind='normal', show_misses=True,
         verts = orgpath.vertices
         values1 = hexbin.get_array()
         # - scale factor - usually 4 or 5 works
-        values1 = np.array([scale_factor if i > scale_factor else i for i in values1])
+        values1 = np.array([scale_factor if i > scale_factor else 0 if i < min_factor else i for i in values1])
         values1 = ((values1 - 1.0)/(scale_factor-1.0))*(1.0-.4) + .4
         values2 = hexbin2.get_array()
         patches = []
@@ -425,6 +409,38 @@ def make_shot_chart(df, kind='normal', show_misses=True,
         hexbin2.remove()
 
     return fig
+
+def make_shot_fig(title, title_size, context, context_size):
+    background_color = '#d9d9d9'
+    fig, ax = plt.subplots(facecolor=background_color, figsize=(10,10))
+    fig.patch.set_facecolor(background_color)
+    ax.patch.set_facecolor(background_color)
+
+    court_elements = draw_court()
+    for element in court_elements:
+        ax.add_patch(element)
+    
+    if title is not None:
+        plt.title(title, pad=10, fontdict={'fontsize': title_size, 'fontweight':'semibold'})
+
+    img = plt.imread("basketball-floor-texture.png")
+    plt.imshow(img,zorder=0, extent=[-275, 275, -50, 425])
+
+    plt.xlim(-250,250)
+    plt.ylim(422.5, -47.5)
+    plt.axis(False)
+
+    if context is not None:
+        # - If multiple lines then add context size to second variable for each additional line
+        ax.text(0, 435 + (context_size * context.count('\n')), s=context, fontsize=context_size, ha='center')
+
+    return fig, ax
+
+def get_team_id(abbrev):
+    '''Returns team_id when given an abbreviation'''
+    return pd.DataFrame(teams.get_teams())[pd.DataFrame(teams.get_teams())['abbreviation'] == abbrev]['id'].iloc[0]
+        
+
 
 #%%
 def make_shot_dist(df, title=None, title_size=22, 
