@@ -3,7 +3,7 @@ pd.options.display.max_columns = None
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-from matplotlib import cm
+from matplotlib import cm, animation
 from matplotlib.patches import Circle, Rectangle, Arc
 import matplotlib.patches as mpatches
 import datetime
@@ -376,7 +376,7 @@ class NBA_Player:
         # - else when seasons not null
         else:
             # - Query with seasons
-            if len(seasons) > 2 or type(seasons) != list or type(seasons[0]) != int:
+            if len(seasons) > 2:
                 raise TypeError('The seasons variable must be a list of length 2 or 1 with years in integer form. Example: [2005, 2018]')
             else:
                 # - Get the seasons from ref between two dates
@@ -415,3 +415,172 @@ class NBA_Player:
 
         fig = make_shot_dist(to_plot, **chart_params)
         return to_plot, fig
+    
+    def get_ani_shot_chart(self, seasons=None, 
+                            interval=750, repeat_delay=0,
+                            chart_params={}, **limiters):
+
+        fig_defaults = dict(title=None, title_size=22, context=None, context_size=14,
+                            scale='P_PPS', show_misses=True, hex_grid=50, scale_factor=5,
+                            min_factor=0)
+
+        for i in fig_defaults.keys():
+            if i not in chart_params.keys():
+                chart_params.update({i: fig_defaults[i]})
+
+        # make fig and ax
+        background_color = '#d9d9d9'
+        fig, ax = plt.subplots(facecolor=background_color, figsize=(10,10))
+        
+        if seasons == None:
+            seasons = [self._career['season'].min(), self._career['season'].max()]
+
+        if len(seasons) == 2:
+            seasons = [i for i in range(seasons[0], seasons[1] + 1)]
+
+        # make list of params in dict
+        frames = []
+        for i in seasons:
+            # add the data with limiters
+            
+            df = self.format_shots(seasons=[i], chart_params=chart_params, **limiters)
+
+            # and the chart params because this whole item in the iterable will be passed to the function
+            season_data = dict(
+                data=df,
+                params=chart_params,
+                season=i
+            )
+
+            frames.append(season_data)
+
+        def hex_animate(i):
+            if i != seasons[0]:
+                ax.clear()
+            frame = frames[i]
+            df = frame['data']
+            df_t = df.copy()
+
+            scale = frame['params']['scale']
+            show_misses = frame['params']['show_misses']
+            hex_grid = frame['params']['hex_grid']
+            scale_factor = frame['params']['scale_factor']
+            min_factor = frame['params']['min_factor']
+
+            if scale == 'P_PPS':
+                # - error if highest val is 1
+                df_t['P_PPS'] = df_t['P_PPS']/3
+
+            if not show_misses:
+                df_t = df_t[df_t['SHOT_MADE'] == 1].copy()
+            hexbin = ax.hexbin(df_t['X'], df_t['Y'], C=df_t[scale].values
+                , gridsize=hex_grid, edgecolors='black',cmap=cm.get_cmap('RdYlBu_r'), extent=[-275, 275, -50, 425]
+                , reduce_C_function=np.sum)
+            # - color
+            hexbin2 = ax.hexbin(df_t['X'], df_t['Y'], C=df_t[scale].values, gridsize=hex_grid, edgecolors='black',
+                cmap=cm.get_cmap('RdYlBu_r'), extent=[-275, 275, -50, 425], reduce_C_function=np.mean)
+
+            if chart_params['title'] is not None:
+                ax.set_title(chart_params['title'], pad=10, fontdict={'fontsize': chart_params['title_size'], 'fontweight':'semibold'})
+
+            court_elements = draw_court()
+            for element in court_elements:
+                ax.add_patch(element)
+
+            img = plt.imread("basketball-floor-texture.png")
+            ax.imshow(img,zorder=0, extent=[-275, 275, -50, 425])
+
+            ax.set_xlim(-250,250)
+            ax.set_ylim(422.5, -47.5)
+            ax.axis(False)
+
+            if chart_params['context'] is not None:
+                # - If multiple lines then add context size to second variable for each additional line
+                ax.text(0, 435 + (chart_params['context_size'] * chart_params['context'].count('\n')), s=chart_params['context'], 
+                                fontsize=chart_params['context_size'], ha='center')
+
+            # - gets the color for the legend on the bottom left using the first season of data
+            offsets = hexbin.get_offsets()
+            orgpath = hexbin.get_paths()[0]
+            verts = orgpath.vertices
+            values1 = hexbin.get_array()
+            values1 = np.array([scale_factor if i > scale_factor else 0 if i < min_factor else i for i in values1])
+            values1 = ((values1 - 1.0)/(scale_factor-1.0))*(1.0-.4) + .4
+            values2 = hexbin2.get_array()
+            patches = []
+
+            for offset, val in zip(offsets,values1):
+                v1 =  verts*val + offset
+                path = Path(v1, orgpath.codes)
+                patch = PathPatch(path)
+                patches.append(patch)
+
+            pc = PatchCollection(patches, cmap=cm.get_cmap('RdYlBu_r'), edgecolors='black')
+            if scale == 'PCT_DIFF':
+                if pc.get_clim()[0] is None:
+                    bottom = abs(df_t[scale].min())
+                    top = abs(df_t[scale].max())
+                else:
+                    top = abs(pc.get_clim()[1])
+                    bottom = abs(pc.get_clim()[0])
+                m = min(top, bottom)
+                # - Need one extreme of the comparison to be at least 1.5 percent off from average
+                if m < .025:
+                    m = .025
+                pc.set_clim([-1 * m, m])
+            # - pps is .4 to 1.something 
+            elif scale in ['P_PPS', 'L_PPS']:
+                # - for 2: 20% to 60%
+                # - for 3: 13% to 40%
+                pc.set_clim([0.13333, .4])
+            else:
+                pc.set_clim([-.05,.05])
+            
+            pc.set_array(values2)
+
+            ax.add_collection(pc)
+            hexbin.remove()
+            hexbin2.remove()
+            
+            ax.text(200, 375, str(frame['season']) + "-" + str(frame['season'] + 1)[2:] + ' season',
+                        horizontalalignment='center', fontsize=12, bbox=dict(facecolor=background_color, boxstyle='round'))
+
+            return hexbin,
+
+        fig.patch.set_facecolor(background_color)
+        ax.patch.set_facecolor(background_color)
+        plt.rcParams["figure.figsize"] = (10, 10)
+
+        hx = ax.hexbin(frames[0]['data']['X'], frames[0]['data']['Y'], C=frames[0]['data'][frames[0]['params']['scale']].values
+                , gridsize=frames[0]['params']['hex_grid'], edgecolors='black',cmap=cm.get_cmap('RdYlBu_r')
+                , reduce_C_function=np.sum)
+        axins1 = inset_axes(ax, width="16%", height="2%", loc='lower left')
+        cbar = fig.colorbar(hx, cax=axins1, orientation="horizontal", ticks=[-1, 1])
+        interval = hx.get_clim()[1] - hx.get_clim()[0]
+        ltick = hx.get_clim()[0] + (interval * .2)
+        rtick = hx.get_clim()[1] - (interval * .2)
+        cbar.set_ticks([ltick, rtick])
+        axins1.xaxis.set_ticks_position('top')
+        if frames[0]['params']['scale'] == 'PCT_DIFF':
+            legend_text = '% Compared to \nLeague Average'
+            tick_labels = ['Below', 'Above']
+        elif frames[0]['params']['scale'] == 'P_PPS':
+            legend_text = 'Efficiency by Zone'
+            tick_labels = ['Lower', 'Higher']
+        else:
+            legend_text = 'Efficiency compared to \nLeague Average'
+            tick_labels = ['Lower', 'Higher']
+        cbar.ax.set_title(legend_text, fontsize=10)
+        cbar.set_ticklabels(tick_labels)
+
+        # show pct
+        plt.text(222, 20, 'The larger hexagons\nrepresent a higher\ndensity of shots',
+                        horizontalalignment='center', bbox=dict(facecolor=background_color, boxstyle='round'))
+
+        ani = animation.FuncAnimation(fig, func=hex_animate, frames=len(seasons), blit=True,
+                                        interval=interval, repeat_delay=repeat_delay, save_count=1)
+
+        ani.save(self.first_name + '_' + self.last_name + str(seasons[0])[2:] + '-' + str(seasons[-1])[2:] + '.gif', 
+                fps=1, writer='PillowWriter', 
+                savefig_kwargs={'facecolor':background_color, 'bbox_inches' : 'tight', 'pad_inches': .05})
+        return ani
