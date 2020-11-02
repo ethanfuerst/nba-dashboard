@@ -419,6 +419,60 @@ class NBA_Player:
     def get_ani_shot_chart(self, seasons=None, 
                             interval=750, repeat_delay=0,
                             chart_params={}, **limiters):
+        '''
+        Returns a matplotlib ani showing the player's shot chart given certain parameters.
+        Saved as player_firstname_player_lastname_season-season.gif
+
+        Parameters:
+
+        seasons (list of integers, default: None (most recent season of career))
+            The seasons (inclusive) for which you'd like to get data from.
+            Must be a list of length 1 or 2 containing integers of the seasons.
+            Example: [2005, 2018]
+                Will return data for the 05-06 season to the 18-19 season
+            If seasons, DateFrom and DateTo are passed make sure that the seasons cover the dates.
+            If nothing is passed, it will return just the most recent season of the players career.
+            If the player doesn't have data recorded for a year passed, then a SeasonNotFoundError will be thrown.
+            If the seasons range contains years that the player didn't play then only years with data will be shown.
+
+        interval (int, default 750):
+            Miliseconds between frame switch
+        
+        repeat_delay (int, default 0):
+            Miliseconds between gif repeat
+
+        chart_params (dict)
+            See the make_shot_chart() method for list of paramters
+
+        **limiters (assorted data types)
+            These will filter the shots on the shot chart.
+            AheadBehind - One of 'Ahead or Behind', 'Ahead or Tied', 'Behind or Tied'
+            ClutchTime - One of 'Last (1-5) Minute(s)' or 'Last (30 or 10) Seconds'
+            DateFrom - ex. 12-14-2019
+            DateTo - ex. 01-24-2020
+                Must specify both date_from_nullable and date_to_nullable
+            GameSegment - One of 'First Half', 'Overtime', 'Second Half'
+            LastNGames - integer
+                Will return the last n games from the season specified
+                Default is most recent season played
+            Location - One of 'Home', 'Road'
+            OpponentTeam - Abbreviation, like DAL or LAL
+            Outcome - One of 'W' or 'L'
+            Period - 1, 2, 3, 4 or 5 (OT)
+            PlayerPosition - One of 'Guard', 'Center', 'Forward'
+            PointDiff - integer
+            SeasonSegment - One of 'Post All-Star', 'Pre All-Star'
+            SeasonType - One of 'Regular Season', 'Pre Season', 'Playoffs', 'All Star'
+            GameID - Use self.career and the NBA_Team class to get the full schedule with game_ids
+            VsConference - One of 'East', 'West'
+            VsDivision  - One of 'Atlantic', 'Central', 'Northwest', 'Pacific', 'Southeast', 'Southwest', 'East', 'West'
+        
+        
+        Returns:
+
+        ani
+            ani figure from matplotlib
+        '''
 
         fig_defaults = dict(title=None, title_size=22, context=None, context_size=14,
                             scale='P_PPS', show_misses=True, hex_grid=50, scale_factor=5,
@@ -583,4 +637,5 @@ class NBA_Player:
         ani.save(self.first_name + '_' + self.last_name + str(seasons[0])[2:] + '-' + str(seasons[-1])[2:] + '.gif', 
                 fps=1, writer='PillowWriter', 
                 savefig_kwargs={'facecolor':background_color, 'bbox_inches' : 'tight', 'pad_inches': .05})
+        
         return ani
