@@ -70,6 +70,7 @@ streaks = df[['LeagueRank', 'WinPCT', 'Team', 'Record', 'strLongHomeStreak',
             'strCurrentRoadStreak']].sort_values(by=['LeagueRank', 'WinPCT'], ascending=[True, False])
 streaks = streaks[['Team', 'Record', 'strLongHomeStreak', 'strLongRoadStreak', 
             'LongWinStreak', 'LongLossStreak', 'strCurrentHomeStreak', 'strCurrentRoadStreak']]
+streaks.name = "Streaks"
 
 # - other
 other = df[['LeagueRank', 'WinPCT', 'Team', 'Record', 'AheadAtHalf', 
@@ -77,6 +78,36 @@ other = df[['LeagueRank', 'WinPCT', 'Team', 'Record', 'AheadAtHalf',
             'FewerTurnovers']].sort_values(by=['LeagueRank', 'WinPCT'], ascending=[True, False])
 other = other[['Team', 'Record', 'AheadAtHalf', 'BehindAtHalf', 
             'TiedAtHalf', 'Score100PTS', 'OppScore100PTS', 'OppOver500', 'FewerTurnovers']]
+other.name = "Other"
+
+for data in [streaks, other]:
+    fig = go.Figure(data=[go.Table(
+            header=dict(
+                values=['<b>{}</b>'.format(i) for i in data.columns[:]],
+                line_color='black',
+                font_color='black',
+                fill_color='lightgrey',
+                align='center'
+            ),
+            cells=dict(
+                values=[data[k].tolist() for k in data.columns[:]],
+                align = "left",
+                fill_color=[[team_colors[i][0] for i in data['Team'].values], ['#E6E6E6'] * 15] + [['#E6E6E6'] * 15] * 6,
+                line_color=[[team_colors[i][1] for i in data['Team'].values], ['#FFFFFF'] * 15] + [['#FFFFFF'] * 15] * 6,
+                font_color=[['#FFFFFF'] * 15, ['#000000'] * 15] + [['#000000'] * 15] * 6,
+                height=45
+                )
+        )
+    ])
+
+    fig.update_layout(
+        height=950,
+        width=900,
+        showlegend=False,
+        title_text=data.name
+    )
+
+    fig.show()
 
 #%%
 # log = leaguedashteamstats.LeagueDashTeamStats(last_n_games=100,
