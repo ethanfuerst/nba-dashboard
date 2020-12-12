@@ -4,7 +4,6 @@ import plotly.graph_objects as go
 import requests
 import re
 from bs4 import BeautifulSoup
-from plotly.subplots import make_subplots
 from nba_api.stats.endpoints import leaguegamelog, leaguestandings, leagueleaders, leaguedashteamstats
 from dashboard_reference import team_colors
 
