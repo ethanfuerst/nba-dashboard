@@ -54,7 +54,8 @@ def conf_table(conf_df):
 
     layout = dict(
         showlegend=False,
-        title_text="{} Conference".format(conf_df.name)
+        title_text="{} Conference".format(conf_df.name),
+        height=900
     )
     return dict(data=[data], layout=layout)
 
@@ -82,4 +83,4 @@ app.layout = html.Div([
 
 
 if __name__ == '__main__':
-    app.run_server(port=3005)
+    app.run_server(debug=True)
