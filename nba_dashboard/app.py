@@ -6,30 +6,15 @@ import numpy as np
 import pandas as pd
 from nba_api.stats.endpoints import commonplayerinfo, playergamelog, playercareerstats, shotchartdetail, leaguegamelog, shotchartlineupdetail, leaguestandings, leagueleaders
 from dashboard_reference import team_colors
+from nba_data import scatter_data, conf_table_data
+
 
 app = dash.Dash(external_stylesheets=['https://codepen.io/chriddyp/pen/bWLwgP.css'])
 
 season = 2019
 
-log = leaguestandings.LeagueStandings(league_id='00', season=str(season), season_type='Regular Season')
-df = log.get_data_frames()[0]
-df['WinPCT'] = round(df['WinPCT'] * 100, 2).astype(str) + '%'
-df['TeamCity'] = df['TeamCity'].replace('LA', 'Los Angeles')
-df['Team'] = df['TeamCity'] + ' ' + df['TeamName']
-
-# - conferences
-east = df[df['Conference'] == 'East']
-west = df[df['Conference'] == 'West']
-east = east[['PlayoffRank', 'Team', 'Record', 'ConferenceGamesBack', 
-            'vsWest', 'ConferenceRecord', 'WinPCT', 'ClinchIndicator']].sort_values(by=['PlayoffRank', 
-            'WinPCT'], ascending=[True, False])
-west = west[['PlayoffRank', 'Team', 'Record', 'ConferenceGamesBack', 
-            'ConferenceRecord', 'vsEast', 'WinPCT', 'ClinchIndicator']].sort_values(by=['PlayoffRank', 
-            'WinPCT'], ascending=[True, False])
-west.columns = east.columns = ['Rank', 'Team', 'Record', 'Games Back', 'vs. West', 'vs. East', 'Win %', 'Clinch Indicator']
-west.name = 'West'
-east.name = 'East'
-
+east, west = conf_table_data(2019)
+scatter_df = scatter_data(2019)
 
 def conf_table(conf_df):
     data = go.Table(
@@ -59,26 +44,13 @@ def conf_table(conf_df):
     )
     return dict(data=[data], layout=layout)
 
-
-# - conferences
-east = df[df['Conference'] == 'East']
-west = df[df['Conference'] == 'West']
-east = east[['PlayoffRank', 'Team', 'Record', 'ConferenceGamesBack', 
-            'vsWest', 'ConferenceRecord', 'WinPCT']].sort_values(by=['PlayoffRank', 
-            'WinPCT'], ascending=[True, False])
-west = west[['PlayoffRank', 'Team', 'Record', 'ConferenceGamesBack', 
-            'ConferenceRecord', 'vsEast', 'WinPCT']].sort_values(by=['PlayoffRank', 
-            'WinPCT'], ascending=[True, False])
-west.columns = east.columns = ['Rank', 'Team', 'Record', 'Games Back', 'vs. West', 'vs. East', 'Win %']
-east.name = 'East'
-west.name = 'West'
-
 app = dash.Dash()
 app.layout = html.Div([
     html.Div([
         html.Div([dcc.Graph(id='g1', figure=conf_table(east))], className="column"),
         html.Div([dcc.Graph(id='g2', figure=conf_table(west))], className="column")
-    ], className="row")
+    ], className="row"),
+    dcc.Graph()
 ])
 
 
