@@ -154,6 +154,7 @@ df = df.drop(['Rank', 'Arena'], axis=1).copy()
 x = 'Wins'
 y = 'Attendance Per Game'
 
+#! make markers bigger and add outline
 fig = go.Figure(data=[
     go.Scatter(x=df[x],
                 y=df[y], 
