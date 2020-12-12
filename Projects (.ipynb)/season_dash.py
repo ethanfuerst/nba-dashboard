@@ -210,4 +210,3 @@ log = leagueleaders.LeagueLeaders(league_id='00', per_mode48='PerGame', scope='S
 
 # - +/- for a team over time
 
-
