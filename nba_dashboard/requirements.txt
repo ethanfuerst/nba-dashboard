@@ -9,3 +9,4 @@ re
 requests
 BeautifulSoup
 nba_api
+gunicorn
