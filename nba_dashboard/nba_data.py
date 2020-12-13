@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import requests
 import re
+import lxml
 from bs4 import BeautifulSoup
 from nba_api.stats.endpoints import leaguestandings
 
@@ -96,7 +97,7 @@ def conf_table_data(season):
 
 def scatter_data(season):
     html = requests.get('http://www.basketball-reference.com/leagues/NBA_{}.html'.format(season + 1)).content
-    cleaned_soup = BeautifulSoup(re.sub(rb"<!--|-->",rb"", html), features='lxml')
+    cleaned_soup = BeautifulSoup(re.sub(rb"<!--|-->",rb"", html),  features='lxml')
     misc_table = cleaned_soup.find('table', {'id':'misc_stats'})
 
     df = pd.read_html(str(misc_table))[0]
