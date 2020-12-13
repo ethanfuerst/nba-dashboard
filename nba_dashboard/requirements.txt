@@ -1,0 +1,11 @@
+pandas
+numpy
+datetime
+dash
+dash_core_components
+dash_html_components
+plotly
+re
+requests
+BeautifulSoup
+nba_api
