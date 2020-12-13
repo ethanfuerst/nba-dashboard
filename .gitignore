@@ -15,8 +15,8 @@ __pycache__
 # plotly key
 plotly_key.txt
 
+nba_dashboard/figs_for_app.py
+
 misc/
 
 Projects (.ipynb)/basketball-floor-texture.png
-
-nba_dashboard/figs_for_app.py
