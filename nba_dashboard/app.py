@@ -7,9 +7,7 @@ import plotly.graph_objs as go
 import numpy as np
 import pandas as pd
 from datetime import datetime
-from nba_api.stats.endpoints import commonplayerinfo, playergamelog, playercareerstats, shotchartdetail, leaguegamelog, shotchartlineupdetail, leaguestandings, leagueleaders
-from dashboard_reference import team_colors
-from nba_data import scatter_data, conf_table_data, other_tables_data
+from nba_data import scatter_data, conf_table_data, other_tables_data, team_colors
 
 app = dash.Dash(external_stylesheets=['https://codepen.io/chriddyp/pen/bWLwgP.css'])
 
