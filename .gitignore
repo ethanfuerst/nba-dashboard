@@ -15,7 +15,7 @@ __pycache__
 # plotly key
 plotly_key.txt
 
-nba_dashboard/figs_for_app.py
+nba_dashboard/app_drafts.py
 
 misc/
 
