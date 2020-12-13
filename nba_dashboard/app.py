@@ -6,18 +6,20 @@ from dash.dependencies import Input, Output
 import plotly.graph_objs as go
 import numpy as np
 import pandas as pd
+from datetime import datetime
 from nba_api.stats.endpoints import commonplayerinfo, playergamelog, playercareerstats, shotchartdetail, leaguegamelog, shotchartlineupdetail, leaguestandings, leagueleaders
 from dashboard_reference import team_colors
-from nba_data import scatter_data, conf_table_data
-
+from nba_data import scatter_data, conf_table_data, other_tables_data
 
 app = dash.Dash(external_stylesheets=['https://codepen.io/chriddyp/pen/bWLwgP.css'])
 
 season = 2019
+season_str = str(season) + "-" + str(season + 1)[2:]
 
-east, west = conf_table_data(2019)
-scatter_df = scatter_data(2019)
+east, west = conf_table_data(season)
+scatter_df = scatter_data(season)
 scatter_vals = scatter_df.columns.to_list()[1:]
+streaks, other = other_tables_data(season)
 
 def conf_table(conf_df):
     data = go.Table(
@@ -47,8 +49,44 @@ def conf_table(conf_df):
     )
     return dict(data=[data], layout=layout)
 
+def other_tables(table):
+    data=go.Table(
+            header=dict(
+                values=['<b>{}</b>'.format(i) for i in table.columns[:]],
+                line_color='black',
+                font_color='black',
+                fill_color='lightgrey',
+                align='center'
+            ),
+            cells=dict(
+                values=[table[k].tolist() for k in table.columns[:]],
+                align = "left",
+                fill_color=[[team_colors[i][0] for i in table['Team'].values], ['#E6E6E6'] * 15] + [['#E6E6E6'] * 15] * 6,
+                line_color=[[team_colors[i][1] for i in table['Team'].values], ['#FFFFFF'] * 15] + [['#FFFFFF'] * 15] * 6,
+                font_color=[['#FFFFFF'] * 15, ['#000000'] * 15] + [['#000000'] * 15] * 6,
+                height=45
+                )
+        )
+
+    layout = dict(
+        height=900,
+        showlegend=False,
+        title_text=table.name
+    )
+
+    return dict(data=[data], layout=layout)
+
 app = dash.Dash()
 app.layout = html.Div([
+    dbc.Row(html.H1(children='{} NBA Regular Season Dashboard'.format(season_str),
+        style={
+            'textAlign': 'center'
+        })),
+    dbc.Row(html.H2(children='Last Updated: {}'.format(datetime.now().strftime('%-I:%M:%S %p %Z')),
+        style={
+            'textAlign': 'center'
+        })),
+    html.Br(),
     dbc.Row(html.H1(children='Western Conference Standings',
         style={
             'textAlign': 'center'
@@ -61,7 +99,7 @@ app.layout = html.Div([
             'textAlign': 'center'
         }
         ),
-    html.Div([dcc.Graph(id='g1', figure=conf_table(west))]),
+    html.Div([dcc.Graph(id='west_table', figure=conf_table(west))]),
     dbc.Row(html.H1(children='Eastern Conference Standings',
         style={
             'textAlign': 'center'
@@ -74,7 +112,16 @@ app.layout = html.Div([
             'textAlign': 'center'
         }
         ),
-    html.Div([dcc.Graph(id='g2', figure=conf_table(east))]),
+    html.Div([dcc.Graph(id='east_table', figure=conf_table(east))]),
+    dbc.Row(html.H1(children='League Statistics Comparison',
+        style={
+            'textAlign': 'center'
+        })),
+    dbc.Row(children=[html.H2('Choose two metrics to compare how the league stacks up!')],
+        style={
+            'textAlign': 'center'
+        }
+        ),
     dcc.Graph(id='scatter1'),
     html.Div([
             dcc.Dropdown(
@@ -91,7 +138,17 @@ app.layout = html.Div([
             options=[{'label': i, 'value': i} for i in scatter_vals],
             value='Wins'
         )
-    ],style={'width': '48%', 'float': 'right', 'display': 'inline-block'})
+    ],style={'width': '48%', 'float': 'right', 'display': 'inline-block'}),
+    dbc.Row(html.H1(children='Streaks',
+        style={
+            'textAlign': 'center'
+        })),
+    html.Div([dcc.Graph(id='streaks_table', figure=other_tables(streaks))]),
+    dbc.Row(html.H1(children='Other Statistics',
+        style={
+            'textAlign': 'center'
+        })),
+    html.Div([dcc.Graph(id='other_table', figure=other_tables(other))]),
 ])
 
 @app.callback(Output('scatter1', 'figure'),
