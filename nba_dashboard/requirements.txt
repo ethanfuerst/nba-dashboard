@@ -6,6 +6,6 @@ dash_core_components
 dash_html_components
 plotly
 requests
-BeautifulSoup
+beautifulsoup4
 nba_api
 gunicorn
