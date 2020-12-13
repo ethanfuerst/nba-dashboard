@@ -1,6 +1,8 @@
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+import dash_bootstrap_components as dbc 
+from dash.dependencies import Input, Output
 import plotly.graph_objs as go
 import numpy as np
 import pandas as pd
@@ -15,6 +17,7 @@ season = 2019
 
 east, west = conf_table_data(2019)
 scatter_df = scatter_data(2019)
+scatter_vals = scatter_df.columns.to_list()[1:]
 
 def conf_table(conf_df):
     data = go.Table(
@@ -46,13 +49,85 @@ def conf_table(conf_df):
 
 app = dash.Dash()
 app.layout = html.Div([
+    dbc.Row(html.H1(children='Western Conference Standings',
+        style={
+            'textAlign': 'center'
+        })),
+    dbc.Row(children=[html.H2('Conference clinched: -w'),
+                    html.H2('Division clinched: - nw, p, sw'),
+                    html.H2('Playoff spot clinched: - o'),
+                    html.H2('Missed Playoffs: - x')],
+        style={
+            'textAlign': 'center'
+        }
+        ),
+    html.Div([dcc.Graph(id='g1', figure=conf_table(west))]),
+    dbc.Row(html.H1(children='Eastern Conference Standings',
+        style={
+            'textAlign': 'center'
+        })),
+        dbc.Row(children=[html.H2('Conference clinched: -w'),
+                    html.H2('Division clinched: - se, c, a'),
+                    html.H2('Playoff spot clinched: - o'),
+                    html.H2('Missed Playoffs: - x')],
+        style={
+            'textAlign': 'center'
+        }
+        ),
+    html.Div([dcc.Graph(id='g2', figure=conf_table(east))]),
+    dcc.Graph(id='scatter1'),
     html.Div([
-        html.Div([dcc.Graph(id='g1', figure=conf_table(east))], className="column"),
-        html.Div([dcc.Graph(id='g2', figure=conf_table(west))], className="column")
-    ], className="row"),
-    dcc.Graph()
+            dcc.Dropdown(
+                id='scatter1-x',
+                options=[{'label': i, 'value': i} for i in scatter_vals],
+                value='Offensive Rating'
+            )
+        ],
+        style={'width': '48%', 'display': 'inline-block'}),
+
+    html.Div([
+        dcc.Dropdown(
+            id='scatter1-y',
+            options=[{'label': i, 'value': i} for i in scatter_vals],
+            value='Wins'
+        )
+    ],style={'width': '48%', 'float': 'right', 'display': 'inline-block'})
 ])
 
+@app.callback(Output('scatter1', 'figure'),
+              [Input('scatter1-x', 'value'),
+              Input('scatter1-y', 'value')])
+def update_scatter2(x, y):
+
+    return {
+        'data': [go.Scatter(x=scatter_df[x],
+                    y=scatter_df[y], 
+                    mode='markers',
+                    marker=dict(color=[team_colors[i][0] for i in scatter_df['Team'].values],
+                        size=12,
+                        line=dict(width=2,
+                                        color=[team_colors[i][1] for i in scatter_df['Team'].values])
+                    ),
+                    hovertemplate=scatter_df['Team'].astype(str)+
+                        '<br><b>{}</b>: '.format(x)+ scatter_df[x].astype(str) +'<br>'+
+                        '<b>{}</b>: '.format(y)+ scatter_df[y].astype(str) +'<br>'+
+                        '<extra></extra>'
+                )
+        ],
+        'layout': go.Layout(
+            plot_bgcolor='#e6e6e6',
+            height=800,
+            width=800,
+            showlegend=False,
+            xaxis=dict(
+                title=x
+            ),
+            yaxis=dict(
+                title=y
+            ),
+            hovermode="closest"
+        )
+    }
 
 if __name__ == '__main__':
     app.run_server(debug=True)
