@@ -7,12 +7,16 @@ from nba_api.stats.endpoints import commonplayerinfo, playergamelog, playercaree
 from dashboard_reference import team_colors
 
 
-def conf_table_data(season):
+def league_standings(season):
     log = leaguestandings.LeagueStandings(league_id='00', season=str(season), season_type='Regular Season')
     df = log.get_data_frames()[0]
     df['WinPCT'] = round(df['WinPCT'] * 100, 2).astype(str) + '%'
     df['TeamCity'] = df['TeamCity'].replace('LA', 'Los Angeles')
     df['Team'] = df['TeamCity'] + ' ' + df['TeamName']
+    return df
+
+def conf_table_data(season):
+    df = league_standings(season)
 
     # - conferences
     east = df[df['Conference'] == 'East']
@@ -51,3 +55,26 @@ def scatter_data(season):
 
     return df.drop(['Rank', 'Arena'], axis=1).copy()
 
+def other_tables_data(season):
+    df = league_standings(season)
+
+    streaks = df[['LeagueRank', 'WinPCT', 'Team', 'Record', 'strLongHomeStreak', 
+                'strLongRoadStreak', 'LongWinStreak', 'LongLossStreak', 'strCurrentHomeStreak', 
+                'strCurrentRoadStreak']].sort_values(by=['LeagueRank', 'WinPCT'], ascending=[True, False])
+    streaks = streaks[['Team', 'Record', 'strLongHomeStreak', 'strLongRoadStreak', 
+                'LongWinStreak', 'LongLossStreak', 'strCurrentHomeStreak', 'strCurrentRoadStreak']]
+    streaks.columns = ['Team', 'Record', 'Longest Home Streak', 'Longest Road Streak', 
+                'Longest Win Streak', 'Longest Losing Streak', ' Current Home Streak', 'Current Road Streak']
+    streaks.name = "Streaks"
+
+    other = df[['LeagueRank', 'WinPCT', 'Team', 'Record', 'AheadAtHalf', 
+                'BehindAtHalf', 'TiedAtHalf', 'Score100PTS', 'OppScore100PTS', 'OppOver500', 
+                'FewerTurnovers']].sort_values(by=['LeagueRank', 'WinPCT'], ascending=[True, False])
+    other = other[['Team', 'Record', 'AheadAtHalf', 'BehindAtHalf', 
+                'TiedAtHalf', 'Score100PTS', 'OppScore100PTS', 'OppOver500', 'FewerTurnovers']]
+    other.columns = ['Team', 'Overall Record', 'Record when ahead at Half', 'Record when behind at Half', 
+                'Record when tied at Half', 'Record when scoring 100 points', 'Record when opponent scores 100 points', 
+                'Record against opponents over .500', 'Record when commiting fewer turnovers']
+    other.name = "Other"
+
+    return streaks, other
