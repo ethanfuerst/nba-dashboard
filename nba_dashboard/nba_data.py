@@ -3,6 +3,7 @@ import pandas as pd
 import requests
 import re
 import lxml
+import time
 from bs4 import BeautifulSoup
 from nba_api.stats.endpoints import leaguestandings
 
@@ -12,6 +13,7 @@ def get_colors(teamname):
         teamname = 'New Orleans Pelicans Team'
     URL = 'https://teamcolorcodes.com/{}-color-codes/'.format(teamname.replace(' ', '-').lower())
     page = requests.get(URL)
+    time.sleep(3)
 
     soup = BeautifulSoup(page.content, 'html.parser')
 
@@ -70,6 +72,7 @@ team_colors = {
     }
 
 def league_standings(season):
+    time.sleep(3)
     log = leaguestandings.LeagueStandings(league_id='00', season=str(season), season_type='Regular Season')
     df = log.get_data_frames()[0]
     df['WinPCT'] = round(df['WinPCT'] * 100, 2).astype(str) + '%'
@@ -97,6 +100,7 @@ def conf_table_data(season):
 
 def scatter_data(season):
     html = requests.get('http://www.basketball-reference.com/leagues/NBA_{}.html'.format(season + 1)).content
+    time.sleep(3)
     cleaned_soup = BeautifulSoup(re.sub(rb"<!--|-->",rb"", html),  features='lxml')
     misc_table = cleaned_soup.find('table', {'id':'misc_stats'})
 
