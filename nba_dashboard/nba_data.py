@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 import requests
 import re
-import lxml
 import time
 from bs4 import BeautifulSoup
 from nba_api.stats.endpoints import leaguestandings
