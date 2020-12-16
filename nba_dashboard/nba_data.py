@@ -1,4 +1,3 @@
-#%%
 import numpy as np
 import pandas as pd
 import requests
@@ -8,8 +7,8 @@ from bs4 import BeautifulSoup
 from nba_api.stats.endpoints import leaguestandings
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.utils import ChromeType
 
-#%%
 def get_colors(teamname):
     if teamname == 'New Orleans Pelicans':
         teamname = 'New Orleans Pelicans Team'
@@ -75,7 +74,7 @@ team_colors = {
 
 def conf_table_data(season):
     url = 'https://www.nba.com/standings?GroupBy=conf&Season={}&Section=overall'.format(str(season) + "-" + str(season + 1)[2:])
-    driver = webdriver.Chrome(ChromeDriverManager().install())
+    driver = webdriver.Chrome(ChromeDriverManager(chrome_type=ChromeType.GOOGLE).install())
     driver.get(url)
     time.sleep(2)
 
