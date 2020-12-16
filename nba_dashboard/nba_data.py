@@ -81,7 +81,7 @@ def conf_table_data(season):
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--no-sandbox')
     chrome_options.binary_location = GOOGLE_CHROME_PATH
-    driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
+    driver = webdriver.Chrome(executable_path==ChromeDriverManager().install(), chrome_options=chrome_options)
     driver.get(url)
     time.sleep(2)
 
