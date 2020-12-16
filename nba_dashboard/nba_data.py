@@ -97,6 +97,7 @@ def conf_table_data(season):
         df = pd.DataFrame(table[1:], columns=table[0])
         df['Team'] = df['TEAM'].str.split(' -', expand=True).iloc[:, 0].apply(lambda x: re.search(r'\d{1,2}\s(.*)\s', x).group(1))
         df['Clinch Indicator'] = df['TEAM'].apply(lambda x: re.search(r'\d{1,2}(.*)[A-Z]{3}(.*)', x).group(2))
+        
         df = df[['Team', 'W', 'L', 'WIN%', 'GB', 'CONF', 'DIV', 'HOME', 'ROAD', 'OT', 'LAST 10', 'STREAK', 'Clinch Indicator']].copy()
         df.columns = ['Team', 'Wins', 'Losses', 'Win %', 'Games Behind', 'vs. Conference', 'vs. Division', 'Home', 'Away', 'Overtime Record', 'Last 10 Games', 'Current Streak', 'Clinch Indicator']
         df['Team'] = df['Team'].apply(lambda x: 'Los Angeles Clippers' if x == 'LA Clippers' else x)
