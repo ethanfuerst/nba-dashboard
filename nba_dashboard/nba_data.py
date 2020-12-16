@@ -77,11 +77,16 @@ team_colors = {
 
 def conf_table_data(season):
     url = 'https://www.nba.com/standings?GroupBy=conf&Season={}&Section=overall'.format(str(season) + "-" + str(season + 1)[2:])
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument('--disable-gpu')
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.binary_location = GOOGLE_CHROME_PATH
-    driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
+    CHROMEDRIVER_PATH = "/app/.chromedriver/bin/chromedriver"
+
+    chrome_bin = os.environ.get('GOOGLE_CHROME_BIN', "chromedriver")
+    options = webdriver.ChromeOptions()
+    options.binary_location = chrome_bin
+    options.add_argument("--disable-gpu")
+    options.add_argument("--no-sandbox")
+    options.add_argument('headless')
+    options.add_argument('window-size=1200x600')
+    driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=options)
     driver.get(url)
     time.sleep(2)
 
@@ -97,7 +102,7 @@ def conf_table_data(season):
         df = pd.DataFrame(table[1:], columns=table[0])
         df['Team'] = df['TEAM'].str.split(' -', expand=True).iloc[:, 0].apply(lambda x: re.search(r'\d{1,2}\s(.*)\s', x).group(1))
         df['Clinch Indicator'] = df['TEAM'].apply(lambda x: re.search(r'\d{1,2}(.*)[A-Z]{3}(.*)', x).group(2))
-        
+
         df = df[['Team', 'W', 'L', 'WIN%', 'GB', 'CONF', 'DIV', 'HOME', 'ROAD', 'OT', 'LAST 10', 'STREAK', 'Clinch Indicator']].copy()
         df.columns = ['Team', 'Wins', 'Losses', 'Win %', 'Games Behind', 'vs. Conference', 'vs. Division', 'Home', 'Away', 'Overtime Record', 'Last 10 Games', 'Current Streak', 'Clinch Indicator']
         df['Team'] = df['Team'].apply(lambda x: 'Los Angeles Clippers' if x == 'LA Clippers' else x)
