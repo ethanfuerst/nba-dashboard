@@ -96,22 +96,34 @@ def conf_table_data(season):
 
     def get_table(tables, val):
         table = []
+        #! error here
+        '''
         for td in tables[val].find_all('tr'):
-            first =[t.getText(strip=True, separator=' ') for t in td]
-            table.append(first)
-        
-        df = pd.DataFrame(table[1:], columns=table[0])
-        df['Team'] = df['TEAM'].str.split(' -', expand=True).iloc[:, 0].apply(lambda x: re.search(r'\d{1,2}\s(.*)\s', x).group(1))
-        df['Clinch Indicator'] = df['TEAM'].apply(lambda x: re.search(r'\d{1,2}(.*)[A-Z]{3}(.*)', x).group(2))
+        2020-12-16T06:04:03.260503+00:00 app[web.1]: IndexError: list index out of range
+        '''
+        if len(tables) == 0:
+            return None
+        else:
+            for td in tables[val].find_all('tr'):
+                first =[t.getText(strip=True, separator=' ') for t in td]
+                table.append(first)
+            
+            df = pd.DataFrame(table[1:], columns=table[0])
+            df['Team'] = df['TEAM'].str.split(' -', expand=True).iloc[:, 0].apply(lambda x: re.search(r'\d{1,2}\s(.*)\s', x).group(1))
+            df['Clinch Indicator'] = df['TEAM'].apply(lambda x: re.search(r'\d{1,2}(.*)[A-Z]{3}(.*)', x).group(2))
 
-        df = df[['Team', 'W', 'L', 'WIN%', 'GB', 'CONF', 'DIV', 'HOME', 'ROAD', 'OT', 'LAST 10', 'STREAK', 'Clinch Indicator']].copy()
-        df.columns = ['Team', 'Wins', 'Losses', 'Win %', 'Games Behind', 'vs. Conference', 'vs. Division', 'Home', 'Away', 'Overtime Record', 'Last 10 Games', 'Current Streak', 'Clinch Indicator']
-        df['Team'] = df['Team'].apply(lambda x: 'Los Angeles Clippers' if x == 'LA Clippers' else x)
+            df = df[['Team', 'W', 'L', 'WIN%', 'GB', 'CONF', 'DIV', 'HOME', 'ROAD', 'OT', 'LAST 10', 'STREAK', 'Clinch Indicator']].copy()
+            df.columns = ['Team', 'Wins', 'Losses', 'Win %', 'Games Behind', 'vs. Conference', 'vs. Division', 'Home', 'Away', 'Overtime Record', 'Last 10 Games', 'Current Streak', 'Clinch Indicator']
+            df['Team'] = df['Team'].apply(lambda x: 'Los Angeles Clippers' if x == 'LA Clippers' else x)
 
-        return df
+            return df
+    east, west = None, None
 
-    east = get_table(tables, 0)
-    west = get_table(tables, 1)
+    while east is not None:
+        east = get_table(tables, 0)
+    while west is not None:
+        west = get_table(tables, 1)
+
     west.name = 'West'
     east.name = 'East'
 
