@@ -7,7 +7,7 @@ import plotly.graph_objs as go
 import numpy as np
 import pandas as pd
 from datetime import datetime
-from nba_data import scatter_data, conf_table_data, other_tables_data, team_colors
+from nba_data import scatter_data, conf_table_data, team_colors
 
 app = dash.Dash(external_stylesheets=['https://codepen.io/chriddyp/pen/bWLwgP.css'])
 
@@ -17,12 +17,11 @@ season_str = str(season) + "-" + str(season + 1)[2:]
 east, west = conf_table_data(season)
 scatter_df = scatter_data(season)
 scatter_vals = scatter_df.columns.to_list()[1:]
-streaks, other = other_tables_data(season)
 
 def conf_table(conf_df):
     data = go.Table(
         header=dict(
-            values=['<b>{}</b>'.format(i) for i in conf_df.columns],
+            values=['<b>Rank</b>'] + ['<b>{}</b>'.format(i) for i in conf_df.columns],
             line_color='black',
             font_color='black',
             fill_color='lightgrey',
@@ -31,7 +30,7 @@ def conf_table(conf_df):
         cells=dict(
             values=[['<b>{}</b>'.format(i) for i in range(1,9)] 
                     + [str(i) for i in range(9,16)]] 
-                    + [conf_df[k].tolist() for k in conf_df.columns[1:]],
+                    + [conf_df[k].tolist() for k in conf_df.columns[:]],
             align = "left",
             fill_color=[['#E6E6E6'] * 15, [team_colors[i][0] for i in conf_df['Team'].values]] + [['#E6E6E6'] * 15] * 6,
             line_color=[['#FFFFFF'] * 15, [team_colors[i][1] for i in conf_df['Team'].values]] + [['#FFFFFF'] * 15] * 6,
@@ -43,7 +42,7 @@ def conf_table(conf_df):
     layout = dict(
         showlegend=False,
         title_text="{} Conference".format(conf_df.name),
-        height=900
+        height=1050
     )
     return dict(data=[data], layout=layout)
 
@@ -136,17 +135,18 @@ app.layout = html.Div([
             options=[{'label': i, 'value': i} for i in scatter_vals],
             value='Wins'
         )
-    ],style={'width': '48%', 'float': 'right', 'display': 'inline-block'}),
-    dbc.Row(html.H1(children='Streaks',
-        style={
-            'textAlign': 'center'
-        })),
-    html.Div([dcc.Graph(id='streaks_table', figure=other_tables(streaks))]),
-    dbc.Row(html.H1(children='Other Statistics',
-        style={
-            'textAlign': 'center'
-        })),
-    html.Div([dcc.Graph(id='other_table', figure=other_tables(other))]),
+    ],style={'width': '48%', 'float': 'right', 'display': 'inline-block'})
+    # ,
+    # dbc.Row(html.H1(children='Streaks',
+    #     style={
+    #         'textAlign': 'center'
+    #     })),
+    # html.Div([dcc.Graph(id='streaks_table', figure=other_tables(streaks))]),
+    # dbc.Row(html.H1(children='Other Statistics',
+    #     style={
+    #         'textAlign': 'center'
+    #     })),
+    # html.Div([dcc.Graph(id='other_table', figure=other_tables(other))]),
 ])
 
 @app.callback(Output('scatter1', 'figure'),

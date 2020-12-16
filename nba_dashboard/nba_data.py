@@ -1,3 +1,4 @@
+#%%
 import numpy as np
 import pandas as pd
 import requests
@@ -6,8 +7,10 @@ import lxml
 import time
 from bs4 import BeautifulSoup
 from nba_api.stats.endpoints import leaguestandings
+from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
 
-
+#%%
 def get_colors(teamname):
     if teamname == 'New Orleans Pelicans':
         teamname = 'New Orleans Pelicans Team'
@@ -71,28 +74,30 @@ team_colors = {
     "Washington Wizards": ["#002B5C", "#e31837", "#C4CED4"]
     }
 
-def league_standings(season):
-    time.sleep(3)
-    log = leaguestandings.LeagueStandings(league_id='00', season=str(season), season_type='Regular Season')
-    df = log.get_data_frames()[0]
-    df['WinPCT'] = round(df['WinPCT'] * 100, 2).astype(str) + '%'
-    df['TeamCity'] = df['TeamCity'].replace('LA', 'Los Angeles')
-    df['Team'] = df['TeamCity'] + ' ' + df['TeamName']
-    return df
-
 def conf_table_data(season):
-    df = league_standings(season)
+    url = 'https://www.nba.com/standings?GroupBy=conf&Season={}&Section=overall'.format(str(season) + "-" + str(season + 1)[2:])
+    driver = webdriver.Chrome(ChromeDriverManager().install())
+    driver.get(url)
+    time.sleep(2)
 
-    # - conferences
-    east = df[df['Conference'] == 'East']
-    west = df[df['Conference'] == 'West']
-    east = east[['PlayoffRank', 'Team', 'Record', 'ConferenceGamesBack', 
-                'vsWest', 'ConferenceRecord', 'WinPCT', 'ClinchIndicator']].sort_values(by=['PlayoffRank', 
-                'WinPCT'], ascending=[True, False])
-    west = west[['PlayoffRank', 'Team', 'Record', 'ConferenceGamesBack', 
-                'ConferenceRecord', 'vsEast', 'WinPCT', 'ClinchIndicator']].sort_values(by=['PlayoffRank', 
-                'WinPCT'], ascending=[True, False])
-    west.columns = east.columns = ['Rank', 'Team', 'Record', 'Games Back', 'vs. West', 'vs. East', 'Win %', 'Clinch Indicator']
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    tables = soup.select('div.StandingsGridRender_standingsContainer__2EwPy')
+
+    def get_table(tables, val):
+        table = []
+        for td in tables[val].find_all('tr'):
+            first =[t.getText(strip=True, separator=' ') for t in td]
+            table.append(first)
+        df = pd.DataFrame(table[1:], columns=table[0])
+        df['Team'] = df['TEAM'].str.split(' -', expand=True).iloc[:, 0].apply(lambda x: re.search(r'\d{1,2}\s(.*)\s', x).group(1))
+        df['Clinch Indicator'] = df['TEAM'].apply(lambda x: re.search(r'\d{1,2}(.*)[A-Z]{3}(.*)', x).group(2))
+        df = df[['Team', 'W', 'L', 'WIN%', 'GB', 'CONF', 'DIV', 'HOME', 'ROAD', 'OT', 'LAST 10', 'STREAK', 'Clinch Indicator']].copy()
+        df.columns = ['Team', 'Wins', 'Losses', 'Win %', 'Games Behind', 'vs. Conference', 'vs. Division', 'Home', 'Away', 'Overtime Record', 'Last 10 Games', 'Current Streak', 'Clinch Indicator']
+        df['Team'] = df['Team'].apply(lambda x: 'Los Angeles Clippers' if x == 'LA Clippers' else x)
+        return df
+
+    east = get_table(tables, 0)
+    west = get_table(tables, 1)
     west.name = 'West'
     east.name = 'East'
 
@@ -120,27 +125,3 @@ def scatter_data(season):
     df[['Wins', 'Losses']] = df[['Wins', 'Losses']].astype(int)
 
     return df.drop(['Rank', 'Arena'], axis=1).copy()
-
-def other_tables_data(season):
-    df = league_standings(season)
-
-    streaks = df[['LeagueRank', 'WinPCT', 'Team', 'Record', 'strLongHomeStreak', 
-                'strLongRoadStreak', 'LongWinStreak', 'LongLossStreak', 'strCurrentHomeStreak', 
-                'strCurrentRoadStreak']].sort_values(by=['LeagueRank', 'WinPCT'], ascending=[True, False])
-    streaks = streaks[['Team', 'Record', 'strLongHomeStreak', 'strLongRoadStreak', 
-                'LongWinStreak', 'LongLossStreak', 'strCurrentHomeStreak', 'strCurrentRoadStreak']]
-    streaks.columns = ['Team', 'Record', 'Longest Home Streak', 'Longest Road Streak', 
-                'Longest Win Streak', 'Longest Losing Streak', ' Current Home Streak', 'Current Road Streak']
-    streaks.name = "Streaks"
-
-    other = df[['LeagueRank', 'WinPCT', 'Team', 'Record', 'AheadAtHalf', 
-                'BehindAtHalf', 'TiedAtHalf', 'Score100PTS', 'OppScore100PTS', 'OppOver500', 
-                'FewerTurnovers']].sort_values(by=['LeagueRank', 'WinPCT'], ascending=[True, False])
-    other = other[['Team', 'Record', 'AheadAtHalf', 'BehindAtHalf', 
-                'TiedAtHalf', 'Score100PTS', 'OppScore100PTS', 'OppOver500', 'FewerTurnovers']]
-    other.columns = ['Team', 'Overall Record', 'Record when ahead at Half', 'Record when behind at Half', 
-                'Record when tied at Half', 'Record when scoring 100 points', 'Record when opponent scores 100 points', 
-                'Record against opponents over .500', 'Record when commiting fewer turnovers']
-    other.name = "Other"
-
-    return streaks, other
