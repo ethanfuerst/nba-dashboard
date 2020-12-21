@@ -88,6 +88,7 @@ def conf_table_data(season):
     options.add_argument('headless')
     options.add_argument('window-size=1200x600')
     options.add_argument('--disable-dev-shm-usage') 
+    options.add_argument("--disable-popup-blocking")
     driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=options)
     driver.get(url)
     time.sleep(2)
@@ -145,3 +146,8 @@ def scatter_data(season):
     df[['Wins', 'Losses']] = df[['Wins', 'Losses']].astype(int)
 
     return df.drop(['Rank', 'Arena'], axis=1).copy()
+
+
+#%%
+
+#%%

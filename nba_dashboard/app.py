@@ -73,52 +73,35 @@ def other_tables(table):
 
     return dict(data=[data], layout=layout)
 
+center_style = {'textAlign': 'center'}
+
 app = dash.Dash()
 app.layout = html.Div([
     dbc.Row(html.H1(children='{} NBA Regular Season Dashboard'.format(season_str),
-        style={
-            'textAlign': 'center'
-        })),
+        style=center_style)),
     dbc.Row(html.H2(children='Last Updated: {}'.format(datetime.now().strftime('%-I:%M:%S %p %Z')),
-        style={
-            'textAlign': 'center'
-        })),
+        style=center_style)),
     html.Br(),
     dbc.Row(html.H1(children='Western Conference Standings',
-        style={
-            'textAlign': 'center'
-        })),
+        style=center_style)),
     dbc.Row(children=[html.H2('Conference clinched: -w'),
                     html.H2('Division clinched: - nw, p, sw'),
                     html.H2('Playoff spot clinched: - o'),
                     html.H2('Missed Playoffs: - x')],
-        style={
-            'textAlign': 'center'
-        }
-        ),
+        style=center_style),
     html.Div([dcc.Graph(id='west_table', figure=conf_table(west))]),
     dbc.Row(html.H1(children='Eastern Conference Standings',
-        style={
-            'textAlign': 'center'
-        })),
+        style=center_style)),
         dbc.Row(children=[html.H2('Conference clinched: -w'),
                     html.H2('Division clinched: - se, c, a'),
                     html.H2('Playoff spot clinched: - o'),
                     html.H2('Missed Playoffs: - x')],
-        style={
-            'textAlign': 'center'
-        }
-        ),
+        style=center_style),
     html.Div([dcc.Graph(id='east_table', figure=conf_table(east))]),
     dbc.Row(html.H1(children='League Statistics Comparison',
-        style={
-            'textAlign': 'center'
-        })),
+        style=center_style)),
     dbc.Row(children=[html.H2('Choose two metrics to compare how the league stacks up!')],
-        style={
-            'textAlign': 'center'
-        }
-        ),
+        style=center_style),
     dcc.Graph(id='scatter1'),
     html.Div([
             dcc.Dropdown(
@@ -138,14 +121,10 @@ app.layout = html.Div([
     ],style={'width': '48%', 'float': 'right', 'display': 'inline-block'})
     # ,
     # dbc.Row(html.H1(children='Streaks',
-    #     style={
-    #         'textAlign': 'center'
-    #     })),
+    #     style=center_style)),
     # html.Div([dcc.Graph(id='streaks_table', figure=other_tables(streaks))]),
     # dbc.Row(html.H1(children='Other Statistics',
-    #     style={
-    #         'textAlign': 'center'
-    #     })),
+    #     style={center_style)),
     # html.Div([dcc.Graph(id='other_table', figure=other_tables(other))]),
 ])
 
