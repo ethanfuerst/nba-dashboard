@@ -118,9 +118,9 @@ def conf_table_data(season):
 
     east, west = None, None
 
-    while east is not None:
+    while east is None:
         east = get_table(tables, 0)
-    while west is not None:
+    while west is None:
         west = get_table(tables, 1)
 
     west.name = 'West'
