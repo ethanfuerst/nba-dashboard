@@ -94,14 +94,13 @@ def conf_table_data(season):
 
     soup = BeautifulSoup(driver.page_source, 'html.parser')
     tables = soup.select('div.StandingsGridRender_standingsContainer__2EwPy')
+    if len(tables) < 2:
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
+        tables = soup.select('div.StandingsGridRender_standingsContainer__2EwPy')
 
     def get_table(tables, val):
         table = []
         #! need to test this
-        '''
-        for td in tables[val].find_all('tr'):
-        2020-12-16T06:04:03.260503+00:00 app[web.1]: IndexError: list index out of range
-        '''
         for td in tables[val].find_all('tr'):
             first =[t.getText(strip=True, separator=' ') for t in td]
             table.append(first)
@@ -116,12 +115,8 @@ def conf_table_data(season):
 
         return df
 
-    east, west = None, None
-
-    while east is None:
-        east = get_table(tables, 0)
-    while west is None:
-        west = get_table(tables, 1)
+    east = get_table(tables, 0)
+    west = get_table(tables, 1)
 
     west.name = 'West'
     east.name = 'East'
