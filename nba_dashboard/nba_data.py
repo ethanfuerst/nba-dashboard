@@ -87,6 +87,7 @@ def conf_table_data(season):
     options.add_argument("--no-sandbox")
     options.add_argument('headless')
     options.add_argument('window-size=1200x600')
+    options.add_argument('--disable-dev-shm-usage') 
     driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=options)
     driver.get(url)
     time.sleep(2)
@@ -96,7 +97,7 @@ def conf_table_data(season):
 
     def get_table(tables, val):
         table = []
-        #! error here
+        #! need to test this
         '''
         for td in tables[val].find_all('tr'):
         2020-12-16T06:04:03.260503+00:00 app[web.1]: IndexError: list index out of range
