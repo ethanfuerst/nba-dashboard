@@ -94,11 +94,7 @@ def conf_table_data(season):
     time.sleep(2)
 
     soup = BeautifulSoup(driver.page_source, 'html.parser')
-    tables = soup.select('div.StandingsGridRender_standingsContainer__2EwPy')
-    if len(tables) < 2:
-        soup = BeautifulSoup(driver.page_source, 'html.parser')
-        tables = soup.select('div.StandingsGridRender_standingsContainer__2EwPy')
-
+    tables = soup.find_all('div', class_="StandingsGridRender_standingsContainer__2EwPy")
     def get_table(tables, val):
         table = []
         #! need to test this
