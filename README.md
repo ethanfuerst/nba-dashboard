@@ -4,17 +4,29 @@ This project is where I keep all my files that I use when I analyze all sorts of
 
 ## Files in this repository
 
-### Projects (.ipynb)
+### /Projects (.ipynb)/
 
-#### .ipynb
+#### a few ad-hoc analyses
 
-__*2020_mvp.ipynb*__ - analysis of the 2020 NBA MVP race between LeBron and Giannis (as of 5/30/20) [Here is my completed analysis.](https://tidbitstatistics.com/are-nba-teams-shooting-better-in-the-bubble/)
+__*2020_mvp.ipynb*__ - detailed analysis of the 2020 NBA MVP race between LeBron and Giannis (as of 5/30/20) [Here is my completed analysis.](https://tidbitstatistics.com/nba-mvp/)
 
-__*2020_mvp.ipynb*__ - analysis of the 2019-20 season that compared shooting number before and during the bubble. [Here is my completed analysis.](https://www.tidbitstatistics.com/nba-mvp/)
+__*bubble_playoff_h-a.ipynb*__ -  compared home/away records over the last 15 years. [Here is my completed analysis.](https://www.tidbitstatistics.com/are-nba-teams-shooting-better-in-the-bubble/)
 
-__*margin_of_victory.ipynb*__ - analysis that showed the '19 - '20 season is set to have the most 40-point blowouts of all time. (as of 12/26/19) [Here is my completed analysis.](https://www.tidbitstatistics.com/NBA-blowouts/)
+__*bubble_shooting.ipynb*__ - comparing shooting number before and during the 2019-20 NBA bubble. [Here is my completed analysis.](https://www.tidbitstatistics.com/are-nba-teams-shooting-better-in-the-bubble/)
 
-### .py
+__*margin_of_victory.ipynb*__ - showed the '19 - '20 season was on pace to have the most 40-point blowouts of all time. (as of 12/26/19) [Here is my completed analysis.](https://www.tidbitstatistics.com/NBA-blowouts/)
+
+### /nba_dashboard/
+
+#### code for my NBA Season dashboard
+
+__*app.<span></span>py*__ - the meat of my application. [Here is the completed dashboard.](https://tidbitstatistics.com/nba-season-dashboard/)
+
+__*nba_data.py*__ - the bones of my application, gathers all data from various sources and formats for usage in app.<span></span>py
+
+__*Procfile, requirements.txt*__ - other files needed for app<span></span>.py to run
+
+### everything else
 
 __*nba_player.py*__ - contains NBA_Player() object
 
@@ -24,13 +36,10 @@ __*nba_season.py*__ - contains NBA_Season() object
 
 __*nba_methods.py*__ - contains various methods to support NBA-related objects I have built in other files
 
-__*pps.ipynb*__ - points per shot analysis - work in progress
-
 ## TODO
 
 - [ ] why are there so many blowouts this year? - create new .py file and dig in to it
-- [ ] dig in to ppfta, ppfga, pp3pa on pps.ipynb
-- [ ] add get_shot_chart() method to NBA_Player class
+- [x] add get_shot_chart() method to NBA_Player class
   - [x] pull data frames
   - [ ] create shot chart from data frames
     - [x] figure out fix, ax
@@ -55,6 +64,8 @@ __*pps.ipynb*__ - points per shot analysis - work in progress
     - [x] fix playoff data from nba_team.py
     - [ ] parameter for size on/off in hexbins
     - [ ] team logo on chart?
+- [ ] create Plotly Dash dashboard to analyze a season's worth of data
+  - [ ] find a way to format the dashboard and make it look good
 - [ ] add get_shot_dist() method to NBA_Player class
   - [x] histogram with shot dist and freq
   - [ ] brainstorm kinds of charts and figure out parameter control
