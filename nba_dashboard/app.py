@@ -6,14 +6,11 @@ from dash.dependencies import Input, Output
 import plotly.graph_objs as go
 import numpy as np
 import pandas as pd
+import sys
 from datetime import datetime
 from nba_data import scatter_data, conf_table_data, team_colors
 import logging
 
-app.logger.addHandler(logging.StreamHandler(sys.stdout))
-app.logger.setLevel(logging.ERROR)
-app = dash.Dash(external_stylesheets=['https://codepen.io/chriddyp/pen/bWLwgP.css'])
-server = app.server
 
 season = 2020
 season_str = str(season) + "-" + str(season + 1)[2:]
@@ -79,7 +76,10 @@ def other_tables(table):
 
 center_style = {'textAlign': 'center'}
 
-app = dash.Dash()
+app = dash.Dash(__name__, external_stylesheets=['https://codepen.io/chriddyp/pen/bWLwgP.css'])
+app.logger.addHandler(logging.StreamHandler(sys.stdout))
+app.logger.setLevel(logging.ERROR)
+server = app.server
 app.layout = html.Div([
     dbc.Row(html.H1(children='{} NBA Regular Season Dashboard'.format(season_str),
         style=center_style)),
