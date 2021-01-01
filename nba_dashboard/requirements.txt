@@ -11,5 +11,3 @@ lxml
 beautifulsoup4
 nba_api
 gunicorn
-selenium
-webdriver_manager

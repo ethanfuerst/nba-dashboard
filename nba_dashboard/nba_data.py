@@ -6,12 +6,7 @@ import time
 import os
 from bs4 import BeautifulSoup
 from nba_api.stats.endpoints import leaguestandings
-from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.utils import ChromeType
 
-GOOGLE_CHROME_PATH = '/app/.apt/usr/bin/google_chrome'
-CHROMEDRIVER_PATH = '/app/.chromedriver/bin/chromedriver'
 
 def get_colors(teamname):
     if teamname == 'New Orleans Pelicans':
