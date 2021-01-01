@@ -10,6 +10,7 @@ from datetime import datetime
 from nba_data import scatter_data, conf_table_data, team_colors
 
 app = dash.Dash(external_stylesheets=['https://codepen.io/chriddyp/pen/bWLwgP.css'])
+server = app.server
 
 season = 2020
 season_str = str(season) + "-" + str(season + 1)[2:]
