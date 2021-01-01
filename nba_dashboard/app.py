@@ -8,7 +8,10 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 from nba_data import scatter_data, conf_table_data, team_colors
+import logging
 
+app.logger.addHandler(logging.StreamHandler(sys.stdout))
+app.logger.setLevel(logging.ERROR)
 app = dash.Dash(external_stylesheets=['https://codepen.io/chriddyp/pen/bWLwgP.css'])
 server = app.server
 
