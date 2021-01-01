@@ -69,41 +69,11 @@ team_colors = {
     "Washington Wizards": ["#002B5C", "#e31837", "#C4CED4"]
     }
 
-teams_replace = {'Clippers': 'Los Angeles Clippers',
-                'Suns': 'Phoenix Suns',
-                'Kings': 'Sacramento Kings',
-                'Jazz': 'Utah Jazz',
-                'Lakers': 'Los Angeles Lakers',
-                'Pelicans': 'New Orleans Pelicans',
-                'Warriors': 'Golden State Warriors',
-                'Blazers': 'Portland Trail Blazers',
-                'Timberwolves': 'Minnesota Timberwolves',
-                'Spurs': 'San Antonio Spurs',
-                'Thunder': 'Oklahoma City Thunder',
-                'Mavericks': 'Dallas Mavericks',
-                'Nuggets': 'Denver Nuggets',
-                'Grizzlies': 'Memphis Grizzlies',
-                'Rockets': 'Houston Rockets',
-                'Magic': 'Orlando Magic',
-                'Pacers': 'Indiana Pacers',
-                '76ers': 'Philadelphia 76ers',
-                'Hawks': 'Atlanta Hawks',
-                'Nets': 'Brooklyn Nets',
-                'Cavaliers': 'Cleveland Cavaliers',
-                'Celtics': 'Boston Celtics',
-                'Hornets': 'Charlotte Hornets',
-                'Knicks': 'New York Knicks',
-                'Heat': 'Miami Heat',
-                'Bucks': 'Milwaukee Bucks',
-                'Bulls': 'Chicago Bulls',
-                'Raptors': 'Toronto Raptors',
-                'Wizards': 'Washington Wizards',
-                'Pistons': 'Detroit Pistons'}
-
 def conf_table_data(season):
     #! add in playoff string reading for previous years after this works for current year
     dfs = pd.read_html(f'https://www.espn.com/nba/standings/_/season/{season + 1}')
     time.sleep(3)
+
     flatten = lambda t: [item.split(' ')[-1] for sublist in t for item in sublist]
     cols = ['Team', 'W', 'L', 'PCT', 'GB', 'HOME', 'AWAY', 'DIV', 'CONF', 'PPG', 'OPP PPG',
             'DIFF', 'STRK', 'L10']
@@ -111,13 +81,20 @@ def conf_table_data(season):
     for i in [[1, 'East'], [3, 'West']]:
         conf_str = i[1]
         conf = dfs[i[0]]
+
         teams = pd.DataFrame([dfs[i[0] - 1].columns.values.tolist()[0].split(' ')[-1]] + flatten(dfs[i[0] - 1].values.tolist()))
-        teams = teams.replace({0:teams_replace})
+        teams = teams.replace({0:{i.split(' ')[-1]: i for i in list(team_colors.keys())}})
+
         conf['Team'] = teams
         conf['PCT'] = round(conf['PCT'] * 100, 2).astype(str) + '%'
-        conf['DIFF'] = round(conf['DIFF'], 1)
+
+        for j in ['PPG','OPP PPG','DIFF']:
+            conf[j] = round(conf[j], 1)
+            conf[j] = conf[j].astype(str)
+        
         conf = conf.reindex(columns=cols).copy()
         conf.columns = ['Team', 'Wins', 'Losses', 'Win %', 'Games Back', 'at Home', 'Away', 'vs. Division', f'vs. {conf_str}', 'Points Per Game', 'Opponent Points Per Game', 'Difference', 'Current Streak', 'Last 10 Games']
+
         if i[1] == 'West':
             west = conf.copy()
         else:
@@ -146,6 +123,7 @@ def scatter_data(season):
                 'Effective Field Goal Percentage Allowed', 'Opponent Turnover Percentage', 
                 'Defensive Rebound Pecentage', 'Opponent Free Throws Per Field Goal Attempt', 'Arena', 'Attendance', 
                 'Attendance Per Game']
+    
     df = df[df['Team'] != 'League Average']
     df[['Wins', 'Losses']] = df[['Wins', 'Losses']].astype(int)
 
@@ -155,3 +133,4 @@ def scatter_data(season):
 #%%
 
 #%%
+# %%

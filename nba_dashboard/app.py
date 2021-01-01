@@ -9,7 +9,6 @@ import pandas as pd
 import sys
 from datetime import datetime
 from nba_data import scatter_data, conf_table_data, team_colors
-import logging
 
 
 season = 2020
@@ -35,7 +34,9 @@ def conf_table(conf_df):
             align = "left",
             fill_color=[['#E6E6E6'] * 15, [team_colors[i][0] for i in conf_df['Team'].values]] + [['#E6E6E6'] * 15] * 6,
             line_color=[['#FFFFFF'] * 15, [team_colors[i][1] for i in conf_df['Team'].values]] + [['#FFFFFF'] * 15] * 6,
-            font_color=[['#000000'] * 15, ['#FFFFFF'] * 15] + [['#000000'] * 15] * 6,
+            font_color=[['#000000'] * 15, ['#FFFFFF'] * 15] + [['#000000'] * 15] * 10 + 
+                        [['#238823' if float(i) > 0 else '#FF0000' if float(i) < 0 else '#000000' for i in conf_df['Difference'].values]] + 
+                        [['#000000'] * 15] * 2,
             height=45
             )
     )
@@ -43,7 +44,7 @@ def conf_table(conf_df):
     layout = dict(
         showlegend=False,
         title_text="{} Conference".format(conf_df.name),
-        height=1050
+        height=1060
     )
     return dict(data=[data], layout=layout)
 
@@ -77,8 +78,6 @@ def other_tables(table):
 center_style = {'textAlign': 'center'}
 
 app = dash.Dash(__name__, external_stylesheets=['https://codepen.io/chriddyp/pen/bWLwgP.css'])
-app.logger.addHandler(logging.StreamHandler(sys.stdout))
-app.logger.setLevel(logging.ERROR)
 server = app.server
 app.layout = html.Div([
     dbc.Row(html.H1(children='{} NBA Regular Season Dashboard'.format(season_str),
