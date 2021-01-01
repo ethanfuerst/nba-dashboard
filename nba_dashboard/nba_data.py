@@ -18,8 +18,6 @@ def get_colors(teamname):
         teamname = 'New Orleans Pelicans Team'
     URL = 'https://teamcolorcodes.com/{}-color-codes/'.format(teamname.replace(' ', '-').lower())
     page = requests.get(URL)
-    time.sleep(3)
-
     soup = BeautifulSoup(page.content, 'html.parser')
 
     colors = []
@@ -76,45 +74,60 @@ team_colors = {
     "Washington Wizards": ["#002B5C", "#e31837", "#C4CED4"]
     }
 
+teams_replace = {'Clippers': 'Los Angeles Clippers',
+                'Suns': 'Phoenix Suns',
+                'Kings': 'Sacramento Kings',
+                'Jazz': 'Utah Jazz',
+                'Lakers': 'Los Angeles Lakers',
+                'Pelicans': 'New Orleans Pelicans',
+                'Warriors': 'Golden State Warriors',
+                'Blazers': 'Portland Trail Blazers',
+                'Timberwolves': 'Minnesota Timberwolves',
+                'Spurs': 'San Antonio Spurs',
+                'Thunder': 'Oklahoma City Thunder',
+                'Mavericks': 'Dallas Mavericks',
+                'Nuggets': 'Denver Nuggets',
+                'Grizzlies': 'Memphis Grizzlies',
+                'Rockets': 'Houston Rockets',
+                'Magic': 'Orlando Magic',
+                'Pacers': 'Indiana Pacers',
+                '76ers': 'Philadelphia 76ers',
+                'Hawks': 'Atlanta Hawks',
+                'Nets': 'Brooklyn Nets',
+                'Cavaliers': 'Cleveland Cavaliers',
+                'Celtics': 'Boston Celtics',
+                'Hornets': 'Charlotte Hornets',
+                'Knicks': 'New York Knicks',
+                'Heat': 'Miami Heat',
+                'Bucks': 'Milwaukee Bucks',
+                'Bulls': 'Chicago Bulls',
+                'Raptors': 'Toronto Raptors',
+                'Wizards': 'Washington Wizards',
+                'Pistons': 'Detroit Pistons'}
+
 def conf_table_data(season):
-    url = 'https://www.nba.com/standings?GroupBy=conf&Season={}&Section=overall'.format(str(season) + "-" + str(season + 1)[2:])
-    CHROMEDRIVER_PATH = "/app/.chromedriver/bin/chromedriver"
-
-    chrome_bin = os.environ.get('GOOGLE_CHROME_BIN', "chromedriver")
-    options = webdriver.ChromeOptions()
-    options.binary_location = chrome_bin
-    options.add_argument("--disable-gpu")
-    options.add_argument("--no-sandbox")
-    options.add_argument('headless')
-    options.add_argument('window-size=1200x600')
-    options.add_argument('--disable-dev-shm-usage') 
-    options.add_argument("--disable-popup-blocking")
-    driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=options)
-    driver.get(url)
-    time.sleep(2)
-
-    soup = BeautifulSoup(driver.page_source, 'html.parser')
-    tables = soup.find_all('div', class_="StandingsGridRender_standingsContainer__2EwPy")
-    def get_table(tables, val):
-        table = []
-        #! need to test this
-        for td in tables[val].find_all('tr'):
-            first =[t.getText(strip=True, separator=' ') for t in td]
-            table.append(first)
-        
-        df = pd.DataFrame(table[1:], columns=table[0])
-        df['Team'] = df['TEAM'].str.split(' -', expand=True).iloc[:, 0].apply(lambda x: re.search(r'\d{1,2}\s(.*)\s', x).group(1))
-        df['Clinch Indicator'] = df['TEAM'].apply(lambda x: re.search(r'\d{1,2}(.*)[A-Z]{3}(.*)', x).group(2))
-
-        df = df[['Team', 'W', 'L', 'WIN%', 'GB', 'CONF', 'DIV', 'HOME', 'ROAD', 'OT', 'LAST 10', 'STREAK', 'Clinch Indicator']].copy()
-        df.columns = ['Team', 'Wins', 'Losses', 'Win %', 'Games Behind', 'vs. Conference', 'vs. Division', 'Home', 'Away', 'Overtime Record', 'Last 10 Games', 'Current Streak', 'Clinch Indicator']
-        df['Team'] = df['Team'].apply(lambda x: 'Los Angeles Clippers' if x == 'LA Clippers' else x)
-
-        return df
-
-    east = get_table(tables, 0)
-    west = get_table(tables, 1)
-
+    #! add in playoff string reading for previous years after this works for current year
+    dfs = pd.read_html(f'https://www.espn.com/nba/standings/_/season/{season + 1}')
+    time.sleep(3)
+    flatten = lambda t: [item.split(' ')[-1] for sublist in t for item in sublist]
+    cols = ['Team', 'W', 'L', 'PCT', 'GB', 'HOME', 'AWAY', 'DIV', 'CONF', 'PPG', 'OPP PPG',
+            'DIFF', 'STRK', 'L10']
+    
+    for i in [[1, 'East'], [3, 'West']]:
+        conf_str = i[1]
+        conf = dfs[i[0]]
+        teams = pd.DataFrame([dfs[i[0] - 1].columns.values.tolist()[0].split(' ')[-1]] + flatten(dfs[i[0] - 1].values.tolist()))
+        teams = teams.replace({0:teams_replace})
+        conf['Team'] = teams
+        conf['PCT'] = round(conf['PCT'] * 100, 2).astype(str) + '%'
+        conf['DIFF'] = round(conf['DIFF'], 1)
+        conf = conf.reindex(columns=cols).copy()
+        conf.columns = ['Team', 'Wins', 'Losses', 'Win %', 'Games Back', 'at Home', 'Away', 'vs. Division', f'vs. {conf_str}', 'Points Per Game', 'Opponent Points Per Game', 'Difference', 'Current Streak', 'Last 10 Games']
+        if i[1] == 'West':
+            west = conf.copy()
+        else:
+            east = conf.copy()
+    
     west.name = 'West'
     east.name = 'East'
 
@@ -123,7 +136,7 @@ def conf_table_data(season):
 def scatter_data(season):
     html = requests.get('http://www.basketball-reference.com/leagues/NBA_{}.html'.format(season + 1)).content
     time.sleep(3)
-    cleaned_soup = BeautifulSoup(re.sub(rb"<!--|-->",rb"", html),  features='lxml')
+    cleaned_soup = BeautifulSoup(re.sub(rb"<!--|-->",rb"", html), features='lxml')
     misc_table = cleaned_soup.find('table', {'id':'misc_stats'})
 
     df = pd.read_html(str(misc_table))[0]

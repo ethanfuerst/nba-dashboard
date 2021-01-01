@@ -11,7 +11,7 @@ from nba_data import scatter_data, conf_table_data, team_colors
 
 app = dash.Dash(external_stylesheets=['https://codepen.io/chriddyp/pen/bWLwgP.css'])
 
-season = 2019
+season = 2020
 season_str = str(season) + "-" + str(season + 1)[2:]
 
 east, west = conf_table_data(season)
@@ -82,6 +82,7 @@ app.layout = html.Div([
     dbc.Row(html.H2(children='Last Updated: {}'.format(datetime.now().strftime('%-I:%M:%S %p %Z')),
         style=center_style)),
     html.Br(),
+
     dbc.Row(html.H1(children='Western Conference Standings',
         style=center_style)),
     dbc.Row(children=[html.H2('Conference clinched: -w'),
@@ -90,6 +91,7 @@ app.layout = html.Div([
                     html.H2('Missed Playoffs: - x')],
         style=center_style),
     html.Div([dcc.Graph(id='west_table', figure=conf_table(west))]),
+
     dbc.Row(html.H1(children='Eastern Conference Standings',
         style=center_style)),
         dbc.Row(children=[html.H2('Conference clinched: -w'),
@@ -98,11 +100,13 @@ app.layout = html.Div([
                     html.H2('Missed Playoffs: - x')],
         style=center_style),
     html.Div([dcc.Graph(id='east_table', figure=conf_table(east))]),
+
     dbc.Row(html.H1(children='League Statistics Comparison',
         style=center_style)),
     dbc.Row(children=[html.H2('Choose two metrics to compare how the league stacks up!')],
         style=center_style),
-    dcc.Graph(id='scatter1'),
+    html.Center([dcc.Graph(id='scatter1')]),
+
     html.Div([
             dcc.Dropdown(
                 id='scatter1-x',
