@@ -157,8 +157,8 @@ def update_scatter2(x, y):
         ],
         'layout': go.Layout(
             plot_bgcolor='#e6e6e6',
-            height=800,
-            width=800,
+            height=600,
+            width=600,
             showlegend=False,
             xaxis=dict(
                 title=x
