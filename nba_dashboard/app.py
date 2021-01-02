@@ -82,7 +82,7 @@ server = app.server
 app.layout = html.Div([
     dbc.Row(html.H1(children='{} NBA Regular Season Dashboard'.format(season_str),
         style=center_style)),
-    dbc.Row(html.H2(children='Last Updated: {}'.format(datetime.now().strftime('%-I:%M:%S %p %Z')),
+    dbc.Row(html.H2(children='Last Updated: {} CST'.format(datetime.now().strftime('%-I:%M:%S %p')),
         style=center_style)),
     html.Br(),
 
