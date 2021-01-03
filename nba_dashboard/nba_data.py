@@ -11,7 +11,7 @@ from nba_api.stats.endpoints import leaguestandings
 def get_colors(teamname):
     if teamname == 'New Orleans Pelicans':
         teamname = 'New Orleans Pelicans Team'
-    URL = 'https://teamcolorcodes.com/{}-color-codes/'.format(teamname.replace(' ', '-').lower())
+    URL = f"https://teamcolorcodes.com/{teamname.replace(' ', '-').lower()}-color-codes/"
     page = requests.get(URL)
     soup = BeautifulSoup(page.content, 'html.parser')
 
@@ -40,6 +40,7 @@ team_colors = {
     "Atlanta Hawks": ["#e03a3e", "#C1D32F", "#26282A", "#C8102E", "#FFCD00", "#87674F", "#000000"], 
     "Boston Celtics": ["#007A33", "#BA9653", "#963821", "#E59E6D", "#000000"], 
     "Brooklyn Nets": ["#000000", "#FFFFFF", "#002A60", "#CD1041", "#777D84", "#C6CFD4", "#FFFFFF"], 
+    "Charlotte Bobcats": ["#2e5a8b", "#f26432", "#959da0", "#232020"],  
     "Charlotte Hornets": ["#1d1160", "#00788C", "#A1A1A4", "#00778B", "#280071", "#F9423A"], 
     "Chicago Bulls": ["#CE1141", "#000000"], 
     "Cleveland Cavaliers": ["#860038", "#041E42", "#FDBB30", "#000000", "#E35205", "#5C88DA", "#27251F", "#DC3B34", "#04225C", "#FFFFFF"], 
@@ -69,44 +70,64 @@ team_colors = {
     "Washington Wizards": ["#002B5C", "#e31837", "#C4CED4"]
     }
 
-def conf_table_data(season):
+def conf_table_data(season, conference):
     #! add in playoff string reading for previous years after this works for current year
-    dfs = pd.read_html(f'https://www.espn.com/nba/standings/_/season/{season + 1}')
-    time.sleep(3)
+    dfs = pd.read_html(f'https://www.espn.com/nba/standings/_/season/{int(season) + 1}')
+    time.sleep(1)
 
-    flatten = lambda t: [item.split(' ')[-1] for sublist in t for item in sublist]
+    flatten = lambda t: [item for sublist in t for item in sublist]
     cols = ['Team', 'W', 'L', 'PCT', 'GB', 'HOME', 'AWAY', 'DIV', 'CONF', 'PPG', 'OPP PPG',
             'DIFF', 'STRK', 'L10']
     
-    for i in [[1, 'East'], [3, 'West']]:
-        conf_str = i[1]
-        conf = dfs[i[0]]
+    if conference == 'West':
+        val = 3
+    else:
+        val = 1
 
-        teams = pd.DataFrame([dfs[i[0] - 1].columns.values.tolist()[0].split(' ')[-1]] + flatten(dfs[i[0] - 1].values.tolist()))
-        teams = teams.replace({0:{i.split(' ')[-1]: i for i in list(team_colors.keys())}})
+    conf = dfs[val]
 
-        conf['Team'] = teams
-        conf['PCT'] = round(conf['PCT'] * 100, 2).astype(str) + '%'
-
-        for j in ['PPG','OPP PPG','DIFF']:
-            conf[j] = round(conf[j], 1)
-            conf[j] = conf[j].astype(str)
-        
-        conf = conf.reindex(columns=cols).copy()
-        conf.columns = ['Team', 'Wins', 'Losses', 'Win %', 'Games Back', 'at Home', 'Away', 'vs. Division', f'vs. {conf_str}', 'Points Per Game', 'Opponent Points Per Game', 'Difference', 'Current Streak', 'Last 10 Games']
-
-        if i[1] == 'West':
-            west = conf.copy()
+    teams = pd.DataFrame([dfs[val - 1].columns.values.tolist()[0]] + flatten(dfs[val - 1].values.tolist()))
+    def playoff_str(x):
+        if str(x)[5].isdigit() and str(x)[6].islower():
+            return str(x)[6:8]
+        elif str(x)[5].islower():
+            return str(x)[5:7]
         else:
-            east = conf.copy()
-    
-    west.name = 'West'
-    east.name = 'East'
+            return ''
 
-    return east, west
+    playoff_str_vals = teams.apply(playoff_str, axis=1)
+    teams = pd.DataFrame([item.split(' ')[-1] for sublist in teams.values for item in sublist])
+
+    teams = teams.replace({0:{i.split(' ')[-1]: i for i in list(team_colors.keys())}})
+    teams['t'] = playoff_str_vals
+    teams = teams.apply(lambda row: row[0] + ' -' + row['t'] if row['t'] != '' else row[0], axis=1)
+
+    conf['Team'] = teams.apply(lambda x: x[:-1] if x.endswith(' ') else x)
+    conf['PCT'] = round(conf['PCT'] * 100, 2).astype(str) + '%'
+
+    for j in ['PPG','OPP PPG','DIFF']:
+        conf[j] = round(conf[j], 1)
+        conf[j] = conf[j].astype(str)
+    
+    conf = conf.reindex(columns=cols).copy()
+    conf.columns = ['Team', 'Wins', 'Losses', 'Win %', 'Games Back', 'at Home', 'Away', 'vs. Division', f'vs. {conference}', 
+                    'Points Per Game', 'Opponent Points Per Game', 'Difference', 'Current Streak', 'Last 10 Games']
+    
+    conf.name = conference
+
+    return conf.copy()
+
+scatter_vals = ['Team', 'Average Age', 'Wins', 'Losses', 'Pythagorean Wins', 'Pythagorean Losses', 
+                'Margin of Victory', 'Strength of Schedule', 'Simple Rating System', 'Offensive Rating', 
+                'Defensive Rating', 'Net Rating', 'Pace', 'Free Throw Attempt Rate', '3 Point Attempt Rate', 
+                'True Shooting Percentage', 'Effective Field Goal Percentage', 'Turnover Percentage', 
+                'Offensive Rebound Percentage', 'Free Throws Per Field Goal Attempt', 
+                'Effective Field Goal Percentage Allowed', 'Opponent Turnover Percentage', 
+                'Defensive Rebound Pecentage', 'Opponent Free Throws Per Field Goal Attempt', 'Attendance', 
+                'Attendance Per Game']
 
 def scatter_data(season):
-    html = requests.get('http://www.basketball-reference.com/leagues/NBA_{}.html'.format(season + 1)).content
+    html = requests.get(f'http://www.basketball-reference.com/leagues/NBA_{int(season) + 1}.html').content
     time.sleep(3)
     cleaned_soup = BeautifulSoup(re.sub(rb"<!--|-->",rb"", html), features='lxml')
     misc_table = cleaned_soup.find('table', {'id':'misc_stats'})
@@ -115,22 +136,16 @@ def scatter_data(season):
     df.columns = df.columns.get_level_values(1)
     df['Team'] = df['Team'].apply(lambda x: x if x[-1] != '*' else x[:-1])
 
-    df.columns = ['Rank', 'Team', 'Average Age', 'Wins', 'Losses', 'Pythagorean Wins', 'Pythagorean Losses', 
-                'Margin of Victory', 'Strength of Schedule', 'Simple Rating System', 'Offensive Rating', 
-                'Defensive Rating', 'Net Rating', 'Pace', 'Free Throw Attempt Rate', '3 Point Attempt Rate', 
-                'True Shooting Percentage', 'Effective Field Goal Percentage', 'Turnover Percentage', 
-                'Offensive Rebound Percentage', 'Free Throws Per Field Goal Attempt', 
-                'Effective Field Goal Percentage Allowed', 'Opponent Turnover Percentage', 
-                'Defensive Rebound Pecentage', 'Opponent Free Throws Per Field Goal Attempt', 'Arena', 'Attendance', 
-                'Attendance Per Game']
+    df = df.drop(['Rk', 'Arena'], axis=1).copy()
+
+    df.columns = scatter_vals
     
     df = df[df['Team'] != 'League Average']
     df[['Wins', 'Losses']] = df[['Wins', 'Losses']].astype(int)
 
-    return df.drop(['Rank', 'Arena'], axis=1).copy()
+    return df
 
 
 #%%
 
-#%%
 # %%
