@@ -132,7 +132,25 @@ def update_scatter2(x, y):
             yaxis=dict(
                 title=y
             ),
-            hovermode="closest"
+            hovermode="closest",
+            shapes=[dict(type='line',
+                        x0=scatter_df[x].mean(),
+                        y0=scatter_df[y].min() - ((scatter_df[y].max() - scatter_df[y].min()) * (1/15)),
+                        x1=scatter_df[x].mean(),
+                        y1=scatter_df[y].max() + ((scatter_df[y].max() - scatter_df[y].min()) * (1/15)),
+                        line=dict(
+                            color='black',
+                            width=2
+                    )),
+                    dict(type='line',
+                        x0=scatter_df[x].min() - ((scatter_df[x].max() - scatter_df[x].min()) * (1/15)),
+                        y0=scatter_df[y].mean(),
+                        x1=scatter_df[x].max() + ((scatter_df[x].max() - scatter_df[x].min()) * (1/15)),
+                        y1=scatter_df[y].mean(),
+                        line=dict(
+                            color='black',
+                            width=2
+                    ))]
         )
     }
 
