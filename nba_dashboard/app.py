@@ -14,14 +14,14 @@ from nba_data import scatter_data, conf_table_data, team_colors, scatter_vals
 def conf_table(conf_df):
     data = go.Table(
         header=dict(
-            values=['<b>Rank</b>'] + ['<b>{}</b>'.format(i) for i in conf_df.columns],
+            values=['<b>Rank</b>'] + [f'<b>{i}</b>' for i in conf_df.columns],
             line_color='black',
             font_color='black',
             fill_color='lightgrey',
             align='center'
         ),
         cells=dict(
-            values=[['<b>{}</b>'.format(i) for i in range(1,9)] 
+            values=[[f'<b>{i}</b>' for i in range(1,9)] 
                     + [str(i) for i in range(9,16)]] 
                     + [conf_df[k].tolist() for k in conf_df.columns[:]],
             align = "left",
@@ -36,7 +36,7 @@ def conf_table(conf_df):
 
     layout = dict(
         showlegend=False,
-        title_text="{} Conference".format(conf_df.name),
+        title_text=f"{conf_df.name} Conference",
         height=1060
     )
 
@@ -63,7 +63,7 @@ app.layout = html.Div([
             )
         ], style= {'width': '20%','padding-left':'40%', 'padding-right':'40%', 'textAlign': 'center'}),
     
-    dbc.Row(html.H2(children='Last Updated: {} CST'.format(datetime.now().strftime('%-I:%M:%S %p')),
+    dbc.Row(html.H2(children=f'Last Updated: {datetime.now().strftime("%-I:%M:%S %p")} CST',
         style=center_style)),
     html.Br(),
 
@@ -137,8 +137,8 @@ def update_scatter1(season_val, x, y):
                                         color=[team_colors[i][1] for i in playoff_splitter(scatter_df)])
                     ),
                     hovertemplate=scatter_df['Team'].astype(str)+
-                        '<br><b>{}</b>: '.format(x)+ scatter_df[x].astype(str) +'<br>'+
-                        '<b>{}</b>: '.format(y)+ scatter_df[y].astype(str) +'<br>'+
+                        f'<br><b>{x}</b>: ' + scatter_df[x].astype(str) +'<br>'+
+                        f'<b>{y}</b>: ' + scatter_df[y].astype(str) +'<br>'+
                         '<extra></extra>'
                 )
         ],

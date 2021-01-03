@@ -11,7 +11,7 @@ from nba_api.stats.endpoints import leaguestandings
 def get_colors(teamname):
     if teamname == 'New Orleans Pelicans':
         teamname = 'New Orleans Pelicans Team'
-    URL = 'https://teamcolorcodes.com/{}-color-codes/'.format(teamname.replace(' ', '-').lower())
+    URL = f"https://teamcolorcodes.com/{teamname.replace(' ', '-').lower()}-color-codes/"
     page = requests.get(URL)
     soup = BeautifulSoup(page.content, 'html.parser')
 
@@ -127,7 +127,7 @@ scatter_vals = ['Team', 'Average Age', 'Wins', 'Losses', 'Pythagorean Wins', 'Py
                 'Attendance Per Game']
 
 def scatter_data(season):
-    html = requests.get('http://www.basketball-reference.com/leagues/NBA_{}.html'.format(int(season) + 1)).content
+    html = requests.get(f'http://www.basketball-reference.com/leagues/NBA_{int(season) + 1}.html').content
     time.sleep(3)
     cleaned_soup = BeautifulSoup(re.sub(rb"<!--|-->",rb"", html), features='lxml')
     misc_table = cleaned_soup.find('table', {'id':'misc_stats'})
