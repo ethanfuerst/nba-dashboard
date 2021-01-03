@@ -8,15 +8,8 @@ import numpy as np
 import pandas as pd
 import sys
 from datetime import datetime
-from nba_data import scatter_data, conf_table_data, team_colors
+from nba_data import scatter_data, conf_table_data, team_colors, scatter_vals
 
-
-season = 2020
-season_str = str(season) + "-" + str(season + 1)[2:]
-
-east, west = conf_table_data(season)
-scatter_df = scatter_data(season)
-scatter_vals = scatter_df.columns.to_list()[1:]
 
 def conf_table(conf_df):
     data = go.Table(
@@ -53,8 +46,15 @@ center_style = {'textAlign': 'center'}
 app = dash.Dash(__name__, external_stylesheets=['https://codepen.io/chriddyp/pen/bWLwgP.css'])
 server = app.server
 app.layout = html.Div([
-    dbc.Row(html.H1(children='{} NBA Regular Season Dashboard'.format(season_str),
+    dbc.Row(html.H1(children='NBA Regular Season Dashboard',
         style=center_style)),
+    html.Div([dcc.Dropdown(
+            id='season_val',
+            options=[{'label': str(i) + "-" + str(i + 1)[2:] + ' Season', 'value': i} for i in range(2012,2021)],
+            value='2020'
+            )
+        ], style= {'width': '20%','padding-left':'40%', 'padding-right':'40%', 'textAlign': 'center'}),
+    
     dbc.Row(html.H2(children='Last Updated: {} CST'.format(datetime.now().strftime('%-I:%M:%S %p')),
         style=center_style)),
     html.Br(),
@@ -66,7 +66,7 @@ app.layout = html.Div([
                     html.H2('Playoff spot clinched: - o'),
                     html.H2('Missed Playoffs: - x')],
         style=center_style),
-    html.Div([dcc.Graph(id='west_table', figure=conf_table(west))]),
+    html.Div([dcc.Graph(id='west_table')]),
 
     dbc.Row(html.H1(children='Eastern Conference Standings',
         style=center_style)),
@@ -75,7 +75,7 @@ app.layout = html.Div([
                     html.H2('Playoff spot clinched: - o'),
                     html.H2('Missed Playoffs: - x')],
         style=center_style),
-    html.Div([dcc.Graph(id='east_table', figure=conf_table(east))]),
+    html.Div([dcc.Graph(id='east_table')]),
 
     dbc.Row(html.H1(children='League Statistics Comparison',
         style=center_style)),
@@ -90,7 +90,7 @@ app.layout = html.Div([
                 value='Offensive Rating'
             )
         ],
-        style={'width': '48%', 'display': 'inline-block'}),
+        style={'width': '25%','padding-left':'25%', 'display': 'inline-block', 'textAlign': 'center'}),
 
     html.Div([
         dcc.Dropdown(
@@ -98,14 +98,33 @@ app.layout = html.Div([
             options=[{'label': i, 'value': i} for i in scatter_vals],
             value='Defensive Rating'
         )
-    ],style={'width': '48%', 'float': 'right', 'display': 'inline-block'})
+    ],style={'width': '25%', 'padding-right':'25%', 'float': 'right', 'display': 'inline-block', 'textAlign': 'center'})
 ])
 
-@app.callback(Output('scatter1', 'figure'),
-              [Input('scatter1-x', 'value'),
-              Input('scatter1-y', 'value')])
-def update_scatter2(x, y):
 
+@app.callback(Output('east_table', 'figure'),
+    [Input('season_val', 'value')])
+def update_east_table(season_val):
+    east = conf_table_data(season=season_val, conference='East')
+    east.name = 'East'
+    
+    return conf_table(east)
+
+@app.callback(Output('west_table', 'figure'),
+    [Input('season_val', 'value')])
+def update_west_table(season_val):
+    west = conf_table_data(season=season_val, conference='West')
+    west.name = 'West'
+
+    return conf_table(west)
+
+@app.callback(Output('scatter1', 'figure'),
+              [Input('season_val', 'value'),
+              Input('scatter1-x', 'value'),
+              Input('scatter1-y', 'value')])
+def update_scatter1(season_val, x, y):
+    scatter_df = scatter_data(season_val)
+    
     return {
         'data': [go.Scatter(x=scatter_df[x],
                     y=scatter_df[y], 
