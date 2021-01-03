@@ -48,33 +48,6 @@ def conf_table(conf_df):
     )
     return dict(data=[data], layout=layout)
 
-def other_tables(table):
-    data=go.Table(
-            header=dict(
-                values=['<b>{}</b>'.format(i) for i in table.columns[:]],
-                line_color='black',
-                font_color='black',
-                fill_color='lightgrey',
-                align='center'
-            ),
-            cells=dict(
-                values=[table[k].tolist() for k in table.columns[:]],
-                align = "left",
-                fill_color=[[team_colors[i][0] for i in table['Team'].values], ['#E6E6E6'] * 15] + [['#E6E6E6'] * 15] * 6,
-                line_color=[[team_colors[i][1] for i in table['Team'].values], ['#FFFFFF'] * 15] + [['#FFFFFF'] * 15] * 6,
-                font_color=[['#FFFFFF'] * 15, ['#000000'] * 15] + [['#000000'] * 15] * 6,
-                height=45
-                )
-        )
-
-    layout = dict(
-        height=900,
-        showlegend=False,
-        title_text=table.name
-    )
-
-    return dict(data=[data], layout=layout)
-
 center_style = {'textAlign': 'center'}
 
 app = dash.Dash(__name__, external_stylesheets=['https://codepen.io/chriddyp/pen/bWLwgP.css'])
@@ -126,13 +99,6 @@ app.layout = html.Div([
             value='Defensive Rating'
         )
     ],style={'width': '48%', 'float': 'right', 'display': 'inline-block'})
-    # ,
-    # dbc.Row(html.H1(children='Streaks',
-    #     style=center_style)),
-    # html.Div([dcc.Graph(id='streaks_table', figure=other_tables(streaks))]),
-    # dbc.Row(html.H1(children='Other Statistics',
-    #     style={center_style)),
-    # html.Div([dcc.Graph(id='other_table', figure=other_tables(other))]),
 ])
 
 @app.callback(Output('scatter1', 'figure'),
