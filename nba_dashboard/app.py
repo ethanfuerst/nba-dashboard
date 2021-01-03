@@ -123,7 +123,7 @@ app.layout = html.Div([
         dcc.Dropdown(
             id='scatter1-y',
             options=[{'label': i, 'value': i} for i in scatter_vals],
-            value='Wins'
+            value='Defensive Rating'
         )
     ],style={'width': '48%', 'float': 'right', 'display': 'inline-block'})
     # ,
