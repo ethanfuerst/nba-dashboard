@@ -25,8 +25,8 @@ def conf_table(conf_df):
                     + [str(i) for i in range(9,16)]] 
                     + [conf_df[k].tolist() for k in conf_df.columns[:]],
             align = "left",
-            fill_color=[['#E6E6E6'] * 15, [team_colors[i][0] for i in conf_df['Team'].values]] + [['#E6E6E6'] * 15] * 6,
-            line_color=[['#FFFFFF'] * 15, [team_colors[i][1] for i in conf_df['Team'].values]] + [['#FFFFFF'] * 15] * 6,
+            fill_color=[['#E6E6E6'] * 15, [team_colors[i][0] for i in playoff_splitter(conf_df)]] + [['#E6E6E6'] * 15] * 6,
+            line_color=[['#FFFFFF'] * 15, [team_colors[i][1] for i in playoff_splitter(conf_df)]] + [['#FFFFFF'] * 15] * 6,
             font_color=[['#000000'] * 15, ['#FFFFFF'] * 15] + [['#000000'] * 15] * 10 + 
                         [['#238823' if float(i) > 0 else '#FF0000' if float(i) < 0 else '#000000' for i in conf_df['Difference'].values]] + 
                         [['#000000'] * 15] * 2,
@@ -39,7 +39,15 @@ def conf_table(conf_df):
         title_text="{} Conference".format(conf_df.name),
         height=1060
     )
+
     return dict(data=[data], layout=layout)
+
+playoff_splitter = lambda x: [j.rsplit(' -')[0] for j in x['Team'].values]
+
+playoff_markers = [html.H2('Conference clinched: -z'),
+                    html.H2('Division clinched: - y'),
+                    html.H2('Playoff spot clinched: - x'),
+                    html.H2('Missed Playoffs: - e')]
 
 center_style = {'textAlign': 'center'}
 
@@ -61,19 +69,13 @@ app.layout = html.Div([
 
     dbc.Row(html.H1(children='Western Conference Standings',
         style=center_style)),
-    dbc.Row(children=[html.H2('Conference clinched: -w'),
-                    html.H2('Division clinched: - nw, p, sw'),
-                    html.H2('Playoff spot clinched: - o'),
-                    html.H2('Missed Playoffs: - x')],
+    dbc.Row(children=playoff_markers,
         style=center_style),
     html.Div([dcc.Graph(id='west_table')]),
 
     dbc.Row(html.H1(children='Eastern Conference Standings',
         style=center_style)),
-        dbc.Row(children=[html.H2('Conference clinched: -w'),
-                    html.H2('Division clinched: - se, c, a'),
-                    html.H2('Playoff spot clinched: - o'),
-                    html.H2('Missed Playoffs: - x')],
+        dbc.Row(children=playoff_markers,
         style=center_style),
     html.Div([dcc.Graph(id='east_table')]),
 
@@ -129,10 +131,10 @@ def update_scatter1(season_val, x, y):
         'data': [go.Scatter(x=scatter_df[x],
                     y=scatter_df[y], 
                     mode='markers',
-                    marker=dict(color=[team_colors[i][0] for i in scatter_df['Team'].values],
+                    marker=dict(color=[team_colors[i][0] for i in playoff_splitter(scatter_df)],
                         size=12,
                         line=dict(width=2,
-                                        color=[team_colors[i][1] for i in scatter_df['Team'].values])
+                                        color=[team_colors[i][1] for i in playoff_splitter(scatter_df)])
                     ),
                     hovertemplate=scatter_df['Team'].astype(str)+
                         '<br><b>{}</b>: '.format(x)+ scatter_df[x].astype(str) +'<br>'+
