@@ -75,7 +75,7 @@ def conf_table_data(season, conference):
     dfs = pd.read_html(f'https://www.espn.com/nba/standings/_/season/{int(season) + 1}')
     time.sleep(1)
 
-    flatten = lambda t: [item.split(' ')[-1] for sublist in t for item in sublist]
+    flatten = lambda t: [item for sublist in t for item in sublist]
     cols = ['Team', 'W', 'L', 'PCT', 'GB', 'HOME', 'AWAY', 'DIV', 'CONF', 'PPG', 'OPP PPG',
             'DIFF', 'STRK', 'L10']
     
@@ -86,10 +86,23 @@ def conf_table_data(season, conference):
 
     conf = dfs[val]
 
-    teams = pd.DataFrame([dfs[val - 1].columns.values.tolist()[0].split(' ')[-1]] + flatten(dfs[val - 1].values.tolist()))
-    teams = teams.replace({0:{i.split(' ')[-1]: i for i in list(team_colors.keys())}})
+    teams = pd.DataFrame([dfs[val - 1].columns.values.tolist()[0]] + flatten(dfs[val - 1].values.tolist()))
+    def playoff_str(x):
+        if str(x)[5].isdigit() and str(x)[6].islower():
+            return str(x)[6:8]
+        elif str(x)[5].islower():
+            return str(x)[5:7]
+        else:
+            return ''
 
-    conf['Team'] = teams
+    playoff_str_vals = teams.apply(playoff_str, axis=1)
+    teams = pd.DataFrame([item.split(' ')[-1] for sublist in teams.values for item in sublist])
+
+    teams = teams.replace({0:{i.split(' ')[-1]: i for i in list(team_colors.keys())}})
+    teams['t'] = playoff_str_vals
+    teams = teams.apply(lambda row: row[0] + ' -' + row['t'] if row['t'] != '' else row[0], axis=1)
+
+    conf['Team'] = teams.apply(lambda x: x[:-1] if x.endswith(' ') else x)
     conf['PCT'] = round(conf['PCT'] * 100, 2).astype(str) + '%'
 
     for j in ['PPG','OPP PPG','DIFF']:
@@ -130,10 +143,9 @@ def scatter_data(season):
     df = df[df['Team'] != 'League Average']
     df[['Wins', 'Losses']] = df[['Wins', 'Losses']].astype(int)
 
-    return df.drop(['Rank', 'Arena'], axis=1).copy()
+    return df
 
 
 #%%
 
-#%%
 # %%
