@@ -88,19 +88,20 @@ app.layout = html.Div([
     html.Div([
             dcc.Dropdown(
                 id='scatter1-x',
-                options=[{'label': i, 'value': i} for i in scatter_vals],
+                options=[{'label': i, 'value': i} for i in scatter_vals[1:]],
                 value='Offensive Rating'
             )
         ],
         style={'width': '25%','padding-left':'25%', 'display': 'inline-block', 'textAlign': 'center'}),
 
     html.Div([
-        dcc.Dropdown(
-            id='scatter1-y',
-            options=[{'label': i, 'value': i} for i in scatter_vals],
-            value='Defensive Rating'
-        )
-    ],style={'width': '25%', 'padding-right':'25%', 'float': 'right', 'display': 'inline-block', 'textAlign': 'center'})
+            dcc.Dropdown(
+                id='scatter1-y',
+                options=[{'label': i, 'value': i} for i in scatter_vals[1:]],
+                value='Defensive Rating'
+            )
+        ],
+        style={'width': '25%', 'padding-right':'25%', 'float': 'right', 'display': 'inline-block', 'textAlign': 'center'})
 ])
 
 
@@ -127,6 +128,9 @@ def update_west_table(season_val):
 def update_scatter1(season_val, x, y):
     scatter_df = scatter_data(season_val)
     
+    scatter_to_flip = ['Defensive Rating', 'Turnover Percentage', 
+                        'Effective Field Goal Percentage Allowed', 'Opponent Free Throws Per Field Goal Attempt']
+
     return {
         'data': [go.Scatter(x=scatter_df[x],
                     y=scatter_df[y], 
@@ -148,10 +152,12 @@ def update_scatter1(season_val, x, y):
             width=750,
             showlegend=False,
             xaxis=dict(
-                title=x
+                title=x,
+                autorange='reversed' if x in scatter_to_flip else True
             ),
             yaxis=dict(
-                title=y
+                title=y,
+                autorange='reversed' if y in scatter_to_flip else True
             ),
             hovermode="closest",
             shapes=[dict(type='line',
