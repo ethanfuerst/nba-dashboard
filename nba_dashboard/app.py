@@ -36,7 +36,10 @@ app.layout = html.Div([
     html.Div([
         dcc.Dropdown(
             id='season_val',
-            options=[{'label': str(i) + "-" + str(i + 1)[2:] + ' Season', 'value': i} for i in range(2012,2021)],
+            options=[{
+                'label': str(i) + "-" + str(i + 1)[2:] + ' Season', 
+                'value': i
+            } for i in range(2012,2021)],
             value='2020'
         )
     ], 
@@ -69,7 +72,10 @@ app.layout = html.Div([
         html.Div([
             dt.DataTable(
                 id='west_table',
-                columns=[{"name": i, "id": i} for i in conf_table_cols('West')],
+                columns=[{
+                    "name": i, 
+                    "id": i
+                } for i in conf_table_cols('West')],
                 **conf_table_params
             )
         ])
@@ -89,7 +95,10 @@ app.layout = html.Div([
         html.Div([
             dt.DataTable(
                 id='east_table',
-                columns=[{"name": i, "id": i} for i in conf_table_cols('East')],
+                columns=[{
+                    "name": i, 
+                    "id": i
+                } for i in conf_table_cols('East')],
                 **conf_table_params
             )
         ])
@@ -112,7 +121,10 @@ app.layout = html.Div([
     html.Div([
         dcc.Dropdown(
                 id='scatter1-x',
-                options=[{'label': i, 'value': i} for i in scatter_vals[1:]],
+                options=[{
+                    'label': i, 
+                    'value': i
+                } for i in scatter_vals[1:]],
                 value='Offensive Rating'
         )
     ],
@@ -126,7 +138,10 @@ app.layout = html.Div([
     html.Div([
         dcc.Dropdown(
             id='scatter1-y',
-            options=[{'label': i, 'value': i} for i in scatter_vals[1:]],
+            options=[{
+                    'label': i, 
+                    'value': i
+                } for i in scatter_vals[1:]],
             value='Defensive Rating'
         )
     ],
@@ -152,7 +167,10 @@ app.layout = html.Div([
         html.Div([
             dt.DataTable(
                 id='league_table',
-                columns=[{"name": i, "id": i} for i in conf_table_cols('Conference')],
+                columns=[{
+                    "name": i, 
+                    "id": i
+                } for i in conf_table_cols('Conference')],
                 **conf_table_params
             )
         ])
@@ -160,30 +178,40 @@ app.layout = html.Div([
 ])
 
 
-@app.callback(Output('east_table', 'data'),
-    [Input('season_val', 'value')])
+@app.callback(
+    Output('east_table', 'data'),
+    [Input('season_val', 'value')]
+)
 def update_east_table(season_val):
     east = conf_table_data(season=season_val, conference='East')
     return east.to_dict('rows')
 
-@app.callback(Output('west_table', 'data'),
-    [Input('season_val', 'value')])
+@app.callback(
+    Output('west_table', 'data'),
+    [Input('season_val', 'value')]
+)
 def update_west_table(season_val):
     west = conf_table_data(season=season_val, conference='West')
 
     return west.to_dict('rows')
 
-@app.callback(Output('league_table', 'data'),
-    [Input('season_val', 'value')])
+@app.callback(
+    Output('league_table', 'data'),
+    [Input('season_val', 'value')]
+)
 def update_league_table(season_val):
     league = conf_table_data(season=season_val, conference='League')
 
     return league.to_dict('rows')
 
-@app.callback(Output('scatter1', 'figure'),
-              [Input('season_val', 'value'),
-              Input('scatter1-x', 'value'),
-              Input('scatter1-y', 'value')])
+@app.callback(
+    Output('scatter1', 'figure'),
+    [
+        Input('season_val', 'value'),
+        Input('scatter1-x', 'value'),
+        Input('scatter1-y', 'value')
+    ]
+)
 def update_scatter1(season_val, x, y):
     scatter_df = scatter_data(season_val)
     
@@ -205,9 +233,9 @@ def update_scatter1(season_val, x, y):
                     )
                 ),
                 hovertemplate=
-                    scatter_df['Team'].astype(str)+
-                    f'<br><b>{x}</b>: ' + scatter_df[x].astype(str) +'<br>'+
-                    f'<b>{y}</b>: ' + scatter_df[y].astype(str) +'<br>'+
+                    scatter_df['Team'].astype(str) + \
+                    f'<br><b>{x}</b>: ' + scatter_df[x].astype(str) +'<br>' + \
+                    f'<b>{y}</b>: ' + scatter_df[y].astype(str) +'<br>' + \
                     '<extra></extra>'
             )
         ],
