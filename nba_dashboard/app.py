@@ -12,39 +12,6 @@ from datetime import datetime
 from nba_data import scatter_data, conf_table_data, team_colors, scatter_vals, conf_table_cols
 from table_styles import conf_table_params, center_style
 
-def conf_table(conf_df):
-    data = go.Table(
-        header=dict(
-            values=['<b>Rank</b>'] + [f'<b>{i}</b>' for i in conf_df.columns],
-            line_color='black',
-            font_color='black',
-            fill_color='lightgrey',
-            align='center'
-        ),
-        cells=dict(
-            values=[[f'<b>{i}</b>' for i in range(1,9)] 
-                    + [str(i) for i in range(9,16)]] 
-                    + [conf_df[k].tolist() for k in conf_df.columns[:]],
-            align = "left",
-            fill_color=[['#E6E6E6'] * 15, [team_colors[i][0] for i in playoff_splitter(conf_df)]] + [['#E6E6E6'] * 15] * 6,
-            line_color=[['#FFFFFF'] * 15, [team_colors[i][1] for i in playoff_splitter(conf_df)]] + [['#FFFFFF'] * 15] * 6,
-            font_color=[['#000000'] * 15, ['#FFFFFF'] * 15] + [['#000000'] * 15] * 10 + 
-                        [['#238823' if float(i) > 0 else '#FF0000' if float(i) < 0 else '#000000' for i in conf_df['Difference'].values]] + 
-                        [['#000000'] * 15] * 2,
-            height=45
-        )
-    )
-
-    layout = dict(
-        showlegend=False,
-        title_text=f"{conf_df.name} Conference",
-        height=1060
-    )
-
-    return dict(
-        data=[data], 
-        layout=layout
-    )
 
 playoff_splitter = lambda x: [j.rsplit(' -')[0] for j in x['Team'].values]
 
