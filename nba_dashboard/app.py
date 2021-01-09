@@ -98,7 +98,7 @@ app.layout = html.Div([
             style_cell=dt_cell_style,
             style_cell_conditional={
                 'if': {'column_id': 'Record'},
-                'width': '10%'
+                'width': '100px'
             },
             style_data_conditional=conf_table_cond_styles
     )])]),
@@ -117,7 +117,7 @@ app.layout = html.Div([
             style_cell=dt_cell_style,
             style_cell_conditional={
                 'if': {'column_id': 'Record'},
-                'width': '10%'
+                'width': '100px'
             },
             style_data_conditional=conf_table_cond_styles
     )])]),
