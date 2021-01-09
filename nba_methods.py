@@ -485,7 +485,7 @@ def make_shot_dist(df, title=None, title_size=22,
         # - set a color manually
         plt.hist(df['SHOT_DISTANCE'], bins=df['SHOT_DISTANCE'].max())
 
-    return
+    return fig
 
 
 

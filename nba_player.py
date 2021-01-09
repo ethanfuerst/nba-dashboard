@@ -14,13 +14,6 @@ from nba_season import NBA_Season
 from nba_methods import *
 
 
-# - Custom errors
-class PlayerNotFoundError(Exception):
-    pass
-
-class SeasonNotFoundError(Exception):
-    pass
-
 class NBA_Player:
     def __init__(self, player_name, print_name=True):
         '''
