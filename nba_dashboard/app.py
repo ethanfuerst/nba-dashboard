@@ -81,11 +81,16 @@ app.layout = html.Div([
                 'border': '1px solid black'
             },
             columns=[{"name": i, "id": i} for i in conf_table_cols('West')],
-            style_table={'height': 650,
-                        'maxWidth': '80%'},
-            style_cell={'font-family':'sans-serif',
+            style_table={
+                'height': 650,
+                'maxWidth': '80%',
+                'minWidth': '40%'
+            },
+            style_cell={
+                'font-family':'sans-serif',
                 'backgroundColor': '#E6E6E6',
-                'textAlign': 'center'},
+                'textAlign': 'center'
+            },
             style_data_conditional=conf_table_styles
     )])]),
 
@@ -102,11 +107,15 @@ app.layout = html.Div([
                 'border': '1px solid black'
             },
             columns=[{"name": i, "id": i} for i in conf_table_cols('East')],
-            style_table={'height': 650,
-                        'maxWidth': '80%'},
-            style_cell={'font-family':'sans-serif',
+            style_table={
+                'height': 650,
+                'maxWidth': '80%'
+            },
+            style_cell={
+                'font-family':'sans-serif',
                 'backgroundColor': '#E6E6E6',
-                'textAlign': 'center'},
+                'textAlign': 'center'
+            },
             style_data_conditional=conf_table_styles
     )])]),
 
