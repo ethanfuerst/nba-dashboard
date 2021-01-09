@@ -55,7 +55,7 @@ dt_conf_table_style = {
                 'height': 700,
                 'overflowX': 'scroll',
                 'maxWidth': '80%',
-                'minWidth': '40%'
+                # 'minWidth': '40%'
             }
 dt_header_style = {
                 'backgroundColor': '#D3D3D3',
