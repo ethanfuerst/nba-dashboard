@@ -4,7 +4,7 @@ This project is where I keep all my files that I use when I analyze all sorts of
 
 ## Files in this repository
 
-### /Projects (.ipynb)/
+### /projects/
 
 #### a few ad-hoc analyses
 
@@ -35,6 +35,8 @@ __*nba_team.py*__ - contains NBA_Team() object
 __*nba_season.py*__ - contains NBA_Season() object
 
 __*nba_methods.py*__ - contains various methods to support NBA-related objects I have built in other files
+
+__*push_heroku_changes.sh*__ - shell script to updated dashboard changes in heroku
 
 ## TODO
 
