@@ -48,14 +48,14 @@ def conf_table(conf_df):
 
 playoff_splitter = lambda x: [j.rsplit(' -')[0] for j in x['Team'].values]
 
-#! dynamically pull from the data
 show_playoff_markers = False
 
 playoff_markers = [
     html.H2('Conference clinched: -z'),
     html.H2('Division clinched: - y'),
     html.H2('Playoff spot clinched: - x'),
-    html.H2('Missed Playoffs: - e')] if show_playoff_markers else []
+    html.H2('Missed Playoffs: - e')
+    ] if show_playoff_markers else []
 
 
 app = dash.Dash(__name__, external_stylesheets=['https://codepen.io/chriddyp/pen/bWLwgP.css'])
