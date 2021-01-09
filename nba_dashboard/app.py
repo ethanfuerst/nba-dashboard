@@ -45,10 +45,13 @@ def conf_table(conf_df):
 
 playoff_splitter = lambda x: [j.rsplit(' -')[0] for j in x['Team'].values]
 
+#! dynamically pull from the data
+show_playoff_markers = False
+
 playoff_markers = [html.H2('Conference clinched: -z'),
                     html.H2('Division clinched: - y'),
                     html.H2('Playoff spot clinched: - x'),
-                    html.H2('Missed Playoffs: - e')]
+                    html.H2('Missed Playoffs: - e')] if show_playoff_markers else []
 
 
 app = dash.Dash(__name__, external_stylesheets=['https://codepen.io/chriddyp/pen/bWLwgP.css'])
@@ -80,7 +83,7 @@ app.layout = html.Div([
 
     dbc.Row(html.H1(children='Eastern Conference Standings',
         style=center_style)),
-        dbc.Row(children=playoff_markers,
+    dbc.Row(children=playoff_markers,
         style=center_style),
     html.Center([html.Div([
         dt.DataTable(
@@ -111,7 +114,18 @@ app.layout = html.Div([
                 value='Defensive Rating'
             )
         ],
-        style={'width': '25%', 'padding-right':'25%', 'float': 'right', 'display': 'inline-block', 'textAlign': 'center'})
+        style={'width': '25%', 'padding-right':'25%', 'float': 'right', 'display': 'inline-block', 'textAlign': 'center'}),
+
+    dbc.Row(html.H1(children='League Standings',
+        style=center_style)),
+    dbc.Row(children=playoff_markers,
+        style=center_style),
+    html.Center([html.Div([
+        dt.DataTable(
+            id='league_table',
+            columns=[{"name": i, "id": i} for i in conf_table_cols('Conference')],
+            **conf_table_params
+    )])]),
 ])
 
 
@@ -127,6 +141,13 @@ def update_west_table(season_val):
     west = conf_table_data(season=season_val, conference='West')
 
     return west.to_dict('rows')
+
+@app.callback(Output('league_table', 'data'),
+    [Input('season_val', 'value')])
+def update_league_table(season_val):
+    league = conf_table_data(season=season_val, conference='League')
+
+    return league.to_dict('rows')
 
 @app.callback(Output('scatter1', 'figure'),
               [Input('season_val', 'value'),
