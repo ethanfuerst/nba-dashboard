@@ -1,4 +1,5 @@
 import dash
+import dash_table as dt
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc 
@@ -8,7 +9,7 @@ import numpy as np
 import pandas as pd
 import sys
 from datetime import datetime
-from nba_data import scatter_data, conf_table_data, team_colors, scatter_vals
+from nba_data import scatter_data, conf_table_data, team_colors, scatter_vals, conf_table_styles, conf_table_cols
 
 
 def conf_table(conf_df):
@@ -71,13 +72,43 @@ app.layout = html.Div([
         style=center_style)),
     dbc.Row(children=playoff_markers,
         style=center_style),
-    html.Div([dcc.Graph(id='west_table')]),
+    html.Center([html.Div([
+        dt.DataTable(
+            id='west_table',
+            style_header={
+                'backgroundColor': '#D3D3D3',
+                'fontWeight': 'bold',
+                'border': '1px solid black'
+            },
+            columns=[{"name": i, "id": i} for i in conf_table_cols('West')],
+            style_table={'height': 650,
+                        'maxWidth': '80%'},
+            style_cell={'font-family':'sans-serif',
+                'backgroundColor': '#E6E6E6',
+                'textAlign': 'center'},
+            style_data_conditional=conf_table_styles
+    )])]),
 
     dbc.Row(html.H1(children='Eastern Conference Standings',
         style=center_style)),
         dbc.Row(children=playoff_markers,
         style=center_style),
-    html.Div([dcc.Graph(id='east_table')]),
+    html.Center([html.Div([
+        dt.DataTable(
+            id='east_table',
+            style_header={
+                'backgroundColor': '#D3D3D3',
+                'fontWeight': 'bold',
+                'border': '1px solid black'
+            },
+            columns=[{"name": i, "id": i} for i in conf_table_cols('East')],
+            style_table={'height': 650,
+                        'maxWidth': '80%'},
+            style_cell={'font-family':'sans-serif',
+                'backgroundColor': '#E6E6E6',
+                'textAlign': 'center'},
+            style_data_conditional=conf_table_styles
+    )])]),
 
     dbc.Row(html.H1(children='League Statistics Comparison',
         style=center_style)),
@@ -105,21 +136,18 @@ app.layout = html.Div([
 ])
 
 
-@app.callback(Output('east_table', 'figure'),
+@app.callback(Output('east_table', 'data'),
     [Input('season_val', 'value')])
 def update_east_table(season_val):
     east = conf_table_data(season=season_val, conference='East')
-    east.name = 'East'
-    
-    return conf_table(east)
+    return east.to_dict('rows')
 
-@app.callback(Output('west_table', 'figure'),
+@app.callback(Output('west_table', 'data'),
     [Input('season_val', 'value')])
 def update_west_table(season_val):
     west = conf_table_data(season=season_val, conference='West')
-    west.name = 'West'
 
-    return conf_table(west)
+    return west.to_dict('rows')
 
 @app.callback(Output('scatter1', 'figure'),
               [Input('season_val', 'value'),
