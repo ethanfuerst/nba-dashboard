@@ -70,13 +70,23 @@ team_colors = {
     "Washington Wizards": ["#002B5C", "#e31837", "#C4CED4"]
     }
 
+table_cols = ['Team', 'Record', 'Win %', 'Games Back', 'at Home', 'Away', 'vs. Division',  
+                    'PPG', 'Opponent PPG', 'Difference', 'Current Streak', 'Last 10 Games']
+
+def conf_table_cols(conference):
+
+    cols = table_cols[:]
+    cols.insert(7, f'vs. {conference}')
+    
+    return cols
+
 def conf_table_data(season, conference):
     #! add in playoff string reading for previous years after this works for current year
     dfs = pd.read_html(f'https://www.espn.com/nba/standings/_/season/{int(season) + 1}')
     time.sleep(1)
 
     flatten = lambda t: [item for sublist in t for item in sublist]
-    cols = ['Team', 'W', 'L', 'PCT', 'GB', 'HOME', 'AWAY', 'DIV', 'CONF', 'PPG', 'OPP PPG',
+    start_cols = ['Team', 'Record', 'PCT', 'GB', 'HOME', 'AWAY', 'DIV', 'CONF', 'PPG', 'OPP PPG',
             'DIFF', 'STRK', 'L10']
     
     if conference == 'West':
@@ -104,18 +114,43 @@ def conf_table_data(season, conference):
 
     conf['Team'] = teams.apply(lambda x: x[:-1] if x.endswith(' ') else x)
     conf['PCT'] = round(conf['PCT'] * 100, 2).astype(str) + '%'
+    conf['Record'] = conf['W'].astype(str) + '-' + conf['L'].astype(str)
 
-    for j in ['PPG','OPP PPG','DIFF']:
+    for j in ['PPG', 'OPP PPG', 'DIFF']:
         conf[j] = round(conf[j], 1)
         conf[j] = conf[j].astype(str)
     
-    conf = conf.reindex(columns=cols).copy()
-    conf.columns = ['Team', 'Wins', 'Losses', 'Win %', 'Games Back', 'at Home', 'Away', 'vs. Division', f'vs. {conference}', 
-                    'Points Per Game', 'Opponent Points Per Game', 'Difference', 'Current Streak', 'Last 10 Games']
-    
-    conf.name = conference
+    conf = conf.reindex(columns=start_cols).copy()
+    conf.columns = conf_table_cols(conference)
 
     return conf.copy()
+
+conf_table_styles = [{
+                    'if': {
+                        'column_id': 'Team',
+                        'filter_query': '{Team} contains "' + team + '"'
+                    },
+                    'backgroundColor': background_color,
+                    'border': '2px solid ' + trim_color,
+                    'color': 'white'
+                } for team, background_color, trim_color in zip(team_colors.keys(), 
+                        [team_colors[d][0] for d in team_colors], 
+                        [team_colors[d][1] for d in team_colors])] + [
+                        {
+                            'if': {
+                                'filter_query': '{Difference} < 0.0',
+                                'column_id': 'Difference'
+                        },
+                        'color': 'red'
+                    },
+                    {
+                            'if': {
+                                'filter_query': '{Difference} > 0.0',
+                                'column_id': 'Difference'
+                        },
+                        'color': 'green'
+                    }
+                ]
 
 scatter_vals = ['Team', 'Average Age', 'Wins', 'Losses', 'Pythagorean Wins', 'Pythagorean Losses', 
                 'Margin of Victory', 'Strength of Schedule', 'Simple Rating System', 'Offensive Rating', 
