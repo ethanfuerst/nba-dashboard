@@ -125,7 +125,7 @@ def conf_table_data(season, conference):
 
     return conf.copy()
 
-conf_table_styles = [{
+conf_table_cond_styles = [{
                     'if': {
                         'column_id': 'Team',
                         'filter_query': '{Team} contains "' + team + '"'
