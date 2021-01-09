@@ -96,6 +96,10 @@ app.layout = html.Div([
             fixed_columns={'headers': True, 'data': 2},
             style_table=dt_conf_table_style,
             style_cell=dt_cell_style,
+            style_cell_conditional={
+                'if': {'column_id': 'Record'},
+                'width': '10%'
+            },
             style_data_conditional=conf_table_cond_styles
     )])]),
 
@@ -111,6 +115,10 @@ app.layout = html.Div([
             fixed_columns={'headers': True, 'data': 2},
             style_table=dt_conf_table_style,
             style_cell=dt_cell_style,
+            style_cell_conditional={
+                'if': {'column_id': 'Record'},
+                'width': '10%'
+            },
             style_data_conditional=conf_table_cond_styles
     )])]),
 
