@@ -26,16 +26,6 @@ def get_colors(teamname):
         colors[1] = '#C4CED4'
     return colors
 
-# - use code below to regenerate team_colors
-# log = leaguestandings.LeagueStandings(league_id='00', season='2019', season_type='Regular Season')
-# df = log.get_data_frames()[0]
-# df['Team'] = df['TeamCity'] + ' ' + df['TeamName']
-
-# team_colors = {}
-# for team in df['Team'].sort_values().values:
-#     colors = get_colors(team)
-#     team_colors.update({team: colors})
-
 team_colors = {
     "Atlanta Hawks": ["#e03a3e", "#C1D32F", "#26282A", "#C8102E", "#FFCD00", "#87674F", "#000000"], 
     "Boston Celtics": ["#007A33", "#BA9653", "#963821", "#E59E6D", "#000000"], 
@@ -124,33 +114,6 @@ def conf_table_data(season, conference):
     conf.columns = conf_table_cols(conference)
 
     return conf.copy()
-
-conf_table_cond_styles = [{
-                    'if': {
-                        'column_id': 'Team',
-                        'filter_query': '{Team} contains "' + team + '"'
-                    },
-                    'backgroundColor': background_color,
-                    'border': '2px solid ' + trim_color,
-                    'color': 'white'
-                } for team, background_color, trim_color in zip(team_colors.keys(), 
-                        [team_colors[d][0] for d in team_colors], 
-                        [team_colors[d][1] for d in team_colors])] + [
-                        {
-                            'if': {
-                                'filter_query': '{Difference} < 0.0',
-                                'column_id': 'Difference'
-                        },
-                        'color': 'red'
-                    },
-                    {
-                            'if': {
-                                'filter_query': '{Difference} > 0.0',
-                                'column_id': 'Difference'
-                        },
-                        'color': 'green'
-                    }
-                ]
 
 scatter_vals = ['Team', 'Average Age', 'Wins', 'Losses', 'Pythagorean Wins', 'Pythagorean Losses', 
                 'Margin of Victory', 'Strength of Schedule', 'Simple Rating System', 'Offensive Rating', 

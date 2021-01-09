@@ -9,8 +9,8 @@ import numpy as np
 import pandas as pd
 import sys
 from datetime import datetime
-from nba_data import scatter_data, conf_table_data, team_colors, scatter_vals, conf_table_cond_styles, conf_table_cols
-
+from nba_data import scatter_data, conf_table_data, team_colors, scatter_vals, conf_table_cols
+from table_styles import conf_table_params, center_style
 
 def conf_table(conf_df):
     data = go.Table(
@@ -50,23 +50,6 @@ playoff_markers = [html.H2('Conference clinched: -z'),
                     html.H2('Playoff spot clinched: - x'),
                     html.H2('Missed Playoffs: - e')]
 
-center_style = {'textAlign': 'center'}
-dt_conf_table_style = {
-                'height': 700,
-                'overflowX': 'scroll',
-                'maxWidth': '80%',
-                # 'minWidth': '40%'
-            }
-dt_header_style = {
-                'backgroundColor': '#D3D3D3',
-                'fontWeight': 'bold',
-                'border': '1px solid black'
-            }
-dt_cell_style = {
-                'font-family':'sans-serif',
-                'backgroundColor': '#E6E6E6',
-                'textAlign': 'center'
-            }
 
 app = dash.Dash(__name__, external_stylesheets=['https://codepen.io/chriddyp/pen/bWLwgP.css'])
 server = app.server
@@ -91,16 +74,8 @@ app.layout = html.Div([
     html.Center([html.Div([
         dt.DataTable(
             id='west_table',
-            style_header=dt_header_style,
             columns=[{"name": i, "id": i} for i in conf_table_cols('West')],
-            fixed_columns={'headers': True, 'data': 2},
-            style_table=dt_conf_table_style,
-            style_cell=dt_cell_style,
-            # style_cell_conditional={
-            #     'if': {'column_id': 'Record'},
-            #     'width': '100px'
-            # },
-            style_data_conditional=conf_table_cond_styles
+            **conf_table_params
     )])]),
 
     dbc.Row(html.H1(children='Eastern Conference Standings',
@@ -110,16 +85,8 @@ app.layout = html.Div([
     html.Center([html.Div([
         dt.DataTable(
             id='east_table',
-            style_header=dt_header_style,
             columns=[{"name": i, "id": i} for i in conf_table_cols('East')],
-            fixed_columns={'headers': True, 'data': 2},
-            style_table=dt_conf_table_style,
-            style_cell=dt_cell_style,
-            # style_cell_conditional={
-            #     'if': {'column_id': 'Record'},
-            #     'width': '100px'
-            # },
-            style_data_conditional=conf_table_cond_styles
+            **conf_table_params
     )])]),
 
     dbc.Row(html.H1(children='League Statistics Comparison',
