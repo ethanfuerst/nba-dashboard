@@ -83,7 +83,7 @@ app.layout = html.Div([
             columns=[{"name": i, "id": i} for i in conf_table_cols('West')],
             style_table={
                 'height': 650,
-                'maxWidth': '80%',
+                'maxWidth': '70%',
                 'minWidth': '40%'
             },
             style_cell={
