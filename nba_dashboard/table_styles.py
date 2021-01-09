@@ -5,7 +5,6 @@ center_style = {'textAlign': 'center'}
 
 conf_table_params = dict(
     style_table = {
-                'height': 700,
                 'overflowX': 'scroll',
                 'maxWidth': '80%',
                 'minWidth': '40%'
