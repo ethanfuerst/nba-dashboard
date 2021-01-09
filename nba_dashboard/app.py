@@ -165,7 +165,7 @@ def update_scatter1(season_val, x, y):
                     mode='markers',
                     marker=dict(color=[team_colors[i][0] for i in playoff_splitter(scatter_df)],
                         size=12,
-                        line=dict(width=2,
+                        line=dict(width=3,
                                         color=[team_colors[i][1] for i in playoff_splitter(scatter_df)])
                     ),
                     hovertemplate=scatter_df['Team'].astype(str)+
