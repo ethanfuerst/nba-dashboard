@@ -64,6 +64,8 @@ table_cols = ['Team', 'Record', 'Win %', 'Games Back', 'at Home', 'Away', 'vs. D
                     'PPG', 'Opponent PPG', 'Difference', 'Current Streak', 'Last 10 Games']
 
 def conf_table_cols(conference):
+    if conference == 'League':
+        conference = 'Conference'
 
     cols = table_cols[:]
     cols.insert(7, f'vs. {conference}')
@@ -72,7 +74,12 @@ def conf_table_cols(conference):
 
 def conf_table_data(season, conference):
     #! add in playoff string reading for previous years after this works for current year
-    dfs = pd.read_html(f'https://www.espn.com/nba/standings/_/season/{int(season) + 1}')
+    url = f'https://www.espn.com/nba/standings/_/season/{int(season) + 1}'
+
+    if conference == 'League':
+        url += '/group/league'
+    
+    dfs = pd.read_html(url)
     time.sleep(1)
 
     flatten = lambda t: [item for sublist in t for item in sublist]
@@ -87,6 +94,7 @@ def conf_table_data(season, conference):
     conf = dfs[val]
 
     teams = pd.DataFrame([dfs[val - 1].columns.values.tolist()[0]] + flatten(dfs[val - 1].values.tolist()))
+    
     def playoff_str(x):
         if str(x)[5].isdigit() and str(x)[6].islower():
             return str(x)[6:8]
@@ -126,7 +134,7 @@ scatter_vals = ['Team', 'Average Age', 'Wins', 'Losses', 'Pythagorean Wins', 'Py
 
 def scatter_data(season):
     html = requests.get(f'http://www.basketball-reference.com/leagues/NBA_{int(season) + 1}.html').content
-    time.sleep(3)
+    time.sleep(1)
     cleaned_soup = BeautifulSoup(re.sub(rb"<!--|-->",rb"", html), features='lxml')
     misc_table = cleaned_soup.find('table', {'id':'misc_stats'})
 
