@@ -1,12 +1,8 @@
 .DS_Store
 .DS
-Icon?
 .vscode
 *.pyc
 __pycache__
-plotly_key.txt
-nba_dashboard/app_drafts.py
 venv
 .env
-misc/
-Projects (.ipynb)/basketball-floor-texture.png
+app_drafts.py
