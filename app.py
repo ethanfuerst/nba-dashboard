@@ -32,7 +32,7 @@ app.layout = html.Div([
         html.H1(
             children='NBA Regular Season Dashboard',
             style=center_style)
-        ),
+    ),
     html.Div([
         dcc.Dropdown(
             id='season_val',
