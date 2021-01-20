@@ -46,7 +46,15 @@ conf_table_params = dict(
             'column_id': 'Difference'
         },
             'color': 'green'
-    }],
+    },
+    {
+        'if': {
+            'filter_query': '{Rank} < 9',
+            'column_id': 'Rank'
+        },
+        'fontWeight': 'bold'
+    }
+    ],
     style_cell_conditional=[{
         'if': {
             'column_id': 'Record'
