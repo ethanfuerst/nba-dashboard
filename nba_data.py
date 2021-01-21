@@ -60,7 +60,7 @@ team_colors = {
     "Washington Wizards": ["#002B5C", "#e31837", "#C4CED4"]
     }
 
-table_cols = ['Team', 'Record', 'Win %', 'Games Back', 'at Home', 'Away', 'vs. Division',  
+table_cols = ['Rank', 'Team', 'Record', 'Win %', 'Games Back', 'at Home', 'Away', 'vs. Division',  
                     'PPG', 'Opponent PPG', 'Difference', 'Current Streak', 'Last 10 Games']
 
 def conf_table_cols(conference):
@@ -68,7 +68,7 @@ def conf_table_cols(conference):
         conference = 'Conference'
 
     cols = table_cols[:]
-    cols.insert(7, f'vs. {conference}')
+    cols.insert(8, f'vs. {conference}')
     
     return cols
 
@@ -83,7 +83,7 @@ def conf_table_data(season, conference):
     time.sleep(1)
 
     flatten = lambda t: [item for sublist in t for item in sublist]
-    start_cols = ['Team', 'Record', 'PCT', 'GB', 'HOME', 'AWAY', 'DIV', 'CONF', 'PPG', 'OPP PPG',
+    start_cols = ['Rank', 'Team', 'Record', 'PCT', 'GB', 'HOME', 'AWAY', 'DIV', 'CONF', 'PPG', 'OPP PPG',
             'DIFF', 'STRK', 'L10']
     
     if conference == 'West':
@@ -113,6 +113,7 @@ def conf_table_data(season, conference):
     conf['Team'] = teams.apply(lambda x: x[:-1] if x.endswith(' ') else x)
     conf['PCT'] = round(conf['PCT'] * 100, 2).astype(str) + '%'
     conf['Record'] = conf['W'].astype(str) + '-' + conf['L'].astype(str)
+    conf['Rank'] = range(1, len(conf) + 1)
 
     for j in ['PPG', 'OPP PPG', 'DIFF']:
         conf[j] = round(conf[j], 1)
@@ -154,4 +155,3 @@ def scatter_data(season):
 
 #%%
 
-# %%
