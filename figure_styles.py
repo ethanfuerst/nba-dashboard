@@ -1,10 +1,9 @@
-import copy
 from nba_data import team_colors, table_cols
 
 
 center_style = {'textAlign': 'center'}
 
-table_params = dict(
+conf_table_params = dict(
     style_table = {
         'overflowX': 'scroll',
         'maxWidth': '80%',
@@ -62,11 +61,3 @@ table_params = dict(
     ]
 )
 
-conf_table_params = copy.deepcopy(table_params)
-conf_table_params['style_data_conditional'].append({
-    'if': {
-        'filter_query': '{Rank} < 9',
-        'column_id': 'Rank'
-    },
-    'fontWeight': 'bold'
-})
