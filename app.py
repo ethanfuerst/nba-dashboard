@@ -10,7 +10,7 @@ import pandas as pd
 import sys
 from datetime import datetime
 from nba_data import scatter_data, conf_table_data, team_colors, scatter_vals, conf_table_cols
-from figure_styles import conf_table_params, center_style
+from figure_styles import table_params, conf_table_params, center_style
 
 
 playoff_splitter = lambda x: [j.rsplit(' -')[0] for j in x['Team'].values]
@@ -171,7 +171,7 @@ app.layout = html.Div([
                     "name": i, 
                     "id": i
                 } for i in conf_table_cols('Conference')],
-                **conf_table_params
+                **table_params
             )
         ])
     ]),
