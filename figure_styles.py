@@ -53,6 +53,12 @@ table_params = dict(
             'column_id': 'Record'
         },
             'width': '75px'
+    },
+    {
+        'if': {
+            'column_id': 'Rank'
+        },
+            'width': '55px'
     }] + [{
         'if': {
             'column_id': col
