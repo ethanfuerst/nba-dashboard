@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "nba-dashboard"
+version = "0.1.0"
+description = ""
+authors = ["Ethan Fuerst <34084535+ethanfuerst@users.noreply.github.com>"]
+readme = "README.md"
+packages = [{include = "nba_dashboard"}]
+
+[tool.poetry.dependencies]
+python = "^3.9.7"
+dash = "2.18.2"
+pandas = "2.2.3"
+plotly = "5.24.1"
+beautifulsoup4 = "4.12.3"
+nba-api = "1.6.1"
+dash-bootstrap-components = "1.6.0"
+dash-html-components = "2.0.0"
+dash-core-components = "2.0.0"
+lxml = "5.3.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
