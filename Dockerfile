@@ -2,13 +2,13 @@ FROM python:3.9-slim
 
 WORKDIR /app
 
-RUN pip install poetry
+RUN pip install uv
 
-COPY poetry.lock pyproject.toml ./
+COPY uv.lock pyproject.toml ./
 
-RUN poetry config virtualenvs.create false
+RUN uv config virtualenvs.create false
 
-RUN poetry install --no-interaction --no-ansi --no-root
+RUN uv sync --no-interaction --no-ansi --no-root
 
 COPY . .
 
