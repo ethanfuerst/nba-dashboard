@@ -1,23 +1,48 @@
-[tool.poetry]
+[project]
 name = "nba-dashboard"
 version = "0.1.0"
 description = ""
-authors = ["Ethan Fuerst <34084535+ethanfuerst@users.noreply.github.com>"]
+authors = [{ name = "Ethan Fuerst", email = "34084535+ethanfuerst@users.noreply.github.com" }]
+requires-python = ">=3.9.7,<4"
 readme = "README.md"
-packages = [{include = "nba_dashboard"}]
+dependencies = [
+    "dash==2.18.2",
+    "pandas==2.2.3",
+    "plotly==5.24.1",
+    "beautifulsoup4==4.12.3",
+    "nba-api==1.6.1",
+    "dash-bootstrap-components==1.6.0",
+    "dash-html-components==2.0.0",
+    "dash-core-components==2.0.0",
+    "lxml==5.3.0",
+]
 
-[tool.poetry.dependencies]
-python = "^3.9.7"
-dash = "2.18.2"
-pandas = "2.2.3"
-plotly = "5.24.1"
-beautifulsoup4 = "4.12.3"
-nba-api = "1.6.1"
-dash-bootstrap-components = "1.6.0"
-dash-html-components = "2.0.0"
-dash-core-components = "2.0.0"
-lxml = "5.3.0"
+[dependency-groups]
+dev = [
+    "isort>=6.0.1,<7",
+    "black>=25.1.0,<26",
+]
+
+[tool.hatch.build.targets.sdist]
+include = ["nba_dashboard"]
+
+[tool.hatch.build.targets.wheel]
+include = ["nba_dashboard"]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.black]
+line-length = 88
+target-version = ["py310"]
+skip-string-normalization = true
+
+[tool.isort]
+profile = "black"
+line_length = 88
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
